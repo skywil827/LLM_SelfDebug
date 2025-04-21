@@ -22,6 +22,7 @@ def longest_increasing_subsequence(nums):
 
 Using this test cases on this code, the code did not pass all test cases.
 
+```bash
 test_cases = [
     (([10, 9, 2, 5, 3, 7, 101, 18],), 4),  # LIS is [2,3,7,101]
     (([0, 1, 0, 3, 2, 3],), 4),           # LIS is [0,1,2,3]
@@ -30,14 +31,15 @@ test_cases = [
     (([1],), 1),                          # Single element
     (([4, 10, 4, 3, 8, 9],), 3),          # LIS is [4,8,9]
 ]
-
+```
 Below are the results:
 
+```bash
 {'input': ([10, 9, 2, 5, 3, 7, 101, 18],), 'expected': 4, 'output': 4, 'passed': True}
 {'input': ([0, 1, 0, 3, 2, 3],), 'expected': 4, 'output': 4, 'passed': True}
 {'input': ([7, 7, 7, 7, 7],), 'expected': 1, 'output': 1, 'passed': True}
 {'input': ([],), 'expected': 0, 'output': 'max() arg is an empty sequence', 'passed': False}
 {'input': ([1],), 'expected': 1, 'output': 1, 'passed': True}
 {'input': ([4, 10, 4, 3, 8, 9],), 'expected': 3, 'output': 3, 'passed': True}
-
+```
 
