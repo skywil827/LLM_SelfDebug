@@ -433,8 +433,8 @@ if __name__ == "__main__":
     # benchmarks = ["HumanEval", "MBPP", "APPS"]
     benchmarks = ["HumanEval", "MBPP"]
 
-    max_tasks = 2
-    max_self_debug_iters = 3
+    max_tasks = 3
+    max_self_debug_iters = 2
 
     all_results = []
 
