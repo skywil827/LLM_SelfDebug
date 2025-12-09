@@ -1,0 +1,9 @@
+Metadata-Version: 2.1
+Name: human-eval
+Version: 1.0.3
+Author: OpenAI
+License-File: LICENSE
+Requires-Dist: tqdm
+Requires-Dist: fire
+Requires-Dist: numpy
+
