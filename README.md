@@ -1,13 +1,14 @@
+# LLM Self-Debugging Pipeline Evaluation
+
 This repository evaluates a self-debugging pipeline for code-generating Large Language Models across three benchmark datasets:
   HumanEval
   MBPP
   APPS
 Each experiment compares Baseline performance against the self-debugging performance using iterative error analysis and code pathing.
 
-NOTE: To manage computational cost, the full benchmark datasets were not executed. Each model was tested on a representative sample of 30 tasks, 
-and the self-debugging module was allowed to perform up to 10 correction iterations before termination.
+### NOTE: To manage computational cost, I did not run the full benchmark datasets. I tested each model on a  sample of 30 tasks, and set the self-debugging module to perform for up to 10 correction iterations before termination.
 
-
+```
 RESULTS:
 (tvenv) osborn@OSBORN-PC:~/thesis$ python3.11 ./index.py
 
@@ -70,3 +71,4 @@ Baseline: 0/30 (0.00% pass rate)
 MBPP on gemini:gemini-2.5-pro | SELF-DEBUG
 Self-debug: 28/30 (93.33% pass rate)
 Improvement: +28 tasks, +93.3333 percentage points
+```
