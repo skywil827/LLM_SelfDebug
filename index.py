@@ -433,8 +433,8 @@ if __name__ == "__main__":
     # benchmarks = ["HumanEval", "MBPP", "APPS"]
     benchmarks = ["HumanEval", "MBPP"]
 
-    max_tasks = 3
-    max_self_debug_iters = 2
+    max_tasks = 30
+    max_self_debug_iters = 10
 
     all_results = []
 
@@ -520,75 +520,75 @@ if __name__ == "__main__":
 
 
 
-    print("\nSAMPLE ORIGINAL VS CORRECTED CODE\n")
+    # print("\nSAMPLE ORIGINAL VS CORRECTED CODE\n")
 
-    for mode, summary in all_results:
-        if mode != "self_debug":
-            continue
+    # for mode, summary in all_results:
+    #     if mode != "self_debug":
+    #         continue
 
-        details = summary.get("details", [])
-        if not details:
-            continue
+    #     details = summary.get("details", [])
+    #     if not details:
+    #         continue
 
-        sample = None
-        for d in details:
-            if (
-                d.get("self_debug_used")
-                and d.get("num_iterations", 1) > 2
-                and d.get("initial_code")
-            ):
-                sample = d
-                break
+    #     sample = None
+    #     for d in details:
+    #         if (
+    #             d.get("self_debug_used")
+    #             and d.get("num_iterations", 1) > 2
+    #             and d.get("initial_code")
+    #         ):
+    #             sample = d
+    #             break
 
-        if sample is None:
+    #     if sample is None:
     
-            continue
+    #         continue
 
-        init_code = sample.get("initial_code", "") or ""
-        final_code = sample.get("final_code", "") or ""
-        num_iters = sample.get("num_iterations", 1)
-        patch_explanations = sample.get("patch_explanations", []) or []
-
-        
-        if not init_code.strip():
-            continue
-
-        print("------------------------------------------------------------")
-        print(f"Benchmark: {summary['benchmark']}")
-        print(f"Model: {summary['provider']}:{summary['model']}")
-        print(f"Task ID: {sample.get('task_id')}")
-        print(f"Passed after self-debug: {sample.get('passed')}")
-        print(f"Iterations used: {num_iters}")
-        print("------------------------------------------------------------")
-
-        print(" ORIGINAL CODE (before self-debug)\n")
-        print(init_code)
-
-        if num_iters > 1 and final_code.strip():
-            print("\nCORRECTED CODE (after self-debug) \n")
-            print(final_code)
-
-            if patch_explanations:
-                print("\n>>> EXPLANATION(S) FOR CODE CORRECTION <<<")
-                for i, expl in enumerate(patch_explanations, 1):
-                    print(f"\n[Patch {i}]\n{expl}")
+    #     init_code = sample.get("initial_code", "") or ""
+    #     final_code = sample.get("final_code", "") or ""
+    #     num_iters = sample.get("num_iterations", 1)
+    #     patch_explanations = sample.get("patch_explanations", []) or []
 
         
-            print("\n DIFF BETWEEN ORIGINAL AND CORRECTED CODE\n")
-            init_lines = init_code.splitlines()
-            final_lines = final_code.splitlines()
-            diff_lines = difflib.unified_diff(
-                init_lines,
-                final_lines,
-                fromfile="original.py",
-                tofile="corrected.py",
-                lineterm="",
-            )
-            for line in diff_lines:
-                print(line)
-        else:
-            print("\n(Self-debugging did not perform extra iterations with a "
-                  "non-empty corrected code; corrected code is effectively "
-                  "identical to the original for this sample.)")
+    #     if not init_code.strip():
+    #         continue
 
-        print("------------------------------------------------------------\n")
+    #     print("------------------------------------------------------------")
+    #     print(f"Benchmark: {summary['benchmark']}")
+    #     print(f"Model: {summary['provider']}:{summary['model']}")
+    #     print(f"Task ID: {sample.get('task_id')}")
+    #     print(f"Passed after self-debug: {sample.get('passed')}")
+    #     print(f"Iterations used: {num_iters}")
+    #     print("------------------------------------------------------------")
+
+    #     print(" ORIGINAL CODE (before self-debug)\n")
+    #     print(init_code)
+
+    #     if num_iters > 1 and final_code.strip():
+    #         print("\nCORRECTED CODE (after self-debug) \n")
+    #         print(final_code)
+
+    #         if patch_explanations:
+    #             print("\n>>> EXPLANATION(S) FOR CODE CORRECTION <<<")
+    #             for i, expl in enumerate(patch_explanations, 1):
+    #                 print(f"\n[Patch {i}]\n{expl}")
+
+        
+    #         print("\n DIFF BETWEEN ORIGINAL AND CORRECTED CODE\n")
+    #         init_lines = init_code.splitlines()
+    #         final_lines = final_code.splitlines()
+    #         diff_lines = difflib.unified_diff(
+    #             init_lines,
+    #             final_lines,
+    #             fromfile="original.py",
+    #             tofile="corrected.py",
+    #             lineterm="",
+    #         )
+    #         for line in diff_lines:
+    #             print(line)
+    #     else:
+    #         print("\n(Self-debugging did not perform extra iterations with a "
+    #               "non-empty corrected code; corrected code is effectively "
+    #               "identical to the original for this sample.)")
+
+    #     print("------------------------------------------------------------\n")
