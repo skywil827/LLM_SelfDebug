@@ -47,6 +47,7 @@ class InitialCodeResult:
     code: str
     explanation: str
     raw_response: dict
+    raw_prompt: str
 
 
 TaskType = Union[HumanEvalTask, MBPPTask, APPSTask]
@@ -140,9 +141,11 @@ def generate_initial_code_with_openai(
         code=code,
         explanation=explanation,
         raw_response=response.model_dump() if hasattr(response, "model_dump") else response,
+        raw_prompt=user_instructions,
     )
 
 
+# Initial Code Generation – Gemini
 # Initial Code Generation – Gemini
 def generate_initial_code_with_gemini(
     task: TaskType,
@@ -186,12 +189,20 @@ def generate_initial_code_with_gemini(
 
     model_obj = GenerativeModel(model)
     response = model_obj.generate_content(user_instructions)
-
     content = getattr(response, "text", "") or str(response)
+    content = content.strip()
+
+    if content.startswith("```"):
+        lines = content.splitlines()
+        lines = lines[1:]
+        if lines and lines[-1].strip().startswith("```"):
+            lines = lines[:-1]
+        content = "\n".join(lines).strip()
 
     try:
         parsed = json.loads(content)
     except json.JSONDecodeError:
+        
         parsed = {
             "plan": "",
             "code": "",
@@ -212,7 +223,9 @@ def generate_initial_code_with_gemini(
         code=code,
         explanation=explanation,
         raw_response=raw_response,
+        raw_prompt=user_instructions,
     )
+
 
 
 # Baseline (NO self-debugging)
@@ -272,12 +285,22 @@ def run_single_task_with_self_debug(
     num_iterations = 0
     used_self_debug = False
     final_exec_result: Optional[ExecutionResult] = None
+    initial_error_type = None
+    initial_error_message = None
+    initial_num_tests = None
+    initial_num_passed = None
 
     for it in range(max_self_debug_iters + 1):
         num_iterations = it + 1
 
         exec_result = execute_task_code(task, current_code)
         final_exec_result = exec_result
+
+        if it == 0:
+            initial_error_type = exec_result.error_type
+            initial_error_message = exec_result.error_message
+            initial_num_tests = exec_result.num_tests
+            initial_num_passed = exec_result.num_passed
 
         if exec_result.passed or exec_result.num_tests == 0:
             break
@@ -336,6 +359,12 @@ def run_single_task_with_self_debug(
         "initial_code": initial_code,
         "final_code": current_code,
         "patch_explanations": patch_explanations,
+        "prompt_to_model": init.raw_prompt,
+        "initial_explanation": init.explanation,
+        "initial_error_type": initial_error_type,
+        "initial_error_message": initial_error_message,
+        "initial_num_tests": initial_num_tests,
+        "initial_num_passed": initial_num_passed,
     }
 
 
@@ -420,6 +449,75 @@ def evaluate_benchmark_on_model(
         "details": per_task,
     }
 
+def print_successful_samples_for_summary(summary: Dict[str, Any], max_samples: int = 1) -> None:
+
+    details = summary.get("details", [])
+    if not details:
+        return
+
+    sample_count = 0
+
+    for d in details:
+        if sample_count >= max_samples:
+            break
+
+        used_self_debug = d.get("self_debug_used", False)
+        final_passed = d.get("passed", False)
+        num_iters = d.get("num_iterations", 1)
+        init_num_passed = d.get("initial_num_passed", None)
+        init_num_tests = d.get("initial_num_tests", None)
+
+        if not used_self_debug:
+            continue
+        if not final_passed:
+            continue
+        if num_iters <= 1:
+            continue
+        if init_num_tests is not None and init_num_passed is not None:
+            if init_num_passed == init_num_tests:
+                continue 
+
+        init_code = d.get("initial_code", "") or ""
+        final_code = d.get("final_code", "") or ""
+        patch_explanations = d.get("patch_explanations", []) or []
+        prompt_to_model = d.get("prompt_to_model", "") or ""
+        initial_explanation = d.get("initial_explanation", "") or ""
+        initial_error_type = d.get("initial_error_type", "") or ""
+        initial_error_message = d.get("initial_error_message", "") or ""
+
+        print("\n================= SELF-DEBUG SUCCESS SAMPLE =================")
+        print(f"Benchmark: {summary['benchmark']}")
+        print(f"Model: {summary['provider']}:{summary['model']}")
+        print(f"Task ID: {d.get('task_id')}")
+        print(f"Initial tests: {init_num_passed}/{init_num_tests}")
+        print(f"Final tests: {d.get('num_passed')}/{d.get('num_tests')}")
+        print(f"Iterations used: {num_iters}")
+        print("============================================================\n")
+
+        print("RAW PROMPT SENT TO MODEL\n")
+        print(prompt_to_model)
+
+        print("\nINITIAL CODE (FAILED)\n")
+        print(init_code)
+
+        print("\nINITIAL CODE EXPLANATION\n")
+        print(initial_explanation)
+
+        print("\nINITIAL ERROR\n")
+        print(f"Error type: {initial_error_type}")
+        print(f"Error message: {initial_error_message}")
+
+        print("\nCORRECTED CODE (ALL TESTS PASSED) \n")
+        print(final_code)
+
+        if patch_explanations:
+            print("\n>>> PATCH EXPLANATION(S) <<<")
+            for i, expl in enumerate(patch_explanations, 1):
+                print(f"\n[Patch {i}]\n{expl}")
+
+        sample_count += 1
+
+
 
 if __name__ == "__main__":
     configs = [
@@ -433,8 +531,8 @@ if __name__ == "__main__":
     # benchmarks = ["HumanEval", "MBPP", "APPS"]
     benchmarks = ["HumanEval", "MBPP"]
 
-    max_tasks = 30
-    max_self_debug_iters = 10
+    max_tasks = 3
+    max_self_debug_iters = 2
 
     all_results = []
 
@@ -469,6 +567,7 @@ if __name__ == "__main__":
                 f"Self-debug: {selfdbg_summary['num_passed']}/"
                 f"{selfdbg_summary['num_tasks']} "
                 f"({selfdbg_summary['pass_rate']*100:.2f}% pass rate)"
+
             )
 
             delta_pass = selfdbg_summary["num_passed"] - baseline_summary["num_passed"]
@@ -478,6 +577,7 @@ if __name__ == "__main__":
                 f"Improvement: +{delta_pass} tasks, "
                 f"{delta_rate:+.4f} percentage points"
             )
+            print_successful_samples_for_summary(selfdbg_summary, max_samples=1)
 
             all_results.append(("baseline", baseline_summary))
             all_results.append(("self_debug", selfdbg_summary))
@@ -515,80 +615,5 @@ if __name__ == "__main__":
         plt.title("Baseline vs Self-Debugging Pass Rates\n(per Benchmark & Model)")
         plt.legend()
         plt.tight_layout()
-        plt.savefig("self_debug_comparison.png")
+        plt.savefig("self_debug_comparison_001.png")
         plt.show()
-
-
-
-    # print("\nSAMPLE ORIGINAL VS CORRECTED CODE\n")
-
-    # for mode, summary in all_results:
-    #     if mode != "self_debug":
-    #         continue
-
-    #     details = summary.get("details", [])
-    #     if not details:
-    #         continue
-
-    #     sample = None
-    #     for d in details:
-    #         if (
-    #             d.get("self_debug_used")
-    #             and d.get("num_iterations", 1) > 2
-    #             and d.get("initial_code")
-    #         ):
-    #             sample = d
-    #             break
-
-    #     if sample is None:
-    
-    #         continue
-
-    #     init_code = sample.get("initial_code", "") or ""
-    #     final_code = sample.get("final_code", "") or ""
-    #     num_iters = sample.get("num_iterations", 1)
-    #     patch_explanations = sample.get("patch_explanations", []) or []
-
-        
-    #     if not init_code.strip():
-    #         continue
-
-    #     print("------------------------------------------------------------")
-    #     print(f"Benchmark: {summary['benchmark']}")
-    #     print(f"Model: {summary['provider']}:{summary['model']}")
-    #     print(f"Task ID: {sample.get('task_id')}")
-    #     print(f"Passed after self-debug: {sample.get('passed')}")
-    #     print(f"Iterations used: {num_iters}")
-    #     print("------------------------------------------------------------")
-
-    #     print(" ORIGINAL CODE (before self-debug)\n")
-    #     print(init_code)
-
-    #     if num_iters > 1 and final_code.strip():
-    #         print("\nCORRECTED CODE (after self-debug) \n")
-    #         print(final_code)
-
-    #         if patch_explanations:
-    #             print("\n>>> EXPLANATION(S) FOR CODE CORRECTION <<<")
-    #             for i, expl in enumerate(patch_explanations, 1):
-    #                 print(f"\n[Patch {i}]\n{expl}")
-
-        
-    #         print("\n DIFF BETWEEN ORIGINAL AND CORRECTED CODE\n")
-    #         init_lines = init_code.splitlines()
-    #         final_lines = final_code.splitlines()
-    #         diff_lines = difflib.unified_diff(
-    #             init_lines,
-    #             final_lines,
-    #             fromfile="original.py",
-    #             tofile="corrected.py",
-    #             lineterm="",
-    #         )
-    #         for line in diff_lines:
-    #             print(line)
-    #     else:
-    #         print("\n(Self-debugging did not perform extra iterations with a "
-    #               "non-empty corrected code; corrected code is effectively "
-    #               "identical to the original for this sample.)")
-
-    #     print("------------------------------------------------------------\n")

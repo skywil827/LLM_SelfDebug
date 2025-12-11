@@ -1,7 +1,5 @@
 import os
-import io
 import json
-import traceback
 from dataclasses import dataclass
 from typing import Dict, Any, Optional, Union
 from dotenv import load_dotenv
@@ -22,22 +20,20 @@ from error_explanation import (
 from patch_generation import produce_next_code_version
 from datasets import load_dataset
 from human_eval.data import read_problems
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+import difflib 
 
 
-
-
-# Load environment variables from .env
+# Environment & Clients
 load_dotenv(override=True)
 
-# Explicitly set environment variables for APIs
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
 
-# Initialize API clients
 openai = OpenAI()
 google.generativeai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
+# Safe defaults for models
 OPENAI_MODEL = "gpt-4o-mini"
 GOOGLE_MODEL = "gemini-2.0-flash"
 
@@ -51,6 +47,7 @@ class InitialCodeResult:
     code: str
     explanation: str
     raw_response: dict
+    raw_prompt: str
 
 
 TaskType = Union[HumanEvalTask, MBPPTask, APPSTask]
@@ -74,15 +71,11 @@ def _get_task_identity(task: TaskType) -> tuple[str, str]:
     return benchmark, tid
 
 
-
 # Initial Code Generation – OpenAI
 def generate_initial_code_with_openai(
     task: TaskType,
     model: str = OPENAI_MODEL,
 ) -> InitialCodeResult:
-    """
-    Initial Understanding & First Code stage using OpenAI (e.g., gpt-4o, gpt-4o-mini).
-    """
     benchmark, tid = _get_task_identity(task)
     base_prompt = task.build_prompt()
 
@@ -148,8 +141,8 @@ def generate_initial_code_with_openai(
         code=code,
         explanation=explanation,
         raw_response=response.model_dump() if hasattr(response, "model_dump") else response,
+        raw_prompt=user_instructions,
     )
-
 
 
 # Initial Code Generation – Gemini
@@ -157,10 +150,6 @@ def generate_initial_code_with_gemini(
     task: TaskType,
     model: str = GOOGLE_MODEL,
 ) -> InitialCodeResult:
-    """
-    Initial Understanding & First Code stage using Gemini (e.g., gemini-2.0-flash).
-    Mirrors generate_initial_code_with_openai, but uses Gemini APIs.
-    """
     benchmark, tid = _get_task_identity(task)
     base_prompt = task.build_prompt()
 
@@ -225,19 +214,16 @@ def generate_initial_code_with_gemini(
         code=code,
         explanation=explanation,
         raw_response=raw_response,
+        raw_prompt=user_instructions,
     )
 
 
 # Baseline (NO self-debugging)
-
 def run_single_task_no_self_debug(
     task: TaskType,
     provider: str,
     model_name: str,
 ) -> Dict[str, Any]:
-    """
-    Baseline pipeline: single shot code generation + execution, no self-debug loop.
-    """
     if provider == "openai":
         init = generate_initial_code_with_openai(task, model=model_name)
     elif provider == "gemini":
@@ -261,6 +247,11 @@ def run_single_task_no_self_debug(
         "error_message": exec_result.error_message,
         "num_iterations": 1,
         "self_debug_used": False,
+        "initial_model": f"{provider}:{model_name}",
+        "patch_model": None,
+        "initial_code": candidate_code,
+        "final_code": candidate_code,
+        "patch_explanations": [],
     }
 
 
@@ -271,9 +262,6 @@ def run_single_task_with_self_debug(
     model_name: str,
     max_self_debug_iters: int = 3,
 ) -> Dict[str, Any]:
-    """
-    Full self-debugging pipeline for a single task with a given provider/model.
-    """
     if provider == "openai":
         init = generate_initial_code_with_openai(task, model=model_name)
     elif provider == "gemini":
@@ -282,23 +270,33 @@ def run_single_task_with_self_debug(
         raise ValueError(f"Unknown provider: {provider}")
 
     current_code = init.code
+    initial_code = current_code
+    patch_explanations = []
     num_iterations = 0
     used_self_debug = False
     final_exec_result: Optional[ExecutionResult] = None
+    initial_error_type = None
+    initial_error_message = None
+    initial_num_tests = None
+    initial_num_passed = None
 
     for it in range(max_self_debug_iters + 1):
         num_iterations = it + 1
 
-     
         exec_result = execute_task_code(task, current_code)
         final_exec_result = exec_result
+
+        if it == 0:
+            initial_error_type = exec_result.error_type
+            initial_error_message = exec_result.error_message
+            initial_num_tests = exec_result.num_tests
+            initial_num_passed = exec_result.num_passed
 
         if exec_result.passed or exec_result.num_tests == 0:
             break
 
         if it == max_self_debug_iters:
             break
-
 
         used_self_debug = True
 
@@ -307,9 +305,16 @@ def run_single_task_with_self_debug(
         diag = diagnose_bug_with_openai(io_bundle)
         err_expl = build_error_explanation_text(io_bundle, diag)
 
-  
         next_code, patch_info = produce_next_code_version(task, current_code, err_expl)
         current_code = next_code
+
+        rationale = getattr(patch_info, "rationale", None)
+        if rationale:
+            patch_explanations.append(rationale)
+        else:
+            patch_explanations.append(
+                "Patch applied, but no explicit rationale was returned from patch_generation."
+            )
 
     if final_exec_result is None:
         benchmark, tid = _get_task_identity(task)
@@ -341,10 +346,19 @@ def run_single_task_with_self_debug(
         "self_debug_used": used_self_debug,
         "initial_model": f"{provider}:{model_name}",
         "patch_model": "openai:gpt-4o",
+        "initial_code": initial_code,
+        "final_code": current_code,
+        "patch_explanations": patch_explanations,
+        "prompt_to_model": init.raw_prompt,
+        "initial_explanation": init.explanation,
+        "initial_error_type": initial_error_type,
+        "initial_error_message": initial_error_message,
+        "initial_num_tests": initial_num_tests,
+        "initial_num_passed": initial_num_passed,
     }
 
 
-
+# Benchmark runner
 def evaluate_benchmark_on_model(
     benchmark: str,
     provider: str,
@@ -353,11 +367,6 @@ def evaluate_benchmark_on_model(
     mode: str = "baseline",
     max_self_debug_iters: int = 3,
 ) -> Dict[str, Any]:
-    """
-    Run ALL (or first max_tasks) tasks of a benchmark for a given provider/model.
-
-    mode ∈ {"baseline", "self_debug"}
-    """
     total_tasks = 0
     total_passed = 0
     per_task = []
@@ -431,8 +440,6 @@ def evaluate_benchmark_on_model(
     }
 
 
-
-
 if __name__ == "__main__":
     configs = [
         ("openai", "gpt-4o"),
@@ -445,9 +452,8 @@ if __name__ == "__main__":
     # benchmarks = ["HumanEval", "MBPP", "APPS"]
     benchmarks = ["HumanEval", "MBPP"]
 
-
-    max_tasks = 1
-    max_self_debug_iters = 3
+    max_tasks = 3
+    max_self_debug_iters = 2
 
     all_results = []
 
@@ -482,6 +488,7 @@ if __name__ == "__main__":
                 f"Self-debug: {selfdbg_summary['num_passed']}/"
                 f"{selfdbg_summary['num_tasks']} "
                 f"({selfdbg_summary['pass_rate']*100:.2f}% pass rate)"
+
             )
 
             delta_pass = selfdbg_summary["num_passed"] - baseline_summary["num_passed"]
@@ -495,16 +502,8 @@ if __name__ == "__main__":
             all_results.append(("baseline", baseline_summary))
             all_results.append(("self_debug", selfdbg_summary))
 
-    # print("\nOVERALL COMPARISON SUMMARY")
-    # for mode, s in all_results:
-    #     label = "BASELINE" if mode == "baseline" else "SELF-DEBUG"
-    #     print(
-    #         f"{label} | {s['benchmark']} | {s['provider']}:{s['model']} "
-    #         f"-> {s['num_passed']}/{s['num_tasks']} passed "
-    #         f"({s['pass_rate']*100:.2f}%)"
-    #     )
 
-   
+
     # Bar Chart: Baseline vs Self-Debug pass rates
     combined: Dict[tuple, Dict[str, float]] = {}
     for mode, summary in all_results:
@@ -528,8 +527,8 @@ if __name__ == "__main__":
         width = 0.4
 
         plt.figure(figsize=(12, 6))
-        plt.bar([i - width/2 for i in x], baseline_rates, width, label="Baseline")
-        plt.bar([i + width/2 for i in x], selfdebug_rates, width, label="Self-Debug")
+        plt.bar([i - width / 2 for i in x], baseline_rates, width, label="Baseline")
+        plt.bar([i + width / 2 for i in x], selfdebug_rates, width, label="Self-Debug")
 
         plt.xticks(list(x), labels, rotation=30, ha="right")
         plt.ylabel("Pass Rate (%)")
@@ -538,116 +537,92 @@ if __name__ == "__main__":
         plt.tight_layout()
         plt.savefig("self_debug_comparison.png")
         plt.show()
-    else:
-        print("No paired baseline/self-debug results available to plot.")
 
 
+    print("\nSAMPLE ORIGINAL VS CORRECTED CODE (ONLY SUCCESSFUL SELF-DEBUG CASES)\n")
 
-  
-    # Debugging Attempts (Self-Debug Mode Only)
-    # print("\n===== SELF-DEBUGGING ATTEMPTS REPORT =====")
+    sample_count = 0
+    max_samples = 2 
 
-    # attempts_summary: Dict[tuple, Dict[str, Any]] = {}
-    # attempts_dist_by_benchmark: Dict[str, Dict[int, int]] = {}
+    for mode, summary in all_results:
+        if sample_count >= max_samples:
+            break
 
-    # for mode, summary in all_results:
-    #     if mode != "self_debug":
-    #         continue
+        if mode != "self_debug":
+            continue
 
-    #     key = (summary["benchmark"], summary["provider"], summary["model"])
-    #     details = summary.get("details", [])
+        details = summary.get("details", [])
+        if not details:
+            continue
 
-    #     num_tasks = summary["num_tasks"]
-    #     iterations = [d.get("num_iterations", 1) for d in details]
-    #     used_flags = [d.get("self_debug_used", False) for d in details]
+        for d in details:
+            if sample_count >= max_samples:
+                break
 
-    #     total_iters = sum(iterations) if iterations else 0
-    #     avg_iters_all = total_iters / num_tasks if num_tasks > 0 else 0.0
+            # We only want:
+            # - self-debug was actually used
+            # - initial code failed
+            # - final code passed
+            # - there was at least one patch (num_iterations > 1)
+            used_self_debug = d.get("self_debug_used", False)
+            final_passed = d.get("passed", False)
+            num_iters = d.get("num_iterations", 1)
+            init_num_passed = d.get("initial_num_passed", None)
+            init_num_tests = d.get("initial_num_tests", None)
 
-    #     used_count = sum(1 for u in used_flags if u)
-    #     iters_when_used = [it for it, u in zip(iterations, used_flags) if u]
-    #     avg_iters_used = (
-    #         (sum(iters_when_used) / len(iters_when_used)) if iters_when_used else 0.0
-    #     )
-    #     max_iters = max(iterations) if iterations else 0
+            if not used_self_debug:
+                continue
+            if not final_passed:
+                continue
+            if num_iters <= 1:
+                continue
+            # initial must have failed: either 0 passed or < total tests
+            if init_num_tests is not None and init_num_passed is not None:
+                if init_num_passed == init_num_tests:
+                    # initial already passed all tests; skip
+                    continue
 
-    #     attempts_summary[key] = {
-    #         "num_tasks": num_tasks,
-    #         "used_count": used_count,
-    #         "avg_iters_all": avg_iters_all,
-    #         "avg_iters_used": avg_iters_used,
-    #         "max_iters": max_iters,
-    #     }
+            init_code = d.get("initial_code", "") or ""
+            final_code = d.get("final_code", "") or ""
+            patch_explanations = d.get("patch_explanations", []) or []
+            prompt_to_model = d.get("prompt_to_model", "") or ""
+            initial_explanation = d.get("initial_explanation", "") or ""
+            initial_error_type = d.get("initial_error_type", "") or ""
+            initial_error_message = d.get("initial_error_message", "") or ""
 
+            print("============================================================")
+            print(f"Benchmark: {summary['benchmark']}")
+            print(f"Model: {summary['provider']}:{summary['model']}")
+            print(f"Task ID: {d.get('task_id')}")
+            print(f"Initial tests: {init_num_passed}/{init_num_tests}")
+            print(f"Final tests: {d.get('num_passed')}/{d.get('num_tests')}")
+            print(f"Iterations used: {num_iters}")
+            print("============================================================\n")
 
-    #     bm = summary["benchmark"]
-    #     if bm not in attempts_dist_by_benchmark:
-    #         attempts_dist_by_benchmark[bm] = {}
+            # 1) Raw prompt sent to the model
+            print(">>> RAW PROMPT SENT TO MODEL (TRUNCATED) <<<\n")
+            # You can truncate if it's too long
+            print(prompt_to_model[:2000])
+            if len(prompt_to_model) > 2000:
+                print("\n...[prompt truncated]...\n")
 
-    #     for it in iterations:
-    #         attempts = max(0, it - 1)
-    #         attempts_dist_by_benchmark[bm][attempts] = (
-    #             attempts_dist_by_benchmark[bm].get(attempts, 0) + 1
-    #         )
+            print("\n>>> INITIAL CODE (FAILED) <<<\n")
+            print(init_code)
 
-    # if not attempts_summary:
-    #     print("No self-debugging data available.")
-    # else:
-    #     for (benchmark, provider, model), stats in attempts_summary.items():
-    #         print(
-    #             f"\n[Self-Debug Attempts] {benchmark} | {provider}:{model}\n"
-    #             f"- Tasks evaluated: {stats['num_tasks']}\n"
-    #             f"- Tasks where self-debug was actually used: {stats['used_count']}\n"
-    #             f"- Avg iterations per task (including ones that passed immediately): "
-    #             f"{stats['avg_iters_all']:.2f}\n"
-    #             f"- Avg iterations only on tasks that used self-debug: "
-    #             f"{stats['avg_iters_used']:.2f}\n"
-    #             f"- Max iterations used on any single task: {stats['max_iters']}"
-    #         )
+            print("\n>>> INITIAL CODE EXPLANATION <<<\n")
+            print(initial_explanation)
+      
+            print("\n>>> INITIAL ERROR <<<\n")
+            print(f"Error type: {initial_error_type}")
+            print(f"Error message: {initial_error_message}")
 
+            print("\n>>> CORRECTED CODE (ALL TESTS PASSED) <<<\n")
+            print(final_code)
+    
+            if patch_explanations:
+                print("\n>>> PATCH EXPLANATION(S) <<<")
+                for i, expl in enumerate(patch_explanations, 1):
+                    print(f"\n[Patch {i}]\n{expl}")
 
-    # Pie Charts
-    # if attempts_dist_by_benchmark:
-    #     benchmarks_list = sorted(attempts_dist_by_benchmark.keys())
-    #     n = len(benchmarks_list)
+            sample_count += 1
 
-    #     fig, axes = plt.subplots(1, n, figsize=(5 * n, 4))
-    #     if n == 1:
-    #         axes = [axes]
-
-    #     for ax, bm in zip(axes, benchmarks_list):
-    #         dist = attempts_dist_by_benchmark[bm]
-    #         attempt_values = sorted(dist.keys())
-    #         counts = [dist[a] for a in attempt_values]
-    #         total = sum(counts)
-
-    #         if total == 0:
-    #             ax.text(0.5, 0.5, "No tasks", ha="center", va="center")
-    #             ax.set_axis_off()
-    #             continue
-
-    #         wedges, _ = ax.pie(
-    #             counts,
-    #             startangle=90,
-    #         )
-    #         ax.set_title(bm)
-
-
-    #         legend_labels = [
-    #             f"{a}: {count / total * 100:.1f}%"
-    #             for a, count in zip(attempt_values, counts)
-    #         ]
-    #         ax.legend(
-    #             wedges,
-    #             legend_labels,
-    #             title="Debugging Attempts",
-    #             loc="center left",
-    #             bbox_to_anchor=(1, 0.5),
-    #         )
-    #         ax.axis("equal")
-
-    #     plt.tight_layout()
-    #     plt.savefig("self_debug_attempt_distribution_per_benchmark.png")
-    #     plt.show()
-    # else:
-    #     print("No self-debug attempt distributions available for pie charts.")
