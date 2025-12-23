@@ -35,7 +35,7 @@ def load_humaneval_task(task_id: str | None = None) -> HumanEvalTask:
     full_prompt: str = problem["prompt"]
     test_code: str = problem["test"]
 
-    first_line = full_prompt.splitlines()[0].strip()
+    first_line = full_prompt.splitlines()[1].strip()
 
     constraints = {
         "benchmark": "HumanEval",
