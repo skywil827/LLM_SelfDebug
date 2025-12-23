@@ -1,9 +1,10 @@
 from dataclasses import dataclass 
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict
 from datasets import load_dataset
 import textwrap
 from openai import OpenAI
 import json
+import random
 # from dotenv import load_dotenv
 # import os
 
@@ -21,6 +22,7 @@ class SWEInstance:
   fail_to_pass: List[str]
   pass_to_pass: List[str]
   environment_setup_commit: Optional[str]
+  constraints: Dict[str, Any]
 
   def short_summary(self) -> str:
     return (
@@ -55,14 +57,24 @@ def normalize_to_list(x: Any) -> List[str]:
   return []
 
 
-def load_swe_instance(index: int = 10) -> SWEInstance:
+def load_swe_instance(index: int | None = None) -> SWEInstance:
+
 
   dataset = load_dataset("princeton-nlp/SWE-bench_Lite", split="test")
 
-  if index < 0 or index >= len(dataset):
-    raise IndexError(f"Index {index} out of range for dataset of size {len(dataset)}")
+  if index is None:
+    index = random.randrange(len(dataset))
   
   row = dataset[index]
+
+  fail_to_pass = normalize_to_list(row.get("FAIL_TO_PASS"))
+  pass_to_pass = normalize_to_list(row.get("PASS_TO_PASS"))
+
+  constraints = {
+    "benchmark": "SWE-bench_LITE",
+    "time_limit_ms": 2000,
+    "memory_limit_mb": 256,
+  }
 
   return SWEInstance(
     repo = row["repo"],
@@ -74,9 +86,10 @@ def load_swe_instance(index: int = 10) -> SWEInstance:
     test_patch = row.get("test_patch"),
     created_at = row["created_at"],
     version = row["version"],
-    fail_to_pass = row.get("FAIL_TO_PASS", []),
-    pass_to_pass = row.get("PASS_TO_PASS", []),
+    fail_to_pass = fail_to_pass,
+    pass_to_pass = pass_to_pass,
     environment_setup_commit = row.get("environment_setup_commit"),
+    constraints = constraints,
 
   )
 
