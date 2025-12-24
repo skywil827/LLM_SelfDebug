@@ -10,8 +10,9 @@ import anthropic
 from humanEvalInput import HumanEvalTask, load_humaneval_task
 from MBPPInput import MBPPTask, load_mbpp_task
 from APPSInput import APPSTask, load_apps_task
+from sweBenchInput import load_swe_instance, build_swe_prompt, SWELITETask
 from runtime.feedback_package import build_feedback_package
-from runtime.code_exec import ExecutionResult, execute_task_code
+from runtime.code_exec import ExecutionResult, execute_task
 from error_explanation import (
     build_error_explanation_io,
     diagnose_bug_with_openai,
@@ -50,7 +51,7 @@ class InitialCodeResult:
     raw_prompt: str
 
 
-TaskType = Union[HumanEvalTask, MBPPTask, APPSTask]
+TaskType = Union[HumanEvalTask, MBPPTask, APPSTask, SWELITETask]
 
 
 def _get_task_identity(task: TaskType) -> tuple[str, str]:
@@ -65,6 +66,8 @@ def _get_task_identity(task: TaskType) -> tuple[str, str]:
         tid = f"MBPP/{task.task_id}"
     elif isinstance(task, APPSTask):
         tid = f"APPS/{task.problem_id}"
+    elif isinstance(task, SWELITETask):
+        tid = f"SWELITE/{task.instance_id}"
     else:
         tid = "UNKNOWN"
 
@@ -77,12 +80,45 @@ def generate_initial_code_with_openai(
     model: str = OPENAI_MODEL,
 ) -> InitialCodeResult:
     benchmark, tid = _get_task_identity(task)
-    base_prompt = task.build_prompt()
+
+    if isinstance(task, SWELITETask):
+        base_prompt = build_swe_prompt(task)
+        response_schema = """
+        {
+          "plan": "Short step-by-step reasoning about how you will solve the problem.",
+          "patch": "Unified diff patch to apply on top of the base commit. Do NOT wrap in ``` fences.",
+          "explanation": "A clear explanation of how the patch fixes the bug."
+        }
+        """
+        artifact_key = "patch"
+        constraints_block = """
+        Constraints:
+        - The "patch" MUST be a valid unified diff starting with: diff --git a/... b/...
+        - Do NOT include backticks or Markdown fences in any field.
+        - Return ONLY code changes in the patch; do not include prose outside the JSON.
+        """
+    else:
+        base_prompt = task.build_prompt()
+        response_schema = """
+        {
+          "plan": "Short step-by-step reasoning about how you will solve the problem.",
+          "code": "Python code implementing your solution. Do NOT wrap in ``` fences.",
+          "explanation": "A clear explanation of how the code works."
+        }
+        """
+        artifact_key = "code"
+        constraints_block = """
+        Constraints:
+        - The "code" MUST be valid Python.
+        - Do NOT include backticks or Markdown fences in any field.
+        - For HumanEval/MBPP, implement ONLY the required function(s), not a CLI.
+        - For APPS, you may write a full program if needed, but keep it minimal and correct.
+        """
 
     system_msg = (
         "You are a highly reliable coding assistant. "
         "Your job is to understand the problem, propose a clear plan, "
-        "then write correct and clean Python code, and finally explain your solution."
+        "then produce the required artifact, and finally explain your solution."
     )
 
     user_instructions = f"""
@@ -96,17 +132,9 @@ def generate_initial_code_with_openai(
         ---------------------------
         Respond ONLY as a JSON object with the following fields:
 
-        {{
-          "plan": "Short step-by-step reasoning about how you will solve the problem.",
-          "code": "Python code implementing your solution. Do NOT wrap in ``` fences.",
-          "explanation": "A clear explanation of how the code works."
-        }}
+        {response_schema}
 
-        Constraints:
-        - The "code" MUST be valid Python.
-        - Do NOT include backticks or Markdown fences in any field.
-        - For HumanEval/MBPP, implement ONLY the required function(s), not a CLI.
-        - For APPS, you may write a full program if needed, but keep it minimal and correct.
+        {constraints_block}
     """
 
     response = openai.chat.completions.create(
@@ -123,14 +151,10 @@ def generate_initial_code_with_openai(
     try:
         parsed = json.loads(content)
     except json.JSONDecodeError:
-        parsed = {
-            "plan": "",
-            "code": "",
-            "explanation": content,
-        }
+        parsed = {"plan": "", artifact_key: "", "explanation": content}
 
     plan = parsed.get("plan", "").strip()
-    code = parsed.get("code", "").strip()
+    artifact = parsed.get(artifact_key, "").strip()
     explanation = parsed.get("explanation", "").strip()
 
     return InitialCodeResult(
@@ -138,30 +162,46 @@ def generate_initial_code_with_openai(
         task_id=tid,
         model=model,
         plan=plan,
-        code=code,
+        code=artifact,
         explanation=explanation,
         raw_response=response.model_dump() if hasattr(response, "model_dump") else response,
         raw_prompt=user_instructions,
     )
 
 
-# Initial Code Generation – Gemini
-# Initial Code Generation – Gemini
+# Initial Code / Patch Generation – Gemini
 def generate_initial_code_with_gemini(
     task: TaskType,
     model: str = GOOGLE_MODEL,
 ) -> InitialCodeResult:
     benchmark, tid = _get_task_identity(task)
-    base_prompt = task.build_prompt()
+
+    if isinstance(task, SWELITETask):
+        base_prompt = build_swe_prompt(task)
+        expected_key = "patch"
+        output_hint = (
+            'Return ONLY JSON with keys: {"plan","patch","explanation"}. '
+            '"patch" must be a valid unified diff starting with diff --git.'
+        )
+    else:
+        base_prompt = task.build_prompt()
+        expected_key = "code"
+        output_hint = (
+            'Return ONLY JSON with keys: {"plan","code","explanation"}. '
+            '"code" must be valid Python and must not be wrapped in backticks.'
+        )
 
     system_msg = (
         "You are a highly reliable coding assistant. "
-        "Your job is to understand the problem, propose a clear plan, "
-        "then write correct and clean Python code, and finally explain your solution."
+        "You must follow the user's output schema exactly. "
+        "Do not include Markdown fences. Return strict JSON only."
     )
 
     user_instructions = f"""
-        You will receive a programming task from the {benchmark} benchmark.
+        You will receive a task from the {benchmark} benchmark.
+        
+        SYSTEM INSTRUCTIONS
+        {system_msg}
 
         TASK SPECIFICATION
         ------------------
@@ -169,32 +209,30 @@ def generate_initial_code_with_gemini(
 
         RESPONSE FORMAT (MANDATORY)
         ---------------------------
-        Respond ONLY as a JSON object with the following fields:
+        {output_hint}
 
-        {{
-          "plan": "Short step-by-step reasoning about how you will solve the problem.",
-          "code": "Python code implementing your solution. Do NOT wrap in ``` fences.",
-          "explanation": "A clear explanation of how the code works."
-        }}
-
-        Constraints:
-        - The "code" MUST be valid Python.
+        General rules:
+        - Output MUST be a single JSON object (no extra text).
         - Do NOT include backticks or Markdown fences in any field.
-        - For HumanEval/MBPP, implement ONLY the required function(s), not a CLI.
-        - For APPS, you may write a full program if needed, but keep it minimal and correct.
+        - Keep the plan short and concrete.
+        """.strip()
 
-        System instructions:
-        {system_msg}
-    """
-
+    
     model_obj = GenerativeModel(model)
-    response = model_obj.generate_content(user_instructions)
+    response = model_obj.generate_content(
+        user_instructions,
+        generation_config={
+            "temperature": 0.2,
+        },
+    )
+
     content = getattr(response, "text", "") or str(response)
     content = content.strip()
 
     if content.startswith("```"):
         lines = content.splitlines()
         lines = lines[1:]
+
         if lines and lines[-1].strip().startswith("```"):
             lines = lines[:-1]
         content = "\n".join(lines).strip()
@@ -202,16 +240,16 @@ def generate_initial_code_with_gemini(
     try:
         parsed = json.loads(content)
     except json.JSONDecodeError:
-        
         parsed = {
             "plan": "",
-            "code": "",
+            expected_key: "",
             "explanation": content,
         }
 
-    plan = parsed.get("plan", "").strip()
-    code = parsed.get("code", "").strip()
-    explanation = parsed.get("explanation", "").strip()
+    plan = str(parsed.get("plan", "") or "").strip()
+    explanation = str(parsed.get("explanation", "") or "").strip()
+
+    artifact = str(parsed.get(expected_key, "") or "").strip()
 
     raw_response = response.to_dict() if hasattr(response, "to_dict") else {"raw": str(response)}
 
@@ -220,7 +258,7 @@ def generate_initial_code_with_gemini(
         task_id=tid,
         model=model,
         plan=plan,
-        code=code,
+        code=artifact,
         explanation=explanation,
         raw_response=raw_response,
         raw_prompt=user_instructions,
@@ -241,8 +279,8 @@ def run_single_task_no_self_debug(
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
-    candidate_code = init.code
-    exec_result = execute_task_code(task, candidate_code)
+    candidate = init.code
+    exec_result = execute_task(task, candidate)
 
     return {
         "benchmark": exec_result.benchmark,
@@ -259,8 +297,8 @@ def run_single_task_no_self_debug(
         "self_debug_used": False,
         "initial_model": f"{provider}:{model_name}",
         "patch_model": None,
-        "initial_code": candidate_code,
-        "final_code": candidate_code,
+        "initial_code": candidate,
+        "final_code": candidate,
         "patch_explanations": [],
     }
 
@@ -272,6 +310,7 @@ def run_single_task_with_self_debug(
     model_name: str,
     max_self_debug_iters: int = 3,
 ) -> Dict[str, Any]:
+
     if provider == "openai":
         init = generate_initial_code_with_openai(task, model=model_name)
     elif provider == "gemini":
@@ -279,52 +318,76 @@ def run_single_task_with_self_debug(
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
-    current_code = init.code
-    initial_code = current_code
-    patch_explanations = []
-    num_iterations = 0
-    used_self_debug = False
-    final_exec_result: Optional[ExecutionResult] = None
-    initial_error_type = None
-    initial_error_message = None
-    initial_num_tests = None
-    initial_num_passed = None
+    current = getattr(init, "artifact", None)
+    if current is None:
+        current = getattr(init, "code", "")
 
-    for it in range(max_self_debug_iters + 1):
-        num_iterations = it + 1
+    initial = current
+    patch_explanations: list[str] = []
 
-        exec_result = execute_task_code(task, current_code)
-        final_exec_result = exec_result
+    first_exec = execute_task(task, current)
 
-        if it == 0:
-            initial_error_type = exec_result.error_type
-            initial_error_message = exec_result.error_message
-            initial_num_tests = exec_result.num_tests
-            initial_num_passed = exec_result.num_passed
+    if first_exec.passed or first_exec.num_tests == 0:
+        return {
+            "benchmark": first_exec.benchmark,
+            "task_id": first_exec.task_id,
+            "provider": provider,
+            "model": model_name,
+            "mode": "self_debug",
+            "passed": first_exec.passed,
+            "num_tests": first_exec.num_tests,
+            "num_passed": first_exec.num_passed,
+            "error_type": first_exec.error_type,
+            "error_message": first_exec.error_message,
+            "num_iterations": 1,
+            "self_debug_used": False,
+            "initial_model": f"{provider}:{model_name}",
+            "patch_model": None,
+            "initial_code": initial,
+            "final_code": initial,
+            "patch_explanations": [],
+            "prompt_to_model": init.raw_prompt,
+            "initial_explanation": init.explanation,
+            "initial_error_type": first_exec.error_type,
+            "initial_error_message": first_exec.error_message,
+            "initial_num_tests": first_exec.num_tests,
+            "initial_num_passed": first_exec.num_passed,
+        }
 
-        if exec_result.passed or exec_result.num_tests == 0:
-            break
+    used_self_debug = True
+    initial_error_type = first_exec.error_type
+    initial_error_message = first_exec.error_message
+    initial_num_tests = first_exec.num_tests
+    initial_num_passed = first_exec.num_passed
 
-        if it == max_self_debug_iters:
-            break
+    final_exec_result: Optional[ExecutionResult] = first_exec
+    num_iterations = 1
 
-        used_self_debug = True
+    for it in range(1, max_self_debug_iters + 1):
+        num_iterations = it + 0 
 
-        feedback = build_feedback_package(task, current_code, exec_result)
-        io_bundle = build_error_explanation_io(task, current_code, feedback)
+        feedback = build_feedback_package(task, current, final_exec_result)
+
+        io_bundle = build_error_explanation_io(task, current, feedback)
         diag = diagnose_bug_with_openai(io_bundle)
         err_expl = build_error_explanation_text(io_bundle, diag)
 
-        next_code, patch_info = produce_next_code_version(task, current_code, err_expl)
-        current_code = next_code
+        next_candidate, patch_info = produce_next_code_version(task, current, err_expl)
+        current = next_candidate
 
         rationale = getattr(patch_info, "rationale", None)
         if rationale:
             patch_explanations.append(rationale)
         else:
             patch_explanations.append(
-                "Patch applied, but no explicit rationale was returned from patch_generation."
+                "Patch/code updated, but no explicit rationale was returned from patch_generation."
             )
+
+        exec_result = execute_task(task, current)
+        final_exec_result = exec_result
+
+        if exec_result.passed or exec_result.num_tests == 0:
+            break
 
     if final_exec_result is None:
         benchmark, tid = _get_task_identity(task)
@@ -356,8 +419,8 @@ def run_single_task_with_self_debug(
         "self_debug_used": used_self_debug,
         "initial_model": f"{provider}:{model_name}",
         "patch_model": "openai:gpt-4o",
-        "initial_code": initial_code,
-        "final_code": current_code,
+        "initial_code": initial,
+        "final_code": current,
         "patch_explanations": patch_explanations,
         "prompt_to_model": init.raw_prompt,
         "initial_explanation": init.explanation,
@@ -427,6 +490,21 @@ def evaluate_benchmark_on_model(
         for row in ds:
             pid = int(row["problem_id"])
             task = load_apps_task(pid, split="test")
+            res = run_task(task)
+            per_task.append(res)
+            total_tasks += 1
+            if res["passed"]:
+                total_passed += 1
+
+
+    elif benchmark == "SWE-bench_LITE":
+        ds = load_dataset("princeton-nlp/SWE-bench_Lite", split="test")
+        if max_tasks is not None:
+            ds = ds.select(range(max_tasks))
+
+        for row in ds:
+            pid = row["instance_id"]
+            task = load_swe_instance(pid)
             res = run_task(task)
             per_task.append(res)
             total_tasks += 1
@@ -522,14 +600,14 @@ def print_successful_samples_for_summary(summary: Dict[str, Any], max_samples: i
 if __name__ == "__main__":
     configs = [
         ("openai", "gpt-4o"),
-        ("openai", "gpt-4o-mini"),
-        ("openai", "gpt-5.1"),
+        # ("openai", "gpt-4o-mini"),
+        # ("openai", "gpt-5.1"),
         ("gemini", "gemini-2.0-flash"),
         ("gemini", "gemini-2.5-pro"),
     ]
 
-    # benchmarks = ["HumanEval", "MBPP", "APPS"]
-    benchmarks = ["HumanEval", "MBPP"]
+    # benchmarks = ["HumanEval", "MBPP", "APPS", "SWE-bench_LITE"]
+    benchmarks = ["HumanEval", "MBPP","SWE-bench_LITE"]
 
     max_tasks = 3
     max_self_debug_iters = 2

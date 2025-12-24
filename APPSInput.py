@@ -71,9 +71,9 @@ def load_apps_task(
 
     constraints = {
         "benchmark": "APPS",
-        "difficulty": difficulty,
-        "time_limit_ms": 4000,
-        "memory_limit_mb": 512,
+        # "difficulty": difficulty,
+        "time_limit_ms": 2000,
+        "memory_limit_mb": 256,
     }
 
     return APPSTask(
@@ -87,4 +87,4 @@ def load_apps_task(
         constraints=constraints,
     )
 
-print(load_apps_task())
+# print(load_apps_task())

@@ -4,6 +4,8 @@ from runtime.code_exec import ExecutionResult
 from humanEvalInput import HumanEvalTask
 from MBPPInput import MBPPTask
 from APPSInput import APPSTask
+from sweBenchInput import SWELITETask
+
 
 
 
@@ -71,7 +73,7 @@ def _truncate(text: str, max_chars: int = 2000) -> str:
         return text
     return text[: max_chars - 20] + "\n...[truncated]..."
 
-TaskType = Union[HumanEvalTask, MBPPTask, APPSTask]
+TaskType = Union[HumanEvalTask, MBPPTask, APPSTask, SWELITETask]
 
 
 def _get_task_identity(task: TaskType) -> tuple[str, str]:
@@ -83,6 +85,8 @@ def _get_task_identity(task: TaskType) -> tuple[str, str]:
         tid = f"MBPP/{task.task_id}"
     elif isinstance(task, APPSTask):
         tid = f"APPS/{task.problem_id}"
+    elif isinstance(task, SWELITETask):
+        tid = f"SWELITE/{task.instance_id}"
     else:
         tid = "UNKNOWN"
 

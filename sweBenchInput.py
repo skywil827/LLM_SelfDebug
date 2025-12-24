@@ -1,5 +1,5 @@
 from dataclasses import dataclass 
-from typing import List, Optional, Any, Dict
+from typing import List, Optional, Any, Dict, Union
 from datasets import load_dataset
 import textwrap
 from openai import OpenAI
@@ -9,7 +9,7 @@ import random
 # import os
 
 @dataclass
-class SWEInstance:
+class SWELITETask:
   repo: str
   instance_id: str
   base_commit: str
@@ -32,6 +32,9 @@ class SWEInstance:
       f"- Fail_To_Pass tests: {len(self.fail_to_pass)}\n"
       f"- Pass_To_Pass tests: {len(self.pass_to_pass)}"
     )
+  
+  def build_prompt(self) -> str:
+    return self.problem_statement
 
 def normalize_to_list(x: Any) -> List[str]:
 
@@ -57,44 +60,52 @@ def normalize_to_list(x: Any) -> List[str]:
   return []
 
 
-def load_swe_instance(index: int | None = None) -> SWEInstance:
+def load_swe_instance(index: Union[str, int, None] = None) -> SWELITETask:
+    dataset = load_dataset("princeton-nlp/SWE-bench_Lite", split="test")
+
+    if index is None:
+        row = dataset[random.randrange(len(dataset))]
+
+    elif isinstance(index, int):
+        row = dataset[index]
+
+    elif isinstance(index, str):
+        matches = dataset.filter(lambda ex: ex["instance_id"] == index)
+        if len(matches) == 0:
+            raise ValueError(f"instance_id not found in SWE-bench_Lite: {index}")
+        row = matches[0]
+
+    else:
+        raise TypeError("index must be str, int, or None")
+
+    fail_to_pass = normalize_to_list(row.get("FAIL_TO_PASS"))
+    pass_to_pass = normalize_to_list(row.get("PASS_TO_PASS"))
+
+    constraints = {
+        "benchmark": "SWE-bench_LITE",
+        "time_limit_ms": 2000,
+        "memory_limit_mb": 256,
+    }
+
+    return SWELITETask(
+        repo=row["repo"],
+        instance_id=row["instance_id"],
+        base_commit=row["base_commit"],
+        problem_statement=row["problem_statement"],
+        hints_text=row.get("hints_text"),
+        patch=row.get("patch", ""),
+        test_patch=row.get("test_patch"),
+        created_at=row.get("created_at", ""),
+        version=row.get("version", ""),
+        fail_to_pass=fail_to_pass,
+        pass_to_pass=pass_to_pass,
+        environment_setup_commit=row.get("environment_setup_commit"),
+        constraints=constraints,
+    )
 
 
-  dataset = load_dataset("princeton-nlp/SWE-bench_Lite", split="test")
 
-  if index is None:
-    index = random.randrange(len(dataset))
-  
-  row = dataset[index]
-
-  fail_to_pass = normalize_to_list(row.get("FAIL_TO_PASS"))
-  pass_to_pass = normalize_to_list(row.get("PASS_TO_PASS"))
-
-  constraints = {
-    "benchmark": "SWE-bench_LITE",
-    "time_limit_ms": 2000,
-    "memory_limit_mb": 256,
-  }
-
-  return SWEInstance(
-    repo = row["repo"],
-    instance_id = row["instance_id"],
-    base_commit = row["base_commit"],
-    problem_statement = row["problem_statement"],
-    hints_text = row.get("hints_text"),
-    patch = row["patch"],
-    test_patch = row.get("test_patch"),
-    created_at = row["created_at"],
-    version = row["version"],
-    fail_to_pass = fail_to_pass,
-    pass_to_pass = pass_to_pass,
-    environment_setup_commit = row.get("environment_setup_commit"),
-    constraints = constraints,
-
-  )
-
-
-def build_swe_prompt(task: SWEInstance) -> str:
+def build_swe_prompt(task: SWELITETask) -> str:
 
   hint_block = ""
   if task.hints_text:
@@ -139,6 +150,3 @@ def build_swe_prompt(task: SWEInstance) -> str:
     """
   
   return textwrap.dedent(prompt).strip()
-
-
-# print(build_swe_prompt(load_swe_instance()))
