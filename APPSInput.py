@@ -86,3 +86,5 @@ def load_apps_task(
         difficulty=difficulty,
         constraints=constraints,
     )
+
+# print(load_apps_task())

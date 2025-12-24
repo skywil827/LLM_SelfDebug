@@ -100,22 +100,34 @@ def diagnose_bug_with_openai(
     benchmark = io.benchmark
     tid = io.task_id
 
-    system_msg = (
-        "You are a highly skilled debugging assistant. "
-        "You receive: (1) the original programming problem, "
-        "(2) the current Python solution code, and "
-        "(3) execution feedback (test results, errors, stdout/stderr). "
-        "Your job in THIS STEP is ONLY to diagnose the bug: "
-        "describe what behaviour is wrong, where the bug likely is, "
-        "what is logically incorrect, and why this violates the problem requirements. "
-        "Do NOT propose or write any new code in this step."
-    )
+    is_swe = (io.benchmark == "SWE-bench_LITE" or io.benchmark.upper().startswith("SWE"))
+    if is_swe:
+        system_msg = (
+            "You are a highly skilled debugging assistant for SWE-bench. "
+            "You receive: (1) the repository bug report prompt, "
+            "(2) the current candidate patch (unified diff), and "
+            "(3) execution feedback (e.g., patch validation or test failures). "
+            "Your job is ONLY to diagnose what is wrong with the patch or why it fails. "
+            "Do NOT propose or write any new patch in this step."
+        )
+        code_label = "CURRENT PATCH (unified diff)"
+    else:
+        system_msg = (
+            "You are a highly skilled debugging assistant. "
+            "You receive: (1) the original programming problem, "
+            "(2) the current Python solution code, and "
+            "(3) execution feedback (test results, errors, stdout/stderr). "
+            "Your job in THIS STEP is ONLY to diagnose the bug. "
+            "Do NOT propose or write any new code in this step."
+        )
+        code_label = "CURRENT PYTHON CODE"
+
 
     user_msg = f"""
         # (1) PROBLEM SPECIFICATION
         {io.problem_spec}
 
-        # (2) CURRENT PYTHON CODE
+        # (2) code_label
         {io.current_code}
 
         # (3) EXECUTION FEEDBACK

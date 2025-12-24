@@ -1,9 +1,9 @@
 import io
 import traceback
 from dataclasses import dataclass
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional, Union, Tuple, List
 from contextlib import redirect_stdout, redirect_stderr
-
+import re
 
 
 
@@ -37,8 +37,24 @@ class APPSTask:
     constraints: Dict[str, Any]
 
 
-TaskType = Union[HumanEvalTask, MBPPTask, APPSTask]
+@dataclass
+class SWELITETask:
+    repo: str
+    instance_id: str
+    base_commit: str
+    problem_statement: str
+    hints_text: Optional[str]
+    patch: str
+    test_patch: Optional[str]
+    created_at: str
+    version: str
+    fail_to_pass: List[str]
+    pass_to_pass: List[str]
+    environment_setup_commit: Optional[str]
+    constraints: Dict[str, Any]
 
+
+TaskType = Union[HumanEvalTask, MBPPTask, APPSTask, SWELITETask]
 
 
 @dataclass
@@ -64,6 +80,8 @@ def _get_task_identity(task: TaskType) -> tuple[str, str]:
         tid = f"MBPP/{task.task_id}"
     elif isinstance(task, APPSTask):
         tid = f"APPS/{task.problem_id}"
+    elif isinstance(task, SWELITETask):
+        tid = f"SWELITE/{task.instance_id}"
     else:
         tid = "UNKNOWN"
 
@@ -80,7 +98,7 @@ def _run_code_with_test_code(
     benchmark: str,
     task_id: str,
 ) -> ExecutionResult:
-
+    
     full_source = code + "\n\n" + test_code
     global_ns: Dict[str, Any] = {}
 
@@ -115,6 +133,7 @@ def _run_code_with_test_code(
         stdout=stdout_buf.getvalue(),
         stderr=stderr_buf.getvalue(),
     )
+
 
 def _run_apps_code(task: APPSTask, code: str) -> ExecutionResult:
 
@@ -201,7 +220,7 @@ def _run_apps_code(task: APPSTask, code: str) -> ExecutionResult:
                     )
 
             passed = (num_passed == num_tests)
-
+            
         else:
             passed = True
 
@@ -219,8 +238,70 @@ def _run_apps_code(task: APPSTask, code: str) -> ExecutionResult:
     )
 
 
-def execute_task_code(task: TaskType, code: str) -> ExecutionResult:
+
+# SWE patch execution (baseline)
+_UNIFIED_DIFF_RE = re.compile(
+    r"(?m)^diff --git a\/.+ b\/.+\n"
+    r"(?:index [0-9a-f]+\.\.[0-9a-f]+(?: \d+)?\n)?"
+    r"^--- a\/.+\n"
+    r"^\+\+\+ b\/.+\n"
+)
+
+def _validate_unified_diff(patch_text: str) -> Tuple[bool, str]:
+    if patch_text is None:
+        return False, "Patch is None."
+    t = str(patch_text).strip()
+    if not t:
+        return False, "Patch is empty."
+    if "diff --git " not in t:
+        return False, "Missing 'diff --git a/... b/...' header."
+    if not _UNIFIED_DIFF_RE.search(t):
+        return False, "Missing ---/+++ file headers (not a valid unified diff)."
+    return True, "Patch format OK."
+
+
+def execute_swe_task_patch(task: SWELITETask, patch: str) -> ExecutionResult:
+
     benchmark, tid = _get_task_identity(task)
+
+    ok, msg = _validate_unified_diff(patch)
+    stdout_buf = io.StringIO()
+    stderr_buf = io.StringIO()
+
+    passed = ok
+    num_tests = 1
+    num_passed = 1 if ok else 0
+
+    err_type = None if ok else "InvalidPatch"
+    err_msg = None if ok else msg
+
+    stdout_buf.write(f"[SWE] Patch validation: {msg}\n")
+    stdout_buf.write(f"[SWE] Repo: {task.repo}\n")
+    stdout_buf.write(f"[SWE] Base commit: {task.base_commit}\n")
+
+    return ExecutionResult(
+        benchmark=benchmark,
+        task_id=tid,
+        passed=passed,
+        num_tests=num_tests,
+        num_passed=num_passed,
+        error_type=err_type,
+        error_message=err_msg,
+        traceback_str=None,
+        stdout=stdout_buf.getvalue(),
+        stderr=stderr_buf.getvalue(),
+    )
+
+
+def execute_task_code(task: TaskType, code: str) -> ExecutionResult:
+
+    benchmark, tid = _get_task_identity(task)
+
+    if benchmark == "SWE-bench_LITE" or isinstance(task, SWELITETask):
+        raise TypeError(
+            "execute_task_code() is for Python-code benchmarks only. "
+            "For SWE-bench, call execute_swe_task_patch(task, patch)."
+        )
 
     if benchmark == "HumanEval":
         return _run_code_with_test_code(code, task.test_code, benchmark, tid)
@@ -262,3 +343,11 @@ def execute_task_code(task: TaskType, code: str) -> ExecutionResult:
                 stdout=stdout_buf.getvalue(),
                 stderr=stderr_buf.getvalue(),
             )
+
+
+def execute_task(task: TaskType, candidate: str) -> ExecutionResult:
+
+    if isinstance(task, SWELITETask) or task.constraints.get("benchmark") == "SWE-bench_LITE":
+        return execute_swe_task_patch(task, candidate)
+
+    return execute_task_code(task, candidate)
