@@ -1,0 +1,1150 @@
+{
+  "timestamp": "2026-02-03_06-22-14",
+  "config": {
+    "benchmarks": [
+      "HumanEval"
+    ],
+    "configs": [
+      [
+        "gemini",
+        "gemini-2.5-pro"
+      ],
+      [
+        "openai",
+        "gpt-4o"
+      ]
+    ],
+    "max_tasks": 3,
+    "max_self_debug_iters": 1,
+    "single_patch_model": "gpt-4o",
+    "patch_pool": [
+      {
+        "provider": "openai",
+        "model": "gpt-4.1-mini"
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-4.1"
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-5-mini"
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-5"
+      }
+    ],
+    "k_values": [
+      2
+    ],
+    "openai_default_model": "gpt-4o",
+    "gemini_default_model": "gemini-2.0-flash"
+  },
+  "summaries": [
+    {
+      "mode_tag": "baseline",
+      "benchmark": "HumanEval",
+      "provider": "gemini",
+      "model": "gemini-2.5-pro",
+      "mode": "baseline",
+      "num_tasks": 3,
+      "num_passed": 3,
+      "pass_rate": 1.0,
+      "details": [
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "['Sort the input list of numbers in ascending order. This step is crucial because if any two numbers in the list are closer than the threshold, then after sorting, there must be at least one pair of adjacent numbers that are also closer than the threshold.', 'Iterate through the sorted list from the first element up to the second-to-last element.', 'In each iteration, calculate the difference between the current element and the next element.', 'Compare this difference with the given `threshold`.', 'If the difference is less than the `threshold`, we have found a pair of close elements, so we can immediately return `True`.', 'If the loop finishes without finding any such adjacent pair, it means no two numbers in the list are closer than the threshold, so we return `False`.']",
+          "initial_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    # Sort the list to bring potentially close elements next to each other.\n    sorted_numbers = sorted(numbers)\n\n    # Iterate through the sorted list and check the difference between adjacent elements.\n    for i in range(len(sorted_numbers) - 1):\n        diff = sorted_numbers[i+1] - sorted_numbers[i]\n        if diff < threshold:\n            return True\n\n    # If the loop completes, no two elements are closer than the threshold.\n    return False",
+          "final_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    # Sort the list to bring potentially close elements next to each other.\n    sorted_numbers = sorted(numbers)\n\n    # Iterate through the sorted list and check the difference between adjacent elements.\n    for i in range(len(sorted_numbers) - 1):\n        diff = sorted_numbers[i+1] - sorted_numbers[i]\n        if diff < threshold:\n            return True\n\n    # If the loop completes, no two elements are closer than the threshold.\n    return False",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 4,
+          "num_passed": 4,
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "['Initialize an empty list `groups` to store the final separated strings.', 'Initialize an integer `balance` to 0. This will act as a counter to track the nesting level of parentheses.', 'Initialize an empty string `current_group` to build each individual parenthesis group.', 'First, remove all spaces from the input `paren_string` to simplify processing.', 'Iterate through each character of the space-removed string.', 'For each character, append it to the `current_group` string.', 'If the character is an opening parenthesis `(`, increment the `balance` counter.', 'If the character is a closing parenthesis `)`, decrement the `balance` counter.', 'After processing the character and updating the balance, check if the `balance` is 0.', 'If `balance` is 0, it means a complete, top-level group has been formed. Add the `current_group` to the `groups` list.', 'After adding the group, reset `current_group` to an empty string to start building the next group.', 'After the loop has processed all characters, return the `groups` list.']",
+          "initial_code": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    # Ignore any spaces in the input string\n    cleaned_string = paren_string.replace(\" \", \"\")\n\n    groups = []\n    current_group = \"\"\n    balance = 0\n\n    for char in cleaned_string:\n        current_group += char\n        if char == '(':\n            balance += 1\n        elif char == ')':\n            balance -= 1\n\n        # A top-level group is complete when the balance returns to 0\n        if balance == 0 and current_group:\n            groups.append(current_group)\n            current_group = \"\"\n\n    return groups",
+          "final_code": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    # Ignore any spaces in the input string\n    cleaned_string = paren_string.replace(\" \", \"\")\n\n    groups = []\n    current_group = \"\"\n    balance = 0\n\n    for char in cleaned_string:\n        current_group += char\n        if char == '(':\n            balance += 1\n        elif char == ')':\n            balance -= 1\n\n        # A top-level group is complete when the balance returns to 0\n        if balance == 0 and current_group:\n            groups.append(current_group)\n            current_group = \"\"\n\n    return groups",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/2",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\n\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "1. The goal is to extract the decimal part of a positive floating-point number.\n2. The problem statement itself describes the decomposition: a number is an integer part plus a decimal part.\n3. Therefore, the decimal part can be found by subtracting the integer part from the original number.\n4. In Python, the integer part of a positive float can be obtained by casting it to an integer using `int()`, which truncates the number (e.g., `int(3.5)` is `3`).\n5. The function will calculate `number - int(number)` and return the result.",
+          "initial_code": "def truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n    return number - int(number)",
+          "final_code": "def truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n    return number - int(number)",
+          "prompt": "\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n"
+        }
+      ]
+    },
+    {
+      "mode_tag": "self_debug_single",
+      "benchmark": "HumanEval",
+      "provider": "gemini",
+      "model": "gemini-2.5-pro",
+      "mode": "self_debug_single",
+      "num_tasks": 3,
+      "num_passed": 3,
+      "pass_rate": 1.0,
+      "details": [
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "['Sort the input list of numbers in ascending order. This step is crucial because if any two numbers in the list are closer than the threshold, then after sorting, there must be at least one pair of adjacent numbers that are also closer than the threshold.', 'Iterate through the sorted list from the first element up to the second-to-last element.', 'In each iteration, calculate the difference between the current element and the next element.', 'Compare this difference with the given `threshold`.', 'If the difference is less than the `threshold`, we have found a pair of close elements, so we can immediately return `True`.', 'If the loop finishes without finding any such adjacent pair, it means no two numbers in the list are closer than the threshold, so we return `False`.']",
+          "initial_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    # Sort the list to bring potentially close elements next to each other.\n    sorted_numbers = sorted(numbers)\n\n    # Iterate through the sorted list and check the difference between adjacent elements.\n    for i in range(len(sorted_numbers) - 1):\n        diff = sorted_numbers[i+1] - sorted_numbers[i]\n        if diff < threshold:\n            return True\n\n    # If the loop completes, no two elements are closer than the threshold.\n    return False",
+          "final_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    # Sort the list to bring potentially close elements next to each other.\n    sorted_numbers = sorted(numbers)\n\n    # Iterate through the sorted list and check the difference between adjacent elements.\n    for i in range(len(sorted_numbers) - 1):\n        diff = sorted_numbers[i+1] - sorted_numbers[i]\n        if diff < threshold:\n            return True\n\n    # If the loop completes, no two elements are closer than the threshold.\n    return False",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 4,
+          "num_passed": 4,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "['Initialize an empty list `groups` to store the final separated strings.', 'Initialize an integer `balance` to 0. This will act as a counter to track the nesting level of parentheses.', 'Initialize an empty string `current_group` to build each individual parenthesis group.', 'First, remove all spaces from the input `paren_string` to simplify processing.', 'Iterate through each character of the space-removed string.', 'For each character, append it to the `current_group` string.', 'If the character is an opening parenthesis `(`, increment the `balance` counter.', 'If the character is a closing parenthesis `)`, decrement the `balance` counter.', 'After processing the character and updating the balance, check if the `balance` is 0.', 'If `balance` is 0, it means a complete, top-level group has been formed. Add the `current_group` to the `groups` list.', 'After adding the group, reset `current_group` to an empty string to start building the next group.', 'After the loop has processed all characters, return the `groups` list.']",
+          "initial_code": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    # Ignore any spaces in the input string\n    cleaned_string = paren_string.replace(\" \", \"\")\n\n    groups = []\n    current_group = \"\"\n    balance = 0\n\n    for char in cleaned_string:\n        current_group += char\n        if char == '(':\n            balance += 1\n        elif char == ')':\n            balance -= 1\n\n        # A top-level group is complete when the balance returns to 0\n        if balance == 0 and current_group:\n            groups.append(current_group)\n            current_group = \"\"\n\n    return groups",
+          "final_code": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    # Ignore any spaces in the input string\n    cleaned_string = paren_string.replace(\" \", \"\")\n\n    groups = []\n    current_group = \"\"\n    balance = 0\n\n    for char in cleaned_string:\n        current_group += char\n        if char == '(':\n            balance += 1\n        elif char == ')':\n            balance -= 1\n\n        # A top-level group is complete when the balance returns to 0\n        if balance == 0 and current_group:\n            groups.append(current_group)\n            current_group = \"\"\n\n    return groups",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/2",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\n\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "1. The goal is to extract the decimal part of a positive floating-point number.\n2. The problem statement itself describes the decomposition: a number is an integer part plus a decimal part.\n3. Therefore, the decimal part can be found by subtracting the integer part from the original number.\n4. In Python, the integer part of a positive float can be obtained by casting it to an integer using `int()`, which truncates the number (e.g., `int(3.5)` is `3`).\n5. The function will calculate `number - int(number)` and return the result.",
+          "initial_code": "def truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n    return number - int(number)",
+          "final_code": "def truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n    return number - int(number)",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n"
+        }
+      ]
+    },
+    {
+      "mode_tag": "handoff_2agents",
+      "benchmark": "HumanEval",
+      "provider": "gemini",
+      "model": "gemini-2.5-pro",
+      "mode": "handoff_2agents",
+      "num_tasks": 3,
+      "num_passed": 3,
+      "pass_rate": 1.0,
+      "details": [
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "handoff_2agents",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "['Sort the input list of numbers in ascending order. This step is crucial because if any two numbers in the list are closer than the threshold, then after sorting, there must be at least one pair of adjacent numbers that are also closer than the threshold.', 'Iterate through the sorted list from the first element up to the second-to-last element.', 'In each iteration, calculate the difference between the current element and the next element.', 'Compare this difference with the given `threshold`.', 'If the difference is less than the `threshold`, we have found a pair of close elements, so we can immediately return `True`.', 'If the loop finishes without finding any such adjacent pair, it means no two numbers in the list are closer than the threshold, so we return `False`.']",
+          "initial_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    # Sort the list to bring potentially close elements next to each other.\n    sorted_numbers = sorted(numbers)\n\n    # Iterate through the sorted list and check the difference between adjacent elements.\n    for i in range(len(sorted_numbers) - 1):\n        diff = sorted_numbers[i+1] - sorted_numbers[i]\n        if diff < threshold:\n            return True\n\n    # If the loop completes, no two elements are closer than the threshold.\n    return False",
+          "final_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    # Sort the list to bring potentially close elements next to each other.\n    sorted_numbers = sorted(numbers)\n\n    # Iterate through the sorted list and check the difference between adjacent elements.\n    for i in range(len(sorted_numbers) - 1):\n        diff = sorted_numbers[i+1] - sorted_numbers[i]\n        if diff < threshold:\n            return True\n\n    # If the loop completes, no two elements are closer than the threshold.\n    return False",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "handoff_2agents",
+          "passed": true,
+          "num_tests": 4,
+          "num_passed": 4,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "['Initialize an empty list `groups` to store the final separated strings.', 'Initialize an integer `balance` to 0. This will act as a counter to track the nesting level of parentheses.', 'Initialize an empty string `current_group` to build each individual parenthesis group.', 'First, remove all spaces from the input `paren_string` to simplify processing.', 'Iterate through each character of the space-removed string.', 'For each character, append it to the `current_group` string.', 'If the character is an opening parenthesis `(`, increment the `balance` counter.', 'If the character is a closing parenthesis `)`, decrement the `balance` counter.', 'After processing the character and updating the balance, check if the `balance` is 0.', 'If `balance` is 0, it means a complete, top-level group has been formed. Add the `current_group` to the `groups` list.', 'After adding the group, reset `current_group` to an empty string to start building the next group.', 'After the loop has processed all characters, return the `groups` list.']",
+          "initial_code": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    # Ignore any spaces in the input string\n    cleaned_string = paren_string.replace(\" \", \"\")\n\n    groups = []\n    current_group = \"\"\n    balance = 0\n\n    for char in cleaned_string:\n        current_group += char\n        if char == '(':\n            balance += 1\n        elif char == ')':\n            balance -= 1\n\n        # A top-level group is complete when the balance returns to 0\n        if balance == 0 and current_group:\n            groups.append(current_group)\n            current_group = \"\"\n\n    return groups",
+          "final_code": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    # Ignore any spaces in the input string\n    cleaned_string = paren_string.replace(\" \", \"\")\n\n    groups = []\n    current_group = \"\"\n    balance = 0\n\n    for char in cleaned_string:\n        current_group += char\n        if char == '(':\n            balance += 1\n        elif char == ')':\n            balance -= 1\n\n        # A top-level group is complete when the balance returns to 0\n        if balance == 0 and current_group:\n            groups.append(current_group)\n            current_group = \"\"\n\n    return groups",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/2",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "handoff_2agents",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\n\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "1. The goal is to extract the decimal part of a positive floating-point number.\n2. The problem statement itself describes the decomposition: a number is an integer part plus a decimal part.\n3. Therefore, the decimal part can be found by subtracting the integer part from the original number.\n4. In Python, the integer part of a positive float can be obtained by casting it to an integer using `int()`, which truncates the number (e.g., `int(3.5)` is `3`).\n5. The function will calculate `number - int(number)` and return the result.",
+          "initial_code": "def truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n    return number - int(number)",
+          "final_code": "def truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n    return number - int(number)",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n"
+        }
+      ]
+    },
+    {
+      "mode_tag": "baseline",
+      "benchmark": "HumanEval",
+      "provider": "openai",
+      "model": "gpt-4o",
+      "mode": "baseline",
+      "num_tasks": 3,
+      "num_passed": 1,
+      "pass_rate": 0.3333333333333333,
+      "details": [
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "openai",
+          "model": "gpt-4o",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 7,
+          "num_passed": 6,
+          "error_type": "NameError",
+          "error_message": "name 'List' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 118, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1, in <module>\nNameError: name 'List' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+          "initial_plan": "To determine if any two numbers in the list are closer to each other than the given threshold, we can sort the list first. Then, we iterate through the sorted list and check the difference between each pair of consecutive numbers. If any difference is less than the threshold, we return True. If we finish the loop without finding such a pair, we return False.",
+          "initial_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
+          "final_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "openai",
+          "model": "gpt-4o",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 4,
+          "num_passed": 3,
+          "error_type": "NameError",
+          "error_message": "name 'List' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 118, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1, in <module>\nNameError: name 'List' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+          "initial_plan": "Iterate through the input string while maintaining a counter to track the balance of parentheses. When the counter returns to zero, it indicates the end of a balanced group. Collect these groups and return them as a list.",
+          "initial_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    balance = 0\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0:\n            groups.append(current_group)\n            current_group = ''\n    return groups",
+          "final_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    balance = 0\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0:\n            groups.append(current_group)\n            current_group = ''\n    return groups",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/2",
+          "provider": "openai",
+          "model": "gpt-4o",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\n\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+          "initial_plan": "To find the decimal part of a given positive floating point number, we can subtract the integer part from the original number. The integer part can be obtained using the int() function, which truncates the decimal part.",
+          "initial_code": "def truncate_number(number: float) -> float:\n    return number - int(number)",
+          "final_code": "def truncate_number(number: float) -> float:\n    return number - int(number)",
+          "prompt": "\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n"
+        }
+      ]
+    },
+    {
+      "mode_tag": "self_debug_single",
+      "benchmark": "HumanEval",
+      "provider": "openai",
+      "model": "gpt-4o",
+      "mode": "self_debug_single",
+      "num_tasks": 3,
+      "num_passed": 3,
+      "pass_rate": 1.0,
+      "details": [
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "openai",
+          "model": "gpt-4o",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": "NameError",
+          "initial_error_message": "name 'List' is not defined",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+          "initial_plan": "To determine if any two numbers in the list are closer to each other than the given threshold, we can sort the list first. Then, we iterate through the sorted list and check the difference between each pair of consecutive numbers. If any difference is less than the threshold, we return True. If we finish the loop without finding such a pair, we return False.",
+          "initial_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
+          "final_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
+          "patch_models_used": [
+            "openai:gpt-4o"
+          ],
+          "patch_explanations": [
+            "The original code was missing the import statement for 'List' from the 'typing' module, which caused a NameError. By adding the correct import statement, the function can now be executed and tested as intended, fulfilling the problem's requirements."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "patch_model": "gpt-4o",
+              "patch_explanation": "The original code was missing the import statement for 'List' from the 'typing' module, which caused a NameError. By adding the correct import statement, the function can now be executed and tested as intended, fulfilling the problem's requirements.",
+              "updated_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
+              "exec_result": {
+                "passed": true,
+                "num_tests": 7,
+                "num_passed": 7,
+                "error_type": null,
+                "error_message": null,
+                "traceback_str": null,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "openai",
+          "model": "gpt-4o",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 4,
+          "num_passed": 4,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": "NameError",
+          "initial_error_message": "name 'List' is not defined",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+          "initial_plan": "Iterate through the input string while maintaining a counter to track the balance of parentheses. When the counter returns to zero, it indicates the end of a balanced group. Collect these groups and return them as a list.",
+          "initial_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    balance = 0\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0:\n            groups.append(current_group)\n            current_group = ''\n    return groups",
+          "final_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    balance = 0\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0:\n            groups.append(current_group)\n            current_group = ''\n    return groups",
+          "patch_models_used": [
+            "openai:gpt-4o"
+          ],
+          "patch_explanations": [
+            "The original code was missing the import statement for List from the typing module, which caused a NameError. Adding the import statement resolves this issue, allowing the function to execute correctly and return the expected results."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "patch_model": "gpt-4o",
+              "patch_explanation": "The original code was missing the import statement for List from the typing module, which caused a NameError. Adding the import statement resolves this issue, allowing the function to execute correctly and return the expected results.",
+              "updated_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    balance = 0\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0:\n            groups.append(current_group)\n            current_group = ''\n    return groups",
+              "exec_result": {
+                "passed": true,
+                "num_tests": 4,
+                "num_passed": 4,
+                "error_type": null,
+                "error_message": null,
+                "traceback_str": null,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/2",
+          "provider": "openai",
+          "model": "gpt-4o",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\n\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+          "initial_plan": "To find the decimal part of a given positive floating point number, we can subtract the integer part from the original number. The integer part can be obtained using the int() function, which truncates the decimal part.",
+          "initial_code": "def truncate_number(number: float) -> float:\n    return number - int(number)",
+          "final_code": "def truncate_number(number: float) -> float:\n    return number - int(number)",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n"
+        }
+      ]
+    },
+    {
+      "mode_tag": "handoff_2agents",
+      "benchmark": "HumanEval",
+      "provider": "openai",
+      "model": "gpt-4o",
+      "mode": "handoff_2agents",
+      "num_tasks": 3,
+      "num_passed": 3,
+      "pass_rate": 1.0,
+      "details": [
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "openai",
+          "model": "gpt-4o",
+          "mode_tag": "handoff_2agents",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+          "initial_plan": "To determine if any two numbers in the list are closer to each other than the given threshold, we can sort the list first. Then, we iterate through the sorted list and check the difference between each pair of consecutive numbers. If any difference is less than the threshold, we return True. If we finish the loop without finding such a pair, we return False.",
+          "initial_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
+          "final_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
+          "patch_models_used": [
+            "openai:gpt-4.1-mini"
+          ],
+          "patch_explanations": [
+            "The original code used List in type hints without importing it, causing a NameError. Adding 'from typing import List' fixes the import error and allows the function to run correctly."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "fixer": {
+                "provider": "openai",
+                "model": "gpt-4.1-mini"
+              },
+              "patch_explanation": "The original code used List in type hints without importing it, causing a NameError. Adding 'from typing import List' fixes the import error and allows the function to run correctly.",
+              "updated_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
+              "exec_result": {
+                "passed": true,
+                "num_tests": 7,
+                "num_passed": 7,
+                "error_type": null,
+                "error_message": null,
+                "traceback_str": null,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "openai",
+          "model": "gpt-4o",
+          "mode_tag": "handoff_2agents",
+          "passed": true,
+          "num_tests": 4,
+          "num_passed": 4,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+          "initial_plan": "Iterate through the input string while maintaining a counter to track the balance of parentheses. When the counter returns to zero, it indicates the end of a balanced group. Collect these groups and return them as a list.",
+          "initial_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    balance = 0\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0:\n            groups.append(current_group)\n            current_group = ''\n    return groups",
+          "final_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    balance = 0\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0:\n            groups.append(current_group)\n            current_group = ''\n    return groups",
+          "patch_models_used": [
+            "openai:gpt-4.1-mini"
+          ],
+          "patch_explanations": [
+            "The original code used List in the function signature without importing it, causing a NameError. Adding 'from typing import List' fixes the import error and allows the function to be defined and executed properly."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "fixer": {
+                "provider": "openai",
+                "model": "gpt-4.1-mini"
+              },
+              "patch_explanation": "The original code used List in the function signature without importing it, causing a NameError. Adding 'from typing import List' fixes the import error and allows the function to be defined and executed properly.",
+              "updated_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    balance = 0\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0:\n            groups.append(current_group)\n            current_group = ''\n    return groups",
+              "exec_result": {
+                "passed": true,
+                "num_tests": 4,
+                "num_passed": 4,
+                "error_type": null,
+                "error_message": null,
+                "traceback_str": null,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/2",
+          "provider": "openai",
+          "model": "gpt-4o",
+          "mode_tag": "handoff_2agents",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\n\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+          "initial_plan": "To find the decimal part of a given positive floating point number, we can subtract the integer part from the original number. The integer part can be obtained using the int() function, which truncates the decimal part.",
+          "initial_code": "def truncate_number(number: float) -> float:\n    return number - int(number)",
+          "final_code": "def truncate_number(number: float) -> float:\n    return number - int(number)",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n"
+        }
+      ]
+    }
+  ],
+  "details": {
+    "baseline": {
+      "HumanEval::gemini::gemini-2.5-pro": [
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "['Sort the input list of numbers in ascending order. This step is crucial because if any two numbers in the list are closer than the threshold, then after sorting, there must be at least one pair of adjacent numbers that are also closer than the threshold.', 'Iterate through the sorted list from the first element up to the second-to-last element.', 'In each iteration, calculate the difference between the current element and the next element.', 'Compare this difference with the given `threshold`.', 'If the difference is less than the `threshold`, we have found a pair of close elements, so we can immediately return `True`.', 'If the loop finishes without finding any such adjacent pair, it means no two numbers in the list are closer than the threshold, so we return `False`.']",
+          "initial_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    # Sort the list to bring potentially close elements next to each other.\n    sorted_numbers = sorted(numbers)\n\n    # Iterate through the sorted list and check the difference between adjacent elements.\n    for i in range(len(sorted_numbers) - 1):\n        diff = sorted_numbers[i+1] - sorted_numbers[i]\n        if diff < threshold:\n            return True\n\n    # If the loop completes, no two elements are closer than the threshold.\n    return False",
+          "final_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    # Sort the list to bring potentially close elements next to each other.\n    sorted_numbers = sorted(numbers)\n\n    # Iterate through the sorted list and check the difference between adjacent elements.\n    for i in range(len(sorted_numbers) - 1):\n        diff = sorted_numbers[i+1] - sorted_numbers[i]\n        if diff < threshold:\n            return True\n\n    # If the loop completes, no two elements are closer than the threshold.\n    return False",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 4,
+          "num_passed": 4,
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "['Initialize an empty list `groups` to store the final separated strings.', 'Initialize an integer `balance` to 0. This will act as a counter to track the nesting level of parentheses.', 'Initialize an empty string `current_group` to build each individual parenthesis group.', 'First, remove all spaces from the input `paren_string` to simplify processing.', 'Iterate through each character of the space-removed string.', 'For each character, append it to the `current_group` string.', 'If the character is an opening parenthesis `(`, increment the `balance` counter.', 'If the character is a closing parenthesis `)`, decrement the `balance` counter.', 'After processing the character and updating the balance, check if the `balance` is 0.', 'If `balance` is 0, it means a complete, top-level group has been formed. Add the `current_group` to the `groups` list.', 'After adding the group, reset `current_group` to an empty string to start building the next group.', 'After the loop has processed all characters, return the `groups` list.']",
+          "initial_code": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    # Ignore any spaces in the input string\n    cleaned_string = paren_string.replace(\" \", \"\")\n\n    groups = []\n    current_group = \"\"\n    balance = 0\n\n    for char in cleaned_string:\n        current_group += char\n        if char == '(':\n            balance += 1\n        elif char == ')':\n            balance -= 1\n\n        # A top-level group is complete when the balance returns to 0\n        if balance == 0 and current_group:\n            groups.append(current_group)\n            current_group = \"\"\n\n    return groups",
+          "final_code": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    # Ignore any spaces in the input string\n    cleaned_string = paren_string.replace(\" \", \"\")\n\n    groups = []\n    current_group = \"\"\n    balance = 0\n\n    for char in cleaned_string:\n        current_group += char\n        if char == '(':\n            balance += 1\n        elif char == ')':\n            balance -= 1\n\n        # A top-level group is complete when the balance returns to 0\n        if balance == 0 and current_group:\n            groups.append(current_group)\n            current_group = \"\"\n\n    return groups",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/2",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\n\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "1. The goal is to extract the decimal part of a positive floating-point number.\n2. The problem statement itself describes the decomposition: a number is an integer part plus a decimal part.\n3. Therefore, the decimal part can be found by subtracting the integer part from the original number.\n4. In Python, the integer part of a positive float can be obtained by casting it to an integer using `int()`, which truncates the number (e.g., `int(3.5)` is `3`).\n5. The function will calculate `number - int(number)` and return the result.",
+          "initial_code": "def truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n    return number - int(number)",
+          "final_code": "def truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n    return number - int(number)",
+          "prompt": "\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n"
+        }
+      ],
+      "HumanEval::openai::gpt-4o": [
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "openai",
+          "model": "gpt-4o",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 7,
+          "num_passed": 6,
+          "error_type": "NameError",
+          "error_message": "name 'List' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 118, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1, in <module>\nNameError: name 'List' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+          "initial_plan": "To determine if any two numbers in the list are closer to each other than the given threshold, we can sort the list first. Then, we iterate through the sorted list and check the difference between each pair of consecutive numbers. If any difference is less than the threshold, we return True. If we finish the loop without finding such a pair, we return False.",
+          "initial_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
+          "final_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "openai",
+          "model": "gpt-4o",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 4,
+          "num_passed": 3,
+          "error_type": "NameError",
+          "error_message": "name 'List' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 118, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1, in <module>\nNameError: name 'List' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+          "initial_plan": "Iterate through the input string while maintaining a counter to track the balance of parentheses. When the counter returns to zero, it indicates the end of a balanced group. Collect these groups and return them as a list.",
+          "initial_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    balance = 0\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0:\n            groups.append(current_group)\n            current_group = ''\n    return groups",
+          "final_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    balance = 0\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0:\n            groups.append(current_group)\n            current_group = ''\n    return groups",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/2",
+          "provider": "openai",
+          "model": "gpt-4o",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\n\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+          "initial_plan": "To find the decimal part of a given positive floating point number, we can subtract the integer part from the original number. The integer part can be obtained using the int() function, which truncates the decimal part.",
+          "initial_code": "def truncate_number(number: float) -> float:\n    return number - int(number)",
+          "final_code": "def truncate_number(number: float) -> float:\n    return number - int(number)",
+          "prompt": "\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n"
+        }
+      ]
+    },
+    "self_debug_single": {
+      "HumanEval::gemini::gemini-2.5-pro": [
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "['Sort the input list of numbers in ascending order. This step is crucial because if any two numbers in the list are closer than the threshold, then after sorting, there must be at least one pair of adjacent numbers that are also closer than the threshold.', 'Iterate through the sorted list from the first element up to the second-to-last element.', 'In each iteration, calculate the difference between the current element and the next element.', 'Compare this difference with the given `threshold`.', 'If the difference is less than the `threshold`, we have found a pair of close elements, so we can immediately return `True`.', 'If the loop finishes without finding any such adjacent pair, it means no two numbers in the list are closer than the threshold, so we return `False`.']",
+          "initial_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    # Sort the list to bring potentially close elements next to each other.\n    sorted_numbers = sorted(numbers)\n\n    # Iterate through the sorted list and check the difference between adjacent elements.\n    for i in range(len(sorted_numbers) - 1):\n        diff = sorted_numbers[i+1] - sorted_numbers[i]\n        if diff < threshold:\n            return True\n\n    # If the loop completes, no two elements are closer than the threshold.\n    return False",
+          "final_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    # Sort the list to bring potentially close elements next to each other.\n    sorted_numbers = sorted(numbers)\n\n    # Iterate through the sorted list and check the difference between adjacent elements.\n    for i in range(len(sorted_numbers) - 1):\n        diff = sorted_numbers[i+1] - sorted_numbers[i]\n        if diff < threshold:\n            return True\n\n    # If the loop completes, no two elements are closer than the threshold.\n    return False",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 4,
+          "num_passed": 4,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "['Initialize an empty list `groups` to store the final separated strings.', 'Initialize an integer `balance` to 0. This will act as a counter to track the nesting level of parentheses.', 'Initialize an empty string `current_group` to build each individual parenthesis group.', 'First, remove all spaces from the input `paren_string` to simplify processing.', 'Iterate through each character of the space-removed string.', 'For each character, append it to the `current_group` string.', 'If the character is an opening parenthesis `(`, increment the `balance` counter.', 'If the character is a closing parenthesis `)`, decrement the `balance` counter.', 'After processing the character and updating the balance, check if the `balance` is 0.', 'If `balance` is 0, it means a complete, top-level group has been formed. Add the `current_group` to the `groups` list.', 'After adding the group, reset `current_group` to an empty string to start building the next group.', 'After the loop has processed all characters, return the `groups` list.']",
+          "initial_code": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    # Ignore any spaces in the input string\n    cleaned_string = paren_string.replace(\" \", \"\")\n\n    groups = []\n    current_group = \"\"\n    balance = 0\n\n    for char in cleaned_string:\n        current_group += char\n        if char == '(':\n            balance += 1\n        elif char == ')':\n            balance -= 1\n\n        # A top-level group is complete when the balance returns to 0\n        if balance == 0 and current_group:\n            groups.append(current_group)\n            current_group = \"\"\n\n    return groups",
+          "final_code": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    # Ignore any spaces in the input string\n    cleaned_string = paren_string.replace(\" \", \"\")\n\n    groups = []\n    current_group = \"\"\n    balance = 0\n\n    for char in cleaned_string:\n        current_group += char\n        if char == '(':\n            balance += 1\n        elif char == ')':\n            balance -= 1\n\n        # A top-level group is complete when the balance returns to 0\n        if balance == 0 and current_group:\n            groups.append(current_group)\n            current_group = \"\"\n\n    return groups",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/2",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\n\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "1. The goal is to extract the decimal part of a positive floating-point number.\n2. The problem statement itself describes the decomposition: a number is an integer part plus a decimal part.\n3. Therefore, the decimal part can be found by subtracting the integer part from the original number.\n4. In Python, the integer part of a positive float can be obtained by casting it to an integer using `int()`, which truncates the number (e.g., `int(3.5)` is `3`).\n5. The function will calculate `number - int(number)` and return the result.",
+          "initial_code": "def truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n    return number - int(number)",
+          "final_code": "def truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n    return number - int(number)",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n"
+        }
+      ],
+      "HumanEval::openai::gpt-4o": [
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "openai",
+          "model": "gpt-4o",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": "NameError",
+          "initial_error_message": "name 'List' is not defined",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+          "initial_plan": "To determine if any two numbers in the list are closer to each other than the given threshold, we can sort the list first. Then, we iterate through the sorted list and check the difference between each pair of consecutive numbers. If any difference is less than the threshold, we return True. If we finish the loop without finding such a pair, we return False.",
+          "initial_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
+          "final_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
+          "patch_models_used": [
+            "openai:gpt-4o"
+          ],
+          "patch_explanations": [
+            "The original code was missing the import statement for 'List' from the 'typing' module, which caused a NameError. By adding the correct import statement, the function can now be executed and tested as intended, fulfilling the problem's requirements."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "patch_model": "gpt-4o",
+              "patch_explanation": "The original code was missing the import statement for 'List' from the 'typing' module, which caused a NameError. By adding the correct import statement, the function can now be executed and tested as intended, fulfilling the problem's requirements.",
+              "updated_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
+              "exec_result": {
+                "passed": true,
+                "num_tests": 7,
+                "num_passed": 7,
+                "error_type": null,
+                "error_message": null,
+                "traceback_str": null,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "openai",
+          "model": "gpt-4o",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 4,
+          "num_passed": 4,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": "NameError",
+          "initial_error_message": "name 'List' is not defined",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+          "initial_plan": "Iterate through the input string while maintaining a counter to track the balance of parentheses. When the counter returns to zero, it indicates the end of a balanced group. Collect these groups and return them as a list.",
+          "initial_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    balance = 0\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0:\n            groups.append(current_group)\n            current_group = ''\n    return groups",
+          "final_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    balance = 0\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0:\n            groups.append(current_group)\n            current_group = ''\n    return groups",
+          "patch_models_used": [
+            "openai:gpt-4o"
+          ],
+          "patch_explanations": [
+            "The original code was missing the import statement for List from the typing module, which caused a NameError. Adding the import statement resolves this issue, allowing the function to execute correctly and return the expected results."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "patch_model": "gpt-4o",
+              "patch_explanation": "The original code was missing the import statement for List from the typing module, which caused a NameError. Adding the import statement resolves this issue, allowing the function to execute correctly and return the expected results.",
+              "updated_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    balance = 0\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0:\n            groups.append(current_group)\n            current_group = ''\n    return groups",
+              "exec_result": {
+                "passed": true,
+                "num_tests": 4,
+                "num_passed": 4,
+                "error_type": null,
+                "error_message": null,
+                "traceback_str": null,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-03_06-22-14",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/2",
+          "provider": "openai",
+          "model": "gpt-4o",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\n\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+          "initial_plan": "To find the decimal part of a given positive floating point number, we can subtract the integer part from the original number. The integer part can be obtained using the int() function, which truncates the decimal part.",
+          "initial_code": "def truncate_number(number: float) -> float:\n    return number - int(number)",
+          "final_code": "def truncate_number(number: float) -> float:\n    return number - int(number)",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n"
+        }
+      ]
+    },
+    "sequential_handoff": {
+      "HumanEval::gemini::gemini-2.5-pro": {
+        "2": [
+          {
+            "timestamp": "2026-02-03_06-22-14",
+            "benchmark": "HumanEval",
+            "task_id": "HumanEval/0",
+            "provider": "gemini",
+            "model": "gemini-2.5-pro",
+            "mode_tag": "handoff_2agents",
+            "passed": true,
+            "num_tests": 7,
+            "num_passed": 7,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+            "initial_plan": "['Sort the input list of numbers in ascending order. This step is crucial because if any two numbers in the list are closer than the threshold, then after sorting, there must be at least one pair of adjacent numbers that are also closer than the threshold.', 'Iterate through the sorted list from the first element up to the second-to-last element.', 'In each iteration, calculate the difference between the current element and the next element.', 'Compare this difference with the given `threshold`.', 'If the difference is less than the `threshold`, we have found a pair of close elements, so we can immediately return `True`.', 'If the loop finishes without finding any such adjacent pair, it means no two numbers in the list are closer than the threshold, so we return `False`.']",
+            "initial_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    # Sort the list to bring potentially close elements next to each other.\n    sorted_numbers = sorted(numbers)\n\n    # Iterate through the sorted list and check the difference between adjacent elements.\n    for i in range(len(sorted_numbers) - 1):\n        diff = sorted_numbers[i+1] - sorted_numbers[i]\n        if diff < threshold:\n            return True\n\n    # If the loop completes, no two elements are closer than the threshold.\n    return False",
+            "final_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    # Sort the list to bring potentially close elements next to each other.\n    sorted_numbers = sorted(numbers)\n\n    # Iterate through the sorted list and check the difference between adjacent elements.\n    for i in range(len(sorted_numbers) - 1):\n        diff = sorted_numbers[i+1] - sorted_numbers[i]\n        if diff < threshold:\n            return True\n\n    # If the loop completes, no two elements are closer than the threshold.\n    return False",
+            "patch_models_used": [],
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+          },
+          {
+            "timestamp": "2026-02-03_06-22-14",
+            "benchmark": "HumanEval",
+            "task_id": "HumanEval/1",
+            "provider": "gemini",
+            "model": "gemini-2.5-pro",
+            "mode_tag": "handoff_2agents",
+            "passed": true,
+            "num_tests": 4,
+            "num_passed": 4,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+            "initial_plan": "['Initialize an empty list `groups` to store the final separated strings.', 'Initialize an integer `balance` to 0. This will act as a counter to track the nesting level of parentheses.', 'Initialize an empty string `current_group` to build each individual parenthesis group.', 'First, remove all spaces from the input `paren_string` to simplify processing.', 'Iterate through each character of the space-removed string.', 'For each character, append it to the `current_group` string.', 'If the character is an opening parenthesis `(`, increment the `balance` counter.', 'If the character is a closing parenthesis `)`, decrement the `balance` counter.', 'After processing the character and updating the balance, check if the `balance` is 0.', 'If `balance` is 0, it means a complete, top-level group has been formed. Add the `current_group` to the `groups` list.', 'After adding the group, reset `current_group` to an empty string to start building the next group.', 'After the loop has processed all characters, return the `groups` list.']",
+            "initial_code": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    # Ignore any spaces in the input string\n    cleaned_string = paren_string.replace(\" \", \"\")\n\n    groups = []\n    current_group = \"\"\n    balance = 0\n\n    for char in cleaned_string:\n        current_group += char\n        if char == '(':\n            balance += 1\n        elif char == ')':\n            balance -= 1\n\n        # A top-level group is complete when the balance returns to 0\n        if balance == 0 and current_group:\n            groups.append(current_group)\n            current_group = \"\"\n\n    return groups",
+            "final_code": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    # Ignore any spaces in the input string\n    cleaned_string = paren_string.replace(\" \", \"\")\n\n    groups = []\n    current_group = \"\"\n    balance = 0\n\n    for char in cleaned_string:\n        current_group += char\n        if char == '(':\n            balance += 1\n        elif char == ')':\n            balance -= 1\n\n        # A top-level group is complete when the balance returns to 0\n        if balance == 0 and current_group:\n            groups.append(current_group)\n            current_group = \"\"\n\n    return groups",
+            "patch_models_used": [],
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+          },
+          {
+            "timestamp": "2026-02-03_06-22-14",
+            "benchmark": "HumanEval",
+            "task_id": "HumanEval/2",
+            "provider": "gemini",
+            "model": "gemini-2.5-pro",
+            "mode_tag": "handoff_2agents",
+            "passed": true,
+            "num_tests": 3,
+            "num_passed": 3,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (HumanEval)\n------------------\n\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+            "initial_plan": "1. The goal is to extract the decimal part of a positive floating-point number.\n2. The problem statement itself describes the decomposition: a number is an integer part plus a decimal part.\n3. Therefore, the decimal part can be found by subtracting the integer part from the original number.\n4. In Python, the integer part of a positive float can be obtained by casting it to an integer using `int()`, which truncates the number (e.g., `int(3.5)` is `3`).\n5. The function will calculate `number - int(number)` and return the result.",
+            "initial_code": "def truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n    return number - int(number)",
+            "final_code": "def truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n    return number - int(number)",
+            "patch_models_used": [],
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n"
+          }
+        ]
+      },
+      "HumanEval::openai::gpt-4o": {
+        "2": [
+          {
+            "timestamp": "2026-02-03_06-22-14",
+            "benchmark": "HumanEval",
+            "task_id": "HumanEval/0",
+            "provider": "openai",
+            "model": "gpt-4o",
+            "mode_tag": "handoff_2agents",
+            "passed": true,
+            "num_tests": 7,
+            "num_passed": 7,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+            "initial_plan": "To determine if any two numbers in the list are closer to each other than the given threshold, we can sort the list first. Then, we iterate through the sorted list and check the difference between each pair of consecutive numbers. If any difference is less than the threshold, we return True. If we finish the loop without finding such a pair, we return False.",
+            "initial_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
+            "final_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
+            "patch_models_used": [
+              "openai:gpt-4.1-mini"
+            ],
+            "patch_explanations": [
+              "The original code used List in type hints without importing it, causing a NameError. Adding 'from typing import List' fixes the import error and allows the function to run correctly."
+            ],
+            "iterations": [
+              {
+                "iteration": 1,
+                "fixer": {
+                  "provider": "openai",
+                  "model": "gpt-4.1-mini"
+                },
+                "patch_explanation": "The original code used List in type hints without importing it, causing a NameError. Adding 'from typing import List' fixes the import error and allows the function to run correctly.",
+                "updated_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
+                "exec_result": {
+                  "passed": true,
+                  "num_tests": 7,
+                  "num_passed": 7,
+                  "error_type": null,
+                  "error_message": null,
+                  "traceback_str": null,
+                  "stdout": "",
+                  "stderr": ""
+                }
+              }
+            ],
+            "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+          },
+          {
+            "timestamp": "2026-02-03_06-22-14",
+            "benchmark": "HumanEval",
+            "task_id": "HumanEval/1",
+            "provider": "openai",
+            "model": "gpt-4o",
+            "mode_tag": "handoff_2agents",
+            "passed": true,
+            "num_tests": 4,
+            "num_passed": 4,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+            "initial_plan": "Iterate through the input string while maintaining a counter to track the balance of parentheses. When the counter returns to zero, it indicates the end of a balanced group. Collect these groups and return them as a list.",
+            "initial_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    balance = 0\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0:\n            groups.append(current_group)\n            current_group = ''\n    return groups",
+            "final_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    balance = 0\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0:\n            groups.append(current_group)\n            current_group = ''\n    return groups",
+            "patch_models_used": [
+              "openai:gpt-4.1-mini"
+            ],
+            "patch_explanations": [
+              "The original code used List in the function signature without importing it, causing a NameError. Adding 'from typing import List' fixes the import error and allows the function to be defined and executed properly."
+            ],
+            "iterations": [
+              {
+                "iteration": 1,
+                "fixer": {
+                  "provider": "openai",
+                  "model": "gpt-4.1-mini"
+                },
+                "patch_explanation": "The original code used List in the function signature without importing it, causing a NameError. Adding 'from typing import List' fixes the import error and allows the function to be defined and executed properly.",
+                "updated_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    paren_string = paren_string.replace(' ', '')\n    groups = []\n    balance = 0\n    current_group = ''\n    for char in paren_string:\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0:\n            groups.append(current_group)\n            current_group = ''\n    return groups",
+                "exec_result": {
+                  "passed": true,
+                  "num_tests": 4,
+                  "num_passed": 4,
+                  "error_type": null,
+                  "error_message": null,
+                  "traceback_str": null,
+                  "stdout": "",
+                  "stderr": ""
+                }
+              }
+            ],
+            "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+          },
+          {
+            "timestamp": "2026-02-03_06-22-14",
+            "benchmark": "HumanEval",
+            "task_id": "HumanEval/2",
+            "provider": "openai",
+            "model": "gpt-4o",
+            "mode_tag": "handoff_2agents",
+            "passed": true,
+            "num_tests": 3,
+            "num_passed": 3,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (HumanEval)\n------------------\n\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n\n\nReturn JSON:\n\n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }\n        \n\n\n        Constraints:\n        - The \"code\" MUST be valid Python.\n        - Do NOT include backticks or Markdown fences.",
+            "initial_plan": "To find the decimal part of a given positive floating point number, we can subtract the integer part from the original number. The integer part can be obtained using the int() function, which truncates the decimal part.",
+            "initial_code": "def truncate_number(number: float) -> float:\n    return number - int(number)",
+            "final_code": "def truncate_number(number: float) -> float:\n    return number - int(number)",
+            "patch_models_used": [],
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n"
+          }
+        ]
+      }
+    }
+  },
+  "artifacts": {
+    "run_dir": "results/run_2026-02-03_06-22-14",
+    "plots_dir": "results/run_2026-02-03_06-22-14/plots",
+    "plots": {
+      "pass_rates": [
+        "results/run_2026-02-03_06-22-14/plots/pass_rates_HumanEval_clean.png"
+      ],
+      "improvement_vs_k": [
+        "results/run_2026-02-03_06-22-14/plots/improvement_vs_k_HumanEval.png"
+      ]
+    }
+  }
+}

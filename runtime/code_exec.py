@@ -71,21 +71,25 @@ class ExecutionResult:
     stderr: str
 
 
-def _get_task_identity(task: TaskType) -> tuple[str, str]:
-    benchmark = task.constraints.get("benchmark", "UNKNOWN")
+def _get_task_identity(task) -> tuple[str, str]:
+    constraints = getattr(task, "constraints", {}) or {}
+    benchmark = constraints.get("benchmark", "UNKNOWN")
 
-    if isinstance(task, HumanEvalTask):
-        tid = task.task_id
-    elif isinstance(task, MBPPTask):
-        tid = f"MBPP/{task.task_id}"
-    elif isinstance(task, APPSTask):
-        tid = f"APPS/{task.problem_id}"
-    elif isinstance(task, SWELITETask):
-        tid = f"SWELITE/{task.instance_id}"
-    else:
-        tid = "UNKNOWN"
+    if hasattr(task, "task_id") and getattr(task, "task_id") is not None:
+        tid = str(getattr(task, "task_id"))
 
-    return benchmark, tid
+        if benchmark == "MBPP" and not tid.startswith("MBPP/"):
+            tid = f"MBPP/{tid}"
+        return benchmark, tid
+
+    if hasattr(task, "problem_id") and getattr(task, "problem_id") is not None:
+        return benchmark, f"APPS/{getattr(task, 'problem_id')}"
+
+    if hasattr(task, "instance_id") and getattr(task, "instance_id") is not None:
+        return benchmark, f"SWELITE/{getattr(task, 'instance_id')}"
+
+    return benchmark, "UNKNOWN"
+
 
 
 def _estimate_num_tests_from_code(test_code: str) -> int:
