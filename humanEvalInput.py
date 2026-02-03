@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from human_eval.data import read_problems
 import random
+from datasets import load_dataset
 
 
 @dataclass
@@ -16,37 +17,70 @@ class HumanEvalTask:
         return self.prompt
 
 
-def load_humaneval_task(task_id: str | None = None) -> HumanEvalTask:
+# def load_humaneval_task(task_id: str | None = None) -> HumanEvalTask:
 
-    problems_dict = read_problems() 
+#     problems_dict = read_problems() 
 
-    if task_id is None:
-        tid = random.choice(list(problems_dict.keys()))
-    else:
-        tid = task_id
-        if tid not in problems_dict:
-            raise ValueError(
-                f"HumanEval task_id '{tid}' not found. "
-                f"Example available: {next(iter(problems_dict.keys()))}"
-            )
+#     if task_id is None:
+#         tid = random.choice(list(problems_dict.keys()))
+#     else:
+#         tid = task_id
+#         if tid not in problems_dict:
+#             raise ValueError(
+#                 f"HumanEval task_id '{tid}' not found. "
+#                 f"Example available: {next(iter(problems_dict.keys()))}"
+#             )
 
-    problem = problems_dict[tid]
+#     problem = problems_dict[tid]
 
-    full_prompt: str = problem["prompt"]
-    test_code: str = problem["test"]
+#     full_prompt: str = problem["prompt"]
+#     test_code: str = problem["test"]
 
-    first_line = full_prompt.splitlines()[1].strip()
+#     first_line = full_prompt.splitlines()[1].strip()
 
-    constraints = {
-        "benchmark": "HumanEval",
-        "time_limit_ms": 2000,
-        "memory_limit_mb": 256,
-    }
+#     constraints = {
+#         "benchmark": "HumanEval",
+#         "time_limit_ms": 2000,
+#         "memory_limit_mb": 256,
+#     }
 
-    return HumanEvalTask(
-        task_id=tid,
-        prompt=full_prompt,
-        function_signature=first_line,
-        test_code=test_code,
-        constraints=constraints,
-    )
+#     return HumanEvalTask(
+#         task_id=tid,
+#         prompt=full_prompt,
+#         function_signature=first_line,
+#         test_code=test_code,
+#         constraints=constraints,
+#     )
+
+def load_humaneval_task(task_id: Optional[str]) -> HumanEvalTask:
+  problem_dict = load_dataset("openai_humaneval")
+  dataset = problem_dict["test"]
+  problem: dict = {}
+  tid: str = ""
+  
+  if task_id is None:
+    problem =  random.choices(dataset)[0]
+    # tid = problem["task_id"]
+  else:
+    for task in dataset:
+      if task["task_id"] == task_id:
+        problem = task
+  
+  tid = str(problem["task_id"])
+  full_prompt: str = problem["prompt"]
+  test_code: str = problem["test"]
+  first_line: str = full_prompt.splitlines()[1].strip()
+
+  constraints = {
+    "benchmark" : "HumanEval",
+    "time_limit_ms" : 2000,
+    "memory_limit_mb" : 256,
+  }
+
+  return HumanEvalTask(
+      task_id = tid,
+      prompt = full_prompt,
+      function_signature = first_line,
+      test_code = test_code,
+      constraints = constraints
+  )

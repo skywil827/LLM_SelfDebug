@@ -89,7 +89,7 @@ def _get_task_identity(task: TaskType) -> tuple[str, str]:
 
 
 def _estimate_num_tests_from_code(test_code: str) -> int:
-    return test_code.count("assert ")
+    return test_code.count("assert")
 
 
 def _run_code_with_test_code(

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Dict, Any, Tuple
 from dotenv import load_dotenv
 from openai import OpenAI
+
 from runtime.feedback_package import TaskType, _get_task_identity
 from error_explanation import ErrorExplanationResult
 
@@ -24,7 +25,7 @@ class PatchGenerationResult:
     model: str
 
     original_code: str
-    patched_code: str 
+    patched_code: str
 
     patch_strategy: str
     rationale: str
@@ -34,8 +35,7 @@ class PatchGenerationResult:
 
 def _is_swe_benchmark(benchmark: str) -> bool:
     b = (benchmark or "").strip()
-    return b == "SWE-"
-    "" or b.upper().startswith("SWE")
+    return b.upper().startswith("SWE")
 
 
 def generate_patched_code_with_openai(
@@ -46,9 +46,7 @@ def generate_patched_code_with_openai(
 ) -> PatchGenerationResult:
     benchmark, tid = _get_task_identity(task)
 
-
     problem_spec = task.build_prompt()
-
     explanation = error_expl.explanation
     diag = getattr(error_expl, "diagnosis", None)
 
@@ -118,9 +116,7 @@ def generate_patched_code_with_openai(
         """
         artifact_field = "patched_code"
         artifact_label = "CURRENT PYTHON CODE (code_t)"
-        rules_line = (
-            "The 'patched_code' field must contain ONLY Python code. No backticks. No Markdown."
-        )
+        rules_line = "The 'patched_code' field must contain ONLY Python code. No backticks. No Markdown."
         additional_guidelines = """
         Guidelines:
         - Preserve required function names/signatures.
@@ -200,11 +196,17 @@ def produce_next_code_version(
     task: TaskType,
     current_code: str,
     error_expl: ErrorExplanationResult,
+    model: str = OPENAI_MODEL,
 ) -> Tuple[str, PatchGenerationResult]:
+    """
+    Returns: (next_code_or_patch, patch_info)
+    model: which OpenAI model should perform the patch step
+    """
     patch_info = generate_patched_code_with_openai(
         task=task,
         current_code=current_code,
         error_expl=error_expl,
+        model=model,
     )
     next_code = patch_info.patched_code
     return next_code, patch_info
