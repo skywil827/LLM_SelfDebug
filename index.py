@@ -18,13 +18,13 @@ from APPSInput import APPSTask, load_apps_task
 from sweBenchInput import load_swe_instance, build_swe_prompt, SWELITETask
 from runtime.feedback_package import build_feedback_package
 from runtime.code_exec import ExecutionResult, execute_task
-
 from error_explanation import (
     build_error_explanation_io,
     diagnose_bug_with_openai,
     build_error_explanation_text,
 )
 from patch_generation import produce_next_code_version
+
 
 
 def _now_ts() -> str:
@@ -46,6 +46,44 @@ def make_run_dir(out_root: str = "results") -> Tuple[str, str, str]:
     return ts, str(run_dir), str(plots_dir)
 
 
+def build_summary_report_text(compact_summary_rows: List[Dict[str, Any]]) -> List[str]:
+    """
+    Builds a human-readable summary identical to terminal output,
+    suitable for inclusion at the end of results.json.
+    """
+    lines: List[str] = []
+
+    for row in compact_summary_rows:
+        bench = row["benchmark"]
+        provider = row["provider"]
+        model = row["model"]
+
+        bsum = row["baseline"]
+        ssum = row["self_debug"]
+
+        lines.append(f"{bench} on {provider}:{model}")
+        lines.append(
+            f"Baseline: {bsum['num_passed']}/{bsum['num_tasks']} "
+            f"({bsum['pass_rate']*100:.2f}%)"
+        )
+        lines.append(
+            f"Self-debug (only on failures): {ssum['num_passed']}/{ssum['num_tasks']} "
+            f"({ssum['pass_rate']*100:.2f}%)"
+        )
+
+        for k, hsum in row["handoff_by_k"].items():
+            lines.append(
+                f"Handoff ({k}): {hsum['num_passed']}/{hsum['num_tasks']} "
+                f"({hsum['pass_rate']*100:.2f}%)"
+            )
+
+        lines.append("")
+    if lines and lines[-1] == "":
+        lines.pop()
+
+    return lines
+
+
 def save_experiment_results(
     *,
     run_dir: str,
@@ -62,6 +100,7 @@ def save_experiment_results(
         "summaries": [{"mode_tag": mode_tag, **summary} for mode_tag, summary in summaries],
         "details": details,
         "artifacts": artifacts,
+        "summary_report_text": artifacts.get("summary_report_text"),
     }
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
@@ -70,7 +109,6 @@ def save_experiment_results(
 
 
 load_dotenv(override=True)
-
 openai_api_key = os.getenv("OPENAI_API_KEY")
 google_api_key = os.getenv("GOOGLE_API_KEY")
 
@@ -127,7 +165,8 @@ def _get_task_identity(task) -> tuple[str, str]:
     return benchmark, "UNKNOWN"
 
 
-# Initial generation
+
+# Initial generation (OpenAI / Gemini)
 def generate_initial_code_with_openai(task: TaskType, model: str = OPENAI_MODEL) -> InitialCodeResult:
     benchmark, tid = _get_task_identity(task)
 
@@ -185,7 +224,6 @@ Return JSON:
             {"role": "system", "content": system_msg},
             {"role": "user", "content": user_instructions},
         ],
-        # temperature=0.2,
     )
 
     content = response.choices[0].message.content
@@ -278,6 +316,8 @@ def _print_iter_header(title: str) -> None:
     print("-" * 60)
 
 
+
+# Self-debug stream (single patch model)
 def self_debug_stream(
     *,
     task: TaskType,
@@ -381,6 +421,7 @@ def self_debug_stream(
     }
 
 
+# Sequential handoff stream (multiple patch agents)
 def sequential_handoff_stream(
     *,
     task: TaskType,
@@ -478,28 +519,44 @@ def sequential_handoff_stream(
     }
 
 
+
+# Plotting
 def shorten(s: str, max_len: int = 26) -> str:
     s = (s or "").replace("\n", " ").strip()
     return s if len(s) <= max_len else s[: max_len - 1] + "…"
 
 
-def add_value_labels(ax, bars):
-    for b in bars:
-        h = float(b.get_height() or 0.0)
-        ax.annotate(
-            f"{h:.1f}%",
-            (b.get_x() + b.get_width() / 2, h),
-            textcoords="offset points",
-            xytext=(0, 3),
-            ha="center",
-            va="bottom",
-            fontsize=9,
-        )
+# def add_value_labels(ax, bars):
+#     for b in bars:
+#         h = float(b.get_height() or 0.0)
+#         ax.annotate(
+#             f"{h:.1f}%",
+#             (b.get_x() + b.get_width() / 2, h),
+#             textcoords="offset points",
+#             xytext=(0, 3),
+#             ha="center",
+#             va="bottom",
+#             fontsize=9,
+#         )
+
+def _benchmark_task_counts_from_results(all_results: List[tuple]) -> Dict[str, int]:
+    """
+    Returns {benchmark: N} where N is the maximum num_tasks observed for that benchmark
+    (across providers/models/modes). This reflects actual loaded tasks, not just max_tasks.
+    """
+    counts: Dict[str, int] = {}
+    for _, summary in all_results:
+        bench = summary.get("benchmark")
+        n = int(summary.get("num_tasks") or 0)
+        if bench:
+            counts[bench] = max(counts.get(bench, 0), n)
+    return counts
 
 
 def plot_clean_grouped_bars(all_results: List[tuple], k_values: List[int], out_dir: str) -> List[str]:
     outp = Path(out_dir)
     outp.mkdir(parents=True, exist_ok=True)
+    bench_counts = _benchmark_task_counts_from_results(all_results)
 
     saved_paths: List[str] = []
     by_benchmark = defaultdict(list)
@@ -529,9 +586,10 @@ def plot_clean_grouped_bars(all_results: List[tuple], k_values: List[int], out_d
 
         for i, s in enumerate(series_order):
             bars = ax.bar([xi + offsets[i] for xi in x], series_vals[s], width, label=s)
-            add_value_labels(ax, bars)
+            # add_value_labels(ax, bars)
 
-        ax.set_title(f"{benchmark}: Baseline vs Single Self-Debug vs Sequential Handoff")
+        n_tasks = bench_counts.get(benchmark, 0)    
+        ax.set_title(f"{benchmark} (N={n_tasks}): Baseline vs Single Self-Debug vs Sequential Handoff")
         ax.set_ylabel("Pass Rate (%)")
         ax.set_ylim(0, 100)
         ax.set_xticks(x)
@@ -550,6 +608,7 @@ def plot_clean_grouped_bars(all_results: List[tuple], k_values: List[int], out_d
 def plot_improvement_over_baseline(all_results: List[tuple], k_values: List[int], out_dir: str) -> List[str]:
     outp = Path(out_dir)
     outp.mkdir(parents=True, exist_ok=True)
+    bench_counts = _benchmark_task_counts_from_results(all_results)
 
     saved_paths: List[str] = []
     baseline_lookup: Dict[tuple, float] = {}
@@ -586,9 +645,10 @@ def plot_improvement_over_baseline(all_results: List[tuple], k_values: List[int]
             ax.plot(xs, ys, marker="o", label=label)
 
         ax.axhline(0, linewidth=1)
-        ax.set_title(f"{bench}: Improvement over Baseline vs # Patch Agents (Sequential Handoff)")
+        n_tasks = bench_counts.get(bench, 0)
+        ax.set_title(f"{bench} (N={n_tasks}): Improvement over Baseline vs # Patch Agents (Sequential Handoff)")
         ax.set_xlabel("Number of patch agents (K)")
-        ax.set_ylabel("Δ Pass Rate (percentage points)")
+        ax.set_ylabel("Pass Rate (percentage points)")
         ax.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0)
 
         fig.tight_layout()
@@ -644,6 +704,8 @@ def summarize_results(details: List[Dict[str, Any]], benchmark: str, provider: s
     }
 
 
+
+
 if __name__ == "__main__":
     ts, run_dir, plots_dir = make_run_dir("results")
 
@@ -653,13 +715,12 @@ if __name__ == "__main__":
 
     configs = [
         ("gemini", "gemini-2.5-pro"),
-        ("openai", "gpt-4o"),
+        # ("openai", "gpt-4o"),
     ]
     # benchmarks = ["HumanEval", "MBPP", "APPS", "SWE-bench_LITE"]
-    benchmarks = ["HumanEval", "MBPP"]
-
-    max_tasks = 50
-    max_self_debug_iters = 5
+    benchmarks = ["MBPP"]
+    max_tasks = 3
+    max_self_debug_iters = 2
 
     single_patch_model = "gpt-4o"
 
@@ -669,7 +730,7 @@ if __name__ == "__main__":
         AgentSpec("openai", "gpt-5-mini"),
         AgentSpec("openai", "gpt-5"),
     ]
-    k_values = [2, 3]
+    k_values = [2]
 
     all_results: List[Tuple[str, Dict[str, Any]]] = []
     all_details: Dict[str, Any] = {"baseline": {}, "self_debug_single": {}, "sequential_handoff": {}}
@@ -735,7 +796,7 @@ if __name__ == "__main__":
                     }
                 )
 
- 
+                # If baseline already passed, skip add self-debug and handoff
                 if base_exec.passed or base_exec.num_tests == 0:
                     sd_noop = {
                         "timestamp": ts,
@@ -765,7 +826,6 @@ if __name__ == "__main__":
                     }
                     self_debug_details.append(sd_noop)
 
-                    # also add a handoff no-op entry for each k (so summaries align)
                     for k in k_values:
                         handoff_details_by_k[k].append(
                             {
@@ -790,9 +850,9 @@ if __name__ == "__main__":
                                 "prompt": task.build_prompt() if hasattr(task, "build_prompt") else "",
                             }
                         )
-                    continue  # next task
+                    continue
 
-                # 3) self-debug (baseline failed)
+                # 3) self-debug only if baseline failed
                 sd = self_debug_stream(
                     task=task,
                     initial_code=candidate,
@@ -840,7 +900,7 @@ if __name__ == "__main__":
                     }
                 )
 
-                # ✅ NEW: If self-debug solved, do NOT run handoff.
+                # If self-debug solved, do nnot run handoff; log as skipped for each k
                 if sd.get("passed") or sd.get("num_tests", 0) == 0:
                     for k in k_values:
                         handoff_details_by_k[k].append(
@@ -867,9 +927,9 @@ if __name__ == "__main__":
                                 "skipped_reason": "self_debug_solved",
                             }
                         )
-                    continue  # next task
+                    continue
 
-                # 4) sequential handoff (only if self-debug did NOT solve)
+                # 4) Run sequential handoff only if self-debug failed
                 for k in k_values:
                     agents_k = patch_pool[:k]
                     handoff = sequential_handoff_stream(
@@ -904,6 +964,7 @@ if __name__ == "__main__":
                         }
                     )
 
+            # summaries (benchmark, provider, model)
             baseline_summary = summarize_results(baseline_details, benchmark, provider, model_name, "baseline")
             self_debug_summary = summarize_results(self_debug_details, benchmark, provider, model_name, "self_debug_single")
 
@@ -940,6 +1001,7 @@ if __name__ == "__main__":
             }
             compact_summary_rows.append(compact_row)
 
+    # plot graphs
     pass_rate_plot_paths = plot_clean_grouped_bars(all_results, k_values, plots_dir)
     improvement_plot_paths = plot_improvement_over_baseline(all_results, k_values, plots_dir)
 
@@ -955,6 +1017,8 @@ if __name__ == "__main__":
         "gemini_default_model": GOOGLE_MODEL,
     }
 
+    summary_report_text = build_summary_report_text(compact_summary_rows)
+
     artifacts = {
         "run_dir": run_dir,
         "plots_dir": plots_dir,
@@ -962,6 +1026,7 @@ if __name__ == "__main__":
             "pass_rates": pass_rate_plot_paths,
             "improvement_vs_k": improvement_plot_paths,
         },
+        "summary_report_text": summary_report_text,
     }
 
     saved_path = save_experiment_results(
@@ -984,7 +1049,7 @@ if __name__ == "__main__":
 
         print(f"{bench} on {provider}:{model}")
         print(f"Baseline: {bsum['num_passed']}/{bsum['num_tasks']} ({bsum['pass_rate']*100:.2f}%)")
-        print(f"Self-debug (only on failures): {ssum['num_passed']}/{ssum['num_tasks']} ({ssum['pass_rate']*100:.2f}%)")
+        print(f"Self-debug (only on failures(baseline)): {ssum['num_passed']}/{ssum['num_tasks']} ({ssum['pass_rate']*100:.2f}%)")
 
         for k, hsum in row["handoff_by_k"].items():
             print(f"Handoff ({k}): {hsum['num_passed']}/{hsum['num_tasks']} ({hsum['pass_rate']*100:.2f}%)")

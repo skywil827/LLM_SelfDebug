@@ -1,18 +1,10 @@
 {
   "timestamp": "2026-02-03_07-27-59",
   "config": {
-    "benchmarks": [
-      "HumanEval"
-    ],
+    "benchmarks": ["HumanEval"],
     "configs": [
-      [
-        "gemini",
-        "gemini-2.5-pro"
-      ],
-      [
-        "openai",
-        "gpt-4o"
-      ]
+      ["gemini", "gemini-2.5-pro"],
+      ["openai", "gpt-4o"]
     ],
     "max_tasks": 10,
     "max_self_debug_iters": 3,
@@ -35,9 +27,7 @@
         "model": "gpt-5"
       }
     ],
-    "k_values": [
-      2
-    ],
+    "k_values": [2],
     "openai_default_model": "gpt-4o",
     "gemini_default_model": "gemini-2.0-flash"
   },
@@ -500,9 +490,7 @@
           "initial_plan": "1. Initialize a variable for the sum to 0 (the additive identity).\n2. Initialize a variable for the product to 1 (the multiplicative identity).\n3. These initial values correctly handle the case of an empty input list.\n4. Iterate through each number in the input list.\n5. In each iteration, add the current number to the sum variable.\n6. In the same iteration, multiply the current number into the product variable.\n7. After the loop completes, return a tuple containing the final sum and product.",
           "initial_code": "from typing import List, Tuple\n\n\ndef def sum_product(numbers: List[int]) -> Tuple[int, int]:\n    \"\"\" For a given list of integers, return a tuple consisting of a sum and a product of all the integers in a list.\n    Empty sum should be equal to 0 and empty product should be equal to 1.\n    >>> sum_product([])\n    (0, 1)\n    >>> sum_product([1, 2, 3, 4])\n    (10, 24)\n    \"\"\"\n    sum_value = 0\n    product_value = 1\n\n    for number in numbers:\n        sum_value += number\n        product_value *= number\n\n    return (sum_value, product_value)",
           "final_code": "from typing import List, Tuple\n\ndef sum_product(numbers: List[int]) -> Tuple[int, int]:\n    \"\"\" For a given list of integers, return a tuple consisting of a sum and a product of all the integers in a list.\n    Empty sum should be equal to 0 and empty product should be equal to 1.\n    >>> sum_product([])\n    (0, 1)\n    >>> sum_product([1, 2, 3, 4])\n    (10, 24)\n    \"\"\"\n    sum_value = 0\n    product_value = 1\n\n    for number in numbers:\n        sum_value += number\n        product_value *= number\n\n    return (sum_value, product_value)",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The original code had a syntax error due to an extra 'def' keyword in the function definition. Removing the redundant 'def' fixes the syntax error, allowing the function to be defined correctly and executed to perform the intended calculations for the sum and product of the list of integers."
           ],
@@ -1030,9 +1018,7 @@
           "initial_plan": "Sort the list of numbers and iterate through it, checking the difference between consecutive elements. If any difference is less than the threshold, return True. Otherwise, return False.",
           "initial_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
           "final_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The original code was missing the correct import statement for 'List' from the 'typing' module, which caused a NameError. By adding the correct import statement, the function can now be executed and tested properly. The logic of the function was already correct, so no further changes were needed."
           ],
@@ -1077,9 +1063,7 @@
           "initial_plan": "The function will iterate through the input string, ignoring spaces, and keep track of the current group of parentheses using a counter. When the counter returns to zero, it indicates the end of a balanced group, which is then added to the result list.",
           "initial_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    result = []\n    current_group = ''\n    balance = 0\n    for char in paren_string:\n        if char == ' ':\n            continue\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0 and current_group:\n            result.append(current_group)\n            current_group = ''\n    return result",
           "final_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    result = []\n    current_group = ''\n    balance = 0\n    for char in paren_string:\n        if char == ' ':\n            continue\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0 and current_group:\n            result.append(current_group)\n            current_group = ''\n    return result",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The error was due to the missing import of 'List' from the typing module, which caused a NameError. Adding the import statement resolves this issue, allowing the function to execute correctly with the intended type hinting."
           ],
@@ -1150,9 +1134,7 @@
           "initial_plan": "Iterate through the list of operations, maintaining a running balance. If at any point the balance goes below zero, return True. If the loop completes without the balance going below zero, return False.",
           "initial_code": "def below_zero(operations: List[int]) -> bool:\n    balance = 0\n    for operation in operations:\n        balance += operation\n        if balance < 0:\n            return True\n    return False",
           "final_code": "from typing import List\n\ndef below_zero(operations: List[int]) -> bool:\n    balance = 0\n    for operation in operations:\n        balance += operation\n        if balance < 0:\n            return True\n    return False",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The error was due to a missing import statement for 'List' from the 'typing' module, which is necessary for type hinting. Adding the correct import statement resolves the NameError and allows the function to execute as intended."
           ],
@@ -1197,9 +1179,7 @@
           "initial_plan": "To calculate the Mean Absolute Deviation (MAD) of a list of numbers, we will first compute the mean of the list. Then, for each number in the list, we will calculate the absolute difference between the number and the mean. Finally, we will compute the average of these absolute differences to get the MAD.",
           "initial_code": "def mean_absolute_deviation(numbers: List[float]) -> float:\n    mean = sum(numbers) / len(numbers)\n    absolute_differences = [abs(x - mean) for x in numbers]\n    mad = sum(absolute_differences) / len(numbers)\n    return mad",
           "final_code": "from typing import List\n\ndef mean_absolute_deviation(numbers: List[float]) -> float:\n    mean = sum(numbers) / len(numbers)\n    absolute_differences = [abs(x - mean) for x in numbers]\n    mad = sum(absolute_differences) / len(numbers)\n    return mad",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The error was due to a missing import statement for 'List' from the 'typing' module, which caused a NameError. By adding the correct import statement, the code can now execute properly with the correct type hinting."
           ],
@@ -1244,9 +1224,7 @@
           "initial_plan": "To solve the problem, we need to iterate over the input list 'numbers' and insert the 'delimeter' between each pair of consecutive elements. We can achieve this by using a loop to append elements to a new list, adding the 'delimeter' after each element except the last one.",
           "initial_code": "def intersperse(numbers: List[int], delimeter: int) -> List[int]:\n    result = []\n    for i, num in enumerate(numbers):\n        result.append(num)\n        if i < len(numbers) - 1:\n            result.append(delimeter)\n    return result",
           "final_code": "from typing import List\n\ndef intersperse(numbers: List[int], delimeter: int) -> List[int]:\n    result = []\n    for i, num in enumerate(numbers):\n        result.append(num)\n        if i < len(numbers) - 1:\n            result.append(delimeter)\n    return result",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The original code was missing the import statement for 'List' from the typing module, which caused a NameError. By adding the import statement, the function can now correctly use the 'List' type hint, allowing it to execute without errors."
           ],
@@ -1291,9 +1269,7 @@
           "initial_plan": "The function will split the input string by spaces to separate each group of parentheses. For each group, it will iterate through the characters, maintaining a counter to track the current level of nesting. It will also keep track of the maximum level of nesting encountered. The function will return a list of maximum nesting levels for each group.",
           "initial_code": "def parse_nested_parens(paren_string: str) -> List[int]:\n    groups = paren_string.split()\n    result = []\n    for group in groups:\n        max_depth = 0\n        current_depth = 0\n        for char in group:\n            if char == '(':  \n                current_depth += 1\n                if current_depth > max_depth:\n                    max_depth = current_depth\n            elif char == ')':\n                current_depth -= 1\n        result.append(max_depth)\n    return result",
           "final_code": "from typing import List\n\ndef parse_nested_parens(paren_string: str) -> List[int]:\n    groups = paren_string.split()\n    result = []\n    for group in groups:\n        max_depth = 0\n        current_depth = 0\n        for char in group:\n            if char == '(':  \n                current_depth += 1\n                if current_depth > max_depth:\n                    max_depth = current_depth\n            elif char == ')':\n                current_depth -= 1\n        result.append(max_depth)\n    return result",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The original code was missing the import statement for List from the typing module, which caused a NameError. Adding the import statement resolves this issue, allowing the function to execute correctly and return the expected results."
           ],
@@ -1338,9 +1314,7 @@
           "initial_plan": "Iterate through the list of strings and use the 'in' keyword to check if the substring is present in each string. If it is, include that string in the result list.",
           "initial_code": "def filter_by_substring(strings: List[str], substring: str) -> List[str]:\n    return [s for s in strings if substring in s]",
           "final_code": "from typing import List\n\ndef filter_by_substring(strings: List[str], substring: str) -> List[str]:\n    return [s for s in strings if substring in s]",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The error was due to a missing import statement for 'List' from the typing module, which caused a NameError. Adding the import statement resolves this issue, allowing the function to execute correctly with the intended type hinting."
           ],
@@ -1385,9 +1359,7 @@
           "initial_plan": "To solve this problem, we need to calculate the sum and product of a list of integers. If the list is empty, the sum should be 0 and the product should be 1. We can use Python's built-in sum function to calculate the sum of the list. For the product, we can initialize a variable to 1 and iterate through the list, multiplying each element to this variable. Finally, we return a tuple containing the sum and product.",
           "initial_code": "def sum_product(numbers: List[int]) -> Tuple[int, int]:\n    total_sum = sum(numbers)\n    total_product = 1\n    for number in numbers:\n        total_product *= number\n    return (total_sum, total_product)",
           "final_code": "from typing import List, Tuple\n\ndef sum_product(numbers: List[int]) -> Tuple[int, int]:\n    total_sum = sum(numbers)\n    total_product = 1\n    for number in numbers:\n        total_product *= number\n    return (total_sum, total_product)",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The error was due to the missing import statement for 'List' and 'Tuple' from the 'typing' module. By adding the correct import statement, the function can now properly recognize the type annotations and execute without errors."
           ],
@@ -1432,9 +1404,7 @@
           "initial_plan": "Iterate through the list of numbers, keeping track of the maximum value encountered so far. For each number, append the current maximum to the result list.",
           "initial_code": "def rolling_max(numbers: List[int]) -> List[int]:\n    if not numbers:\n        return []\n    max_so_far = numbers[0]\n    result = []\n    for num in numbers:\n        if num > max_so_far:\n            max_so_far = num\n        result.append(max_so_far)\n    return result",
           "final_code": "from typing import List\n\ndef rolling_max(numbers: List[int]) -> List[int]:\n    if not numbers:\n        return []\n    max_so_far = numbers[0]\n    result = []\n    for num in numbers:\n        if num > max_so_far:\n            max_so_far = num\n        result.append(max_so_far)\n    return result",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The original code was missing the import statement for 'List' from the 'typing' module, which caused a NameError. Adding the import statement resolves this issue, allowing the function to execute correctly and compute the rolling maximum as intended."
           ],
@@ -2350,9 +2320,7 @@
           "initial_plan": "1. Initialize a variable for the sum to 0 (the additive identity).\n2. Initialize a variable for the product to 1 (the multiplicative identity).\n3. These initial values correctly handle the case of an empty input list.\n4. Iterate through each number in the input list.\n5. In each iteration, add the current number to the sum variable.\n6. In the same iteration, multiply the current number into the product variable.\n7. After the loop completes, return a tuple containing the final sum and product.",
           "initial_code": "from typing import List, Tuple\n\n\ndef def sum_product(numbers: List[int]) -> Tuple[int, int]:\n    \"\"\" For a given list of integers, return a tuple consisting of a sum and a product of all the integers in a list.\n    Empty sum should be equal to 0 and empty product should be equal to 1.\n    >>> sum_product([])\n    (0, 1)\n    >>> sum_product([1, 2, 3, 4])\n    (10, 24)\n    \"\"\"\n    sum_value = 0\n    product_value = 1\n\n    for number in numbers:\n        sum_value += number\n        product_value *= number\n\n    return (sum_value, product_value)",
           "final_code": "from typing import List, Tuple\n\ndef sum_product(numbers: List[int]) -> Tuple[int, int]:\n    \"\"\" For a given list of integers, return a tuple consisting of a sum and a product of all the integers in a list.\n    Empty sum should be equal to 0 and empty product should be equal to 1.\n    >>> sum_product([])\n    (0, 1)\n    >>> sum_product([1, 2, 3, 4])\n    (10, 24)\n    \"\"\"\n    sum_value = 0\n    product_value = 1\n\n    for number in numbers:\n        sum_value += number\n        product_value *= number\n\n    return (sum_value, product_value)",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The original code had a syntax error due to an extra 'def' keyword in the function definition. Removing the redundant 'def' fixes the syntax error, allowing the function to be defined correctly and executed to perform the intended calculations for the sum and product of the list of integers."
           ],
@@ -2425,9 +2393,7 @@
           "initial_plan": "Sort the list of numbers and iterate through it, checking the difference between consecutive elements. If any difference is less than the threshold, return True. Otherwise, return False.",
           "initial_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
           "final_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    numbers.sort()\n    for i in range(len(numbers) - 1):\n        if numbers[i + 1] - numbers[i] < threshold:\n            return True\n    return False",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The original code was missing the correct import statement for 'List' from the 'typing' module, which caused a NameError. By adding the correct import statement, the function can now be executed and tested properly. The logic of the function was already correct, so no further changes were needed."
           ],
@@ -2472,9 +2438,7 @@
           "initial_plan": "The function will iterate through the input string, ignoring spaces, and keep track of the current group of parentheses using a counter. When the counter returns to zero, it indicates the end of a balanced group, which is then added to the result list.",
           "initial_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    result = []\n    current_group = ''\n    balance = 0\n    for char in paren_string:\n        if char == ' ':\n            continue\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0 and current_group:\n            result.append(current_group)\n            current_group = ''\n    return result",
           "final_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    result = []\n    current_group = ''\n    balance = 0\n    for char in paren_string:\n        if char == ' ':\n            continue\n        current_group += char\n        if char == '(': \n            balance += 1\n        elif char == ')':\n            balance -= 1\n        if balance == 0 and current_group:\n            result.append(current_group)\n            current_group = ''\n    return result",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The error was due to the missing import of 'List' from the typing module, which caused a NameError. Adding the import statement resolves this issue, allowing the function to execute correctly with the intended type hinting."
           ],
@@ -2545,9 +2509,7 @@
           "initial_plan": "Iterate through the list of operations, maintaining a running balance. If at any point the balance goes below zero, return True. If the loop completes without the balance going below zero, return False.",
           "initial_code": "def below_zero(operations: List[int]) -> bool:\n    balance = 0\n    for operation in operations:\n        balance += operation\n        if balance < 0:\n            return True\n    return False",
           "final_code": "from typing import List\n\ndef below_zero(operations: List[int]) -> bool:\n    balance = 0\n    for operation in operations:\n        balance += operation\n        if balance < 0:\n            return True\n    return False",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The error was due to a missing import statement for 'List' from the 'typing' module, which is necessary for type hinting. Adding the correct import statement resolves the NameError and allows the function to execute as intended."
           ],
@@ -2592,9 +2554,7 @@
           "initial_plan": "To calculate the Mean Absolute Deviation (MAD) of a list of numbers, we will first compute the mean of the list. Then, for each number in the list, we will calculate the absolute difference between the number and the mean. Finally, we will compute the average of these absolute differences to get the MAD.",
           "initial_code": "def mean_absolute_deviation(numbers: List[float]) -> float:\n    mean = sum(numbers) / len(numbers)\n    absolute_differences = [abs(x - mean) for x in numbers]\n    mad = sum(absolute_differences) / len(numbers)\n    return mad",
           "final_code": "from typing import List\n\ndef mean_absolute_deviation(numbers: List[float]) -> float:\n    mean = sum(numbers) / len(numbers)\n    absolute_differences = [abs(x - mean) for x in numbers]\n    mad = sum(absolute_differences) / len(numbers)\n    return mad",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The error was due to a missing import statement for 'List' from the 'typing' module, which caused a NameError. By adding the correct import statement, the code can now execute properly with the correct type hinting."
           ],
@@ -2639,9 +2599,7 @@
           "initial_plan": "To solve the problem, we need to iterate over the input list 'numbers' and insert the 'delimeter' between each pair of consecutive elements. We can achieve this by using a loop to append elements to a new list, adding the 'delimeter' after each element except the last one.",
           "initial_code": "def intersperse(numbers: List[int], delimeter: int) -> List[int]:\n    result = []\n    for i, num in enumerate(numbers):\n        result.append(num)\n        if i < len(numbers) - 1:\n            result.append(delimeter)\n    return result",
           "final_code": "from typing import List\n\ndef intersperse(numbers: List[int], delimeter: int) -> List[int]:\n    result = []\n    for i, num in enumerate(numbers):\n        result.append(num)\n        if i < len(numbers) - 1:\n            result.append(delimeter)\n    return result",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The original code was missing the import statement for 'List' from the typing module, which caused a NameError. By adding the import statement, the function can now correctly use the 'List' type hint, allowing it to execute without errors."
           ],
@@ -2686,9 +2644,7 @@
           "initial_plan": "The function will split the input string by spaces to separate each group of parentheses. For each group, it will iterate through the characters, maintaining a counter to track the current level of nesting. It will also keep track of the maximum level of nesting encountered. The function will return a list of maximum nesting levels for each group.",
           "initial_code": "def parse_nested_parens(paren_string: str) -> List[int]:\n    groups = paren_string.split()\n    result = []\n    for group in groups:\n        max_depth = 0\n        current_depth = 0\n        for char in group:\n            if char == '(':  \n                current_depth += 1\n                if current_depth > max_depth:\n                    max_depth = current_depth\n            elif char == ')':\n                current_depth -= 1\n        result.append(max_depth)\n    return result",
           "final_code": "from typing import List\n\ndef parse_nested_parens(paren_string: str) -> List[int]:\n    groups = paren_string.split()\n    result = []\n    for group in groups:\n        max_depth = 0\n        current_depth = 0\n        for char in group:\n            if char == '(':  \n                current_depth += 1\n                if current_depth > max_depth:\n                    max_depth = current_depth\n            elif char == ')':\n                current_depth -= 1\n        result.append(max_depth)\n    return result",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The original code was missing the import statement for List from the typing module, which caused a NameError. Adding the import statement resolves this issue, allowing the function to execute correctly and return the expected results."
           ],
@@ -2733,9 +2689,7 @@
           "initial_plan": "Iterate through the list of strings and use the 'in' keyword to check if the substring is present in each string. If it is, include that string in the result list.",
           "initial_code": "def filter_by_substring(strings: List[str], substring: str) -> List[str]:\n    return [s for s in strings if substring in s]",
           "final_code": "from typing import List\n\ndef filter_by_substring(strings: List[str], substring: str) -> List[str]:\n    return [s for s in strings if substring in s]",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The error was due to a missing import statement for 'List' from the typing module, which caused a NameError. Adding the import statement resolves this issue, allowing the function to execute correctly with the intended type hinting."
           ],
@@ -2780,9 +2734,7 @@
           "initial_plan": "To solve this problem, we need to calculate the sum and product of a list of integers. If the list is empty, the sum should be 0 and the product should be 1. We can use Python's built-in sum function to calculate the sum of the list. For the product, we can initialize a variable to 1 and iterate through the list, multiplying each element to this variable. Finally, we return a tuple containing the sum and product.",
           "initial_code": "def sum_product(numbers: List[int]) -> Tuple[int, int]:\n    total_sum = sum(numbers)\n    total_product = 1\n    for number in numbers:\n        total_product *= number\n    return (total_sum, total_product)",
           "final_code": "from typing import List, Tuple\n\ndef sum_product(numbers: List[int]) -> Tuple[int, int]:\n    total_sum = sum(numbers)\n    total_product = 1\n    for number in numbers:\n        total_product *= number\n    return (total_sum, total_product)",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The error was due to the missing import statement for 'List' and 'Tuple' from the 'typing' module. By adding the correct import statement, the function can now properly recognize the type annotations and execute without errors."
           ],
@@ -2827,9 +2779,7 @@
           "initial_plan": "Iterate through the list of numbers, keeping track of the maximum value encountered so far. For each number, append the current maximum to the result list.",
           "initial_code": "def rolling_max(numbers: List[int]) -> List[int]:\n    if not numbers:\n        return []\n    max_so_far = numbers[0]\n    result = []\n    for num in numbers:\n        if num > max_so_far:\n            max_so_far = num\n        result.append(max_so_far)\n    return result",
           "final_code": "from typing import List\n\ndef rolling_max(numbers: List[int]) -> List[int]:\n    if not numbers:\n        return []\n    max_so_far = numbers[0]\n    result = []\n    for num in numbers:\n        if num > max_so_far:\n            max_so_far = num\n        result.append(max_so_far)\n    return result",
-          "patch_models_used": [
-            "openai:gpt-4o"
-          ],
+          "patch_models_used": ["openai:gpt-4o"],
           "patch_explanations": [
             "The original code was missing the import statement for 'List' from the 'typing' module, which caused a NameError. Adding the import statement resolves this issue, allowing the function to execute correctly and compute the rolling maximum as intended."
           ],
