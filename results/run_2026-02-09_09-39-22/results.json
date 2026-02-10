@@ -1,0 +1,300 @@
+{
+  "timestamp": "2026-02-09_09-39-22",
+  "config": {
+    "benchmarks": [
+      "SWE-bench_LITE"
+    ],
+    "configs": [
+      [
+        "gemini",
+        "gemini-2.5-pro"
+      ]
+    ],
+    "max_tasks": 1,
+    "max_self_debug_iters": 1,
+    "single_patch_model": "gpt-4o",
+    "patch_pool": [
+      {
+        "provider": "openai",
+        "model": "gpt-4.1-mini"
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-4.1"
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-5-mini"
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-5"
+      }
+    ],
+    "k_values": [
+      2
+    ],
+    "openai_default_model": "gpt-4o",
+    "gemini_default_model": "gemini-2.0-flash"
+  },
+  "summaries": [
+    {
+      "mode_tag": "baseline",
+      "benchmark": "SWE-bench_LITE",
+      "provider": "gemini",
+      "model": "gemini-2.5-pro",
+      "mode": "baseline",
+      "num_tasks": 1,
+      "num_passed": 0,
+      "pass_rate": 0.0,
+      "details": [
+        {
+          "timestamp": "2026-02-09_09-39-22",
+          "benchmark": "SWE-bench_LITE",
+          "task_id": "SWELITE/astropy__astropy-12907",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 1,
+          "num_passed": 0,
+          "artifact": "",
+          "error_type": "InvalidPatch",
+          "error_message": "Patch is empty.",
+          "traceback_str": null,
+          "stdout": "[SWE] Patch validation: Patch is empty.\n[SWE] Repo: astropy/astropy\n[SWE] Base commit: d16bfe05a744909de4b27f5875fe0d4ed41ce607\n",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (SWE-bench_LITE)\n------------------\nYou are an expert software engineer working on the repository:\n\n          astropy/astropy\n\n      The current codebase is at commit:\n\n          d16bfe05a744909de4b27f5875fe0d4ed41ce607\n\n      A bug has been reported with the following problem statement:\n\n      Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels\nConsider the following model:\r\n\r\n```python\r\nfrom astropy.modeling import models as m\r\nfrom astropy.modeling.separable import separability_matrix\r\n\r\ncm = m.Linear1D(10) & m.Linear1D(5)\r\n```\r\n\r\nIt's separability matrix as you might expect is a diagonal:\r\n\r\n```python\r\n>>> separability_matrix(cm)\r\narray([[ True, False],\r\n       [False,  True]])\r\n```\r\n\r\nIf I make the model more complex:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & m.Linear1D(10) & m.Linear1D(5))\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True, False],\r\n       [False, False, False,  True]])\r\n```\r\n\r\nThe output matrix is again, as expected, the outputs and inputs to the linear models are separable and independent of each other.\r\n\r\nIf however, I nest these compound models:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & cm)\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True,  True],\r\n       [False, False,  True,  True]])\r\n```\r\nSuddenly the inputs and outputs are no longer separable?\r\n\r\nThis feels like a bug to me, but I might be missing something?\n\n\n\n      The test suite is structured so that:\n      - FAIL_TO_PASS: tests that currently fail, but should pass after your fix.\n        Example / preview: astropy/modeling/tests/test_separable.py::test_separable[compound_model6-result6], astropy/modeling/tests/test_separable.py::test_separable[compound_model9-result9]\n      - PASS_TO_PASS: tests that already pass and must continue to pass.\n        Example / preview: astropy/modeling/tests/test_separable.py::test_coord_matrix, astropy/modeling/tests/test_separable.py::test_cdot, astropy/modeling/tests/test_separable.py::test_cstack, astropy/modeling/tests/test_separable.py::test_arith_oper, astropy/modeling/tests/test_separable.py::test_separable[compound_model0-result0], astropy/modeling/tests/test_separable.py::test_separable[compound_model1-result1], astropy/modeling/tests/test_separable.py::test_separable[compound_model2-result2], astropy/modeling/tests/test_separable.py::test_separable[compound_model3-result3], astropy/modeling/tests/test_separable.py::test_separable[compound_model4-result4], astropy/modeling/tests/test_separable.py::test_separable[compound_model5-result5], astropy/modeling/tests/test_separable.py::test_separable[compound_model7-result7], astropy/modeling/tests/test_separable.py::test_separable[compound_model8-result8], astropy/modeling/tests/test_separable.py::test_custom_model_separable\n\n      Your job is to produce a git patch that fixes the bug while preserving existing behavior.\n\n      IMPORTANT REQUIREMENTS:\n      - Output must be a unified diff (git patch) that can be applied on top of the base commit.\n      - Do NOT include explanations, markdown, or prose in the final answer.\n      - Do NOT modify tests unless absolutely necessary.\n      - Try to keep the patch as small and focused as possible.\n\n      Return ONLY the patch, in standard unified diff format, starting with lines like:\n\n          diff --git a/path/to/file.py b/path/to/file.py\n\nReturn ONLY JSON with keys: plan, patch, explanation.\nNo markdown fences.",
+          "initial_plan": "",
+          "initial_code": "",
+          "final_code": "",
+          "prompt": "Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels\nConsider the following model:\r\n\r\n```python\r\nfrom astropy.modeling import models as m\r\nfrom astropy.modeling.separable import separability_matrix\r\n\r\ncm = m.Linear1D(10) & m.Linear1D(5)\r\n```\r\n\r\nIt's separability matrix as you might expect is a diagonal:\r\n\r\n```python\r\n>>> separability_matrix(cm)\r\narray([[ True, False],\r\n       [False,  True]])\r\n```\r\n\r\nIf I make the model more complex:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & m.Linear1D(10) & m.Linear1D(5))\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True, False],\r\n       [False, False, False,  True]])\r\n```\r\n\r\nThe output matrix is again, as expected, the outputs and inputs to the linear models are separable and independent of each other.\r\n\r\nIf however, I nest these compound models:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & cm)\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True,  True],\r\n       [False, False,  True,  True]])\r\n```\r\nSuddenly the inputs and outputs are no longer separable?\r\n\r\nThis feels like a bug to me, but I might be missing something?\n"
+        }
+      ]
+    },
+    {
+      "mode_tag": "self_debug_single",
+      "benchmark": "SWE-bench_LITE",
+      "provider": "gemini",
+      "model": "gemini-2.5-pro",
+      "mode": "self_debug_single",
+      "num_tasks": 1,
+      "num_passed": 1,
+      "pass_rate": 1.0,
+      "details": [
+        {
+          "timestamp": "2026-02-09_09-39-22",
+          "benchmark": "SWE-bench_LITE",
+          "task_id": "SWELITE/astropy__astropy-12907",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 1,
+          "num_passed": 1,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": "InvalidPatch",
+          "initial_error_message": "Patch is empty.",
+          "initial_raw_prompt": "TASK (SWE-bench_LITE)\n------------------\nYou are an expert software engineer working on the repository:\n\n          astropy/astropy\n\n      The current codebase is at commit:\n\n          d16bfe05a744909de4b27f5875fe0d4ed41ce607\n\n      A bug has been reported with the following problem statement:\n\n      Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels\nConsider the following model:\r\n\r\n```python\r\nfrom astropy.modeling import models as m\r\nfrom astropy.modeling.separable import separability_matrix\r\n\r\ncm = m.Linear1D(10) & m.Linear1D(5)\r\n```\r\n\r\nIt's separability matrix as you might expect is a diagonal:\r\n\r\n```python\r\n>>> separability_matrix(cm)\r\narray([[ True, False],\r\n       [False,  True]])\r\n```\r\n\r\nIf I make the model more complex:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & m.Linear1D(10) & m.Linear1D(5))\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True, False],\r\n       [False, False, False,  True]])\r\n```\r\n\r\nThe output matrix is again, as expected, the outputs and inputs to the linear models are separable and independent of each other.\r\n\r\nIf however, I nest these compound models:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & cm)\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True,  True],\r\n       [False, False,  True,  True]])\r\n```\r\nSuddenly the inputs and outputs are no longer separable?\r\n\r\nThis feels like a bug to me, but I might be missing something?\n\n\n\n      The test suite is structured so that:\n      - FAIL_TO_PASS: tests that currently fail, but should pass after your fix.\n        Example / preview: astropy/modeling/tests/test_separable.py::test_separable[compound_model6-result6], astropy/modeling/tests/test_separable.py::test_separable[compound_model9-result9]\n      - PASS_TO_PASS: tests that already pass and must continue to pass.\n        Example / preview: astropy/modeling/tests/test_separable.py::test_coord_matrix, astropy/modeling/tests/test_separable.py::test_cdot, astropy/modeling/tests/test_separable.py::test_cstack, astropy/modeling/tests/test_separable.py::test_arith_oper, astropy/modeling/tests/test_separable.py::test_separable[compound_model0-result0], astropy/modeling/tests/test_separable.py::test_separable[compound_model1-result1], astropy/modeling/tests/test_separable.py::test_separable[compound_model2-result2], astropy/modeling/tests/test_separable.py::test_separable[compound_model3-result3], astropy/modeling/tests/test_separable.py::test_separable[compound_model4-result4], astropy/modeling/tests/test_separable.py::test_separable[compound_model5-result5], astropy/modeling/tests/test_separable.py::test_separable[compound_model7-result7], astropy/modeling/tests/test_separable.py::test_separable[compound_model8-result8], astropy/modeling/tests/test_separable.py::test_custom_model_separable\n\n      Your job is to produce a git patch that fixes the bug while preserving existing behavior.\n\n      IMPORTANT REQUIREMENTS:\n      - Output must be a unified diff (git patch) that can be applied on top of the base commit.\n      - Do NOT include explanations, markdown, or prose in the final answer.\n      - Do NOT modify tests unless absolutely necessary.\n      - Try to keep the patch as small and focused as possible.\n\n      Return ONLY the patch, in standard unified diff format, starting with lines like:\n\n          diff --git a/path/to/file.py b/path/to/file.py\n\nReturn ONLY JSON with keys: plan, patch, explanation.\nNo markdown fences.",
+          "initial_plan": "",
+          "initial_code": "",
+          "final_code": "diff --git a/astropy/modeling/separable.py b/astropy/modeling/separable.py\nindex 1234567..89abcde 100644\n--- a/astropy/modeling/separable.py\n+++ b/astropy/modeling/separable.py\n@@ -45,7 +45,7 @@ def separability_matrix(model):\n     # Existing logic to handle simple models\n     if not isinstance(model, CompoundModel):\n         return _compute_simple_separability(model)\n \n-    # Incorrect logic for nested CompoundModels\n-    sub_matrices = [separability_matrix(sub_model) for sub_model in model._submodels]\n+    # Correct logic for nested CompoundModels\n+    sub_matrices = [separability_matrix(sub_model) if isinstance(sub_model, CompoundModel) else _compute_simple_separability(sub_model) for sub_model in model._submodels]\n \n     # Combine sub-matrices into a single separability matrix\n     return _combine_separability_matrices(sub_matrices)",
+          "patch_models_used": [
+            "openai:gpt-4o"
+          ],
+          "patch_explanations": [
+            "The updated patch ensures that each submodel within a CompoundModel is checked for its type and processed accordingly, allowing for correct computation of separability even when models are nested. This addresses the issue where nested models were incorrectly marked as inseparable."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "patch_model": "gpt-4o",
+              "patch_explanation": "The updated patch ensures that each submodel within a CompoundModel is checked for its type and processed accordingly, allowing for correct computation of separability even when models are nested. This addresses the issue where nested models were incorrectly marked as inseparable.",
+              "updated_code": "diff --git a/astropy/modeling/separable.py b/astropy/modeling/separable.py\nindex 1234567..89abcde 100644\n--- a/astropy/modeling/separable.py\n+++ b/astropy/modeling/separable.py\n@@ -45,7 +45,7 @@ def separability_matrix(model):\n     # Existing logic to handle simple models\n     if not isinstance(model, CompoundModel):\n         return _compute_simple_separability(model)\n \n-    # Incorrect logic for nested CompoundModels\n-    sub_matrices = [separability_matrix(sub_model) for sub_model in model._submodels]\n+    # Correct logic for nested CompoundModels\n+    sub_matrices = [separability_matrix(sub_model) if isinstance(sub_model, CompoundModel) else _compute_simple_separability(sub_model) for sub_model in model._submodels]\n \n     # Combine sub-matrices into a single separability matrix\n     return _combine_separability_matrices(sub_matrices)",
+              "exec_result": {
+                "passed": true,
+                "num_tests": 1,
+                "num_passed": 1,
+                "error_type": null,
+                "error_message": null,
+                "traceback_str": null,
+                "stdout": "[SWE] Patch validation: Patch format OK.\n[SWE] Repo: astropy/astropy\n[SWE] Base commit: d16bfe05a744909de4b27f5875fe0d4ed41ce607\n",
+                "stderr": ""
+              }
+            }
+          ],
+          "traceback_str": null,
+          "stdout": "[SWE] Patch validation: Patch format OK.\n[SWE] Repo: astropy/astropy\n[SWE] Base commit: d16bfe05a744909de4b27f5875fe0d4ed41ce607\n",
+          "stderr": "",
+          "prompt": "Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels\nConsider the following model:\r\n\r\n```python\r\nfrom astropy.modeling import models as m\r\nfrom astropy.modeling.separable import separability_matrix\r\n\r\ncm = m.Linear1D(10) & m.Linear1D(5)\r\n```\r\n\r\nIt's separability matrix as you might expect is a diagonal:\r\n\r\n```python\r\n>>> separability_matrix(cm)\r\narray([[ True, False],\r\n       [False,  True]])\r\n```\r\n\r\nIf I make the model more complex:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & m.Linear1D(10) & m.Linear1D(5))\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True, False],\r\n       [False, False, False,  True]])\r\n```\r\n\r\nThe output matrix is again, as expected, the outputs and inputs to the linear models are separable and independent of each other.\r\n\r\nIf however, I nest these compound models:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & cm)\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True,  True],\r\n       [False, False,  True,  True]])\r\n```\r\nSuddenly the inputs and outputs are no longer separable?\r\n\r\nThis feels like a bug to me, but I might be missing something?\n"
+        }
+      ]
+    },
+    {
+      "mode_tag": "handoff_2agents",
+      "benchmark": "SWE-bench_LITE",
+      "provider": "gemini",
+      "model": "gemini-2.5-pro",
+      "mode": "handoff_2agents",
+      "num_tasks": 1,
+      "num_passed": 1,
+      "pass_rate": 1.0,
+      "details": [
+        {
+          "timestamp": "2026-02-09_09-39-22",
+          "benchmark": "SWE-bench_LITE",
+          "task_id": "SWELITE/astropy__astropy-12907",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "handoff_2agents",
+          "passed": true,
+          "num_tests": 1,
+          "num_passed": 1,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (SWE-bench_LITE)\n------------------\nYou are an expert software engineer working on the repository:\n\n          astropy/astropy\n\n      The current codebase is at commit:\n\n          d16bfe05a744909de4b27f5875fe0d4ed41ce607\n\n      A bug has been reported with the following problem statement:\n\n      Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels\nConsider the following model:\r\n\r\n```python\r\nfrom astropy.modeling import models as m\r\nfrom astropy.modeling.separable import separability_matrix\r\n\r\ncm = m.Linear1D(10) & m.Linear1D(5)\r\n```\r\n\r\nIt's separability matrix as you might expect is a diagonal:\r\n\r\n```python\r\n>>> separability_matrix(cm)\r\narray([[ True, False],\r\n       [False,  True]])\r\n```\r\n\r\nIf I make the model more complex:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & m.Linear1D(10) & m.Linear1D(5))\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True, False],\r\n       [False, False, False,  True]])\r\n```\r\n\r\nThe output matrix is again, as expected, the outputs and inputs to the linear models are separable and independent of each other.\r\n\r\nIf however, I nest these compound models:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & cm)\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True,  True],\r\n       [False, False,  True,  True]])\r\n```\r\nSuddenly the inputs and outputs are no longer separable?\r\n\r\nThis feels like a bug to me, but I might be missing something?\n\n\n\n      The test suite is structured so that:\n      - FAIL_TO_PASS: tests that currently fail, but should pass after your fix.\n        Example / preview: astropy/modeling/tests/test_separable.py::test_separable[compound_model6-result6], astropy/modeling/tests/test_separable.py::test_separable[compound_model9-result9]\n      - PASS_TO_PASS: tests that already pass and must continue to pass.\n        Example / preview: astropy/modeling/tests/test_separable.py::test_coord_matrix, astropy/modeling/tests/test_separable.py::test_cdot, astropy/modeling/tests/test_separable.py::test_cstack, astropy/modeling/tests/test_separable.py::test_arith_oper, astropy/modeling/tests/test_separable.py::test_separable[compound_model0-result0], astropy/modeling/tests/test_separable.py::test_separable[compound_model1-result1], astropy/modeling/tests/test_separable.py::test_separable[compound_model2-result2], astropy/modeling/tests/test_separable.py::test_separable[compound_model3-result3], astropy/modeling/tests/test_separable.py::test_separable[compound_model4-result4], astropy/modeling/tests/test_separable.py::test_separable[compound_model5-result5], astropy/modeling/tests/test_separable.py::test_separable[compound_model7-result7], astropy/modeling/tests/test_separable.py::test_separable[compound_model8-result8], astropy/modeling/tests/test_separable.py::test_custom_model_separable\n\n      Your job is to produce a git patch that fixes the bug while preserving existing behavior.\n\n      IMPORTANT REQUIREMENTS:\n      - Output must be a unified diff (git patch) that can be applied on top of the base commit.\n      - Do NOT include explanations, markdown, or prose in the final answer.\n      - Do NOT modify tests unless absolutely necessary.\n      - Try to keep the patch as small and focused as possible.\n\n      Return ONLY the patch, in standard unified diff format, starting with lines like:\n\n          diff --git a/path/to/file.py b/path/to/file.py\n\nReturn ONLY JSON with keys: plan, patch, explanation.\nNo markdown fences.",
+          "initial_plan": "",
+          "initial_code": "",
+          "final_code": "diff --git a/astropy/modeling/separable.py b/astropy/modeling/separable.py\nindex 1234567..89abcde 100644\n--- a/astropy/modeling/separable.py\n+++ b/astropy/modeling/separable.py\n@@ -45,7 +45,7 @@ def separability_matrix(model):\n     # Existing logic to handle simple models\n     if not isinstance(model, CompoundModel):\n         return _compute_simple_separability(model)\n \n-    # Incorrect logic for nested CompoundModels\n-    sub_matrices = [separability_matrix(sub_model) for sub_model in model._submodels]\n+    # Correct logic for nested CompoundModels\n+    sub_matrices = [separability_matrix(sub_model) if isinstance(sub_model, CompoundModel) else _compute_simple_separability(sub_model) for sub_model in model._submodels]\n \n     # Combine sub-matrices into a single separability matrix\n     return _combine_separability_matrices(sub_matrices)",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels\nConsider the following model:\r\n\r\n```python\r\nfrom astropy.modeling import models as m\r\nfrom astropy.modeling.separable import separability_matrix\r\n\r\ncm = m.Linear1D(10) & m.Linear1D(5)\r\n```\r\n\r\nIt's separability matrix as you might expect is a diagonal:\r\n\r\n```python\r\n>>> separability_matrix(cm)\r\narray([[ True, False],\r\n       [False,  True]])\r\n```\r\n\r\nIf I make the model more complex:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & m.Linear1D(10) & m.Linear1D(5))\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True, False],\r\n       [False, False, False,  True]])\r\n```\r\n\r\nThe output matrix is again, as expected, the outputs and inputs to the linear models are separable and independent of each other.\r\n\r\nIf however, I nest these compound models:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & cm)\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True,  True],\r\n       [False, False,  True,  True]])\r\n```\r\nSuddenly the inputs and outputs are no longer separable?\r\n\r\nThis feels like a bug to me, but I might be missing something?\n",
+          "skipped_reason": "self_debug_solved"
+        }
+      ]
+    }
+  ],
+  "details": {
+    "baseline": {
+      "SWE-bench_LITE::gemini::gemini-2.5-pro": [
+        {
+          "timestamp": "2026-02-09_09-39-22",
+          "benchmark": "SWE-bench_LITE",
+          "task_id": "SWELITE/astropy__astropy-12907",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 1,
+          "num_passed": 0,
+          "artifact": "",
+          "error_type": "InvalidPatch",
+          "error_message": "Patch is empty.",
+          "traceback_str": null,
+          "stdout": "[SWE] Patch validation: Patch is empty.\n[SWE] Repo: astropy/astropy\n[SWE] Base commit: d16bfe05a744909de4b27f5875fe0d4ed41ce607\n",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (SWE-bench_LITE)\n------------------\nYou are an expert software engineer working on the repository:\n\n          astropy/astropy\n\n      The current codebase is at commit:\n\n          d16bfe05a744909de4b27f5875fe0d4ed41ce607\n\n      A bug has been reported with the following problem statement:\n\n      Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels\nConsider the following model:\r\n\r\n```python\r\nfrom astropy.modeling import models as m\r\nfrom astropy.modeling.separable import separability_matrix\r\n\r\ncm = m.Linear1D(10) & m.Linear1D(5)\r\n```\r\n\r\nIt's separability matrix as you might expect is a diagonal:\r\n\r\n```python\r\n>>> separability_matrix(cm)\r\narray([[ True, False],\r\n       [False,  True]])\r\n```\r\n\r\nIf I make the model more complex:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & m.Linear1D(10) & m.Linear1D(5))\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True, False],\r\n       [False, False, False,  True]])\r\n```\r\n\r\nThe output matrix is again, as expected, the outputs and inputs to the linear models are separable and independent of each other.\r\n\r\nIf however, I nest these compound models:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & cm)\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True,  True],\r\n       [False, False,  True,  True]])\r\n```\r\nSuddenly the inputs and outputs are no longer separable?\r\n\r\nThis feels like a bug to me, but I might be missing something?\n\n\n\n      The test suite is structured so that:\n      - FAIL_TO_PASS: tests that currently fail, but should pass after your fix.\n        Example / preview: astropy/modeling/tests/test_separable.py::test_separable[compound_model6-result6], astropy/modeling/tests/test_separable.py::test_separable[compound_model9-result9]\n      - PASS_TO_PASS: tests that already pass and must continue to pass.\n        Example / preview: astropy/modeling/tests/test_separable.py::test_coord_matrix, astropy/modeling/tests/test_separable.py::test_cdot, astropy/modeling/tests/test_separable.py::test_cstack, astropy/modeling/tests/test_separable.py::test_arith_oper, astropy/modeling/tests/test_separable.py::test_separable[compound_model0-result0], astropy/modeling/tests/test_separable.py::test_separable[compound_model1-result1], astropy/modeling/tests/test_separable.py::test_separable[compound_model2-result2], astropy/modeling/tests/test_separable.py::test_separable[compound_model3-result3], astropy/modeling/tests/test_separable.py::test_separable[compound_model4-result4], astropy/modeling/tests/test_separable.py::test_separable[compound_model5-result5], astropy/modeling/tests/test_separable.py::test_separable[compound_model7-result7], astropy/modeling/tests/test_separable.py::test_separable[compound_model8-result8], astropy/modeling/tests/test_separable.py::test_custom_model_separable\n\n      Your job is to produce a git patch that fixes the bug while preserving existing behavior.\n\n      IMPORTANT REQUIREMENTS:\n      - Output must be a unified diff (git patch) that can be applied on top of the base commit.\n      - Do NOT include explanations, markdown, or prose in the final answer.\n      - Do NOT modify tests unless absolutely necessary.\n      - Try to keep the patch as small and focused as possible.\n\n      Return ONLY the patch, in standard unified diff format, starting with lines like:\n\n          diff --git a/path/to/file.py b/path/to/file.py\n\nReturn ONLY JSON with keys: plan, patch, explanation.\nNo markdown fences.",
+          "initial_plan": "",
+          "initial_code": "",
+          "final_code": "",
+          "prompt": "Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels\nConsider the following model:\r\n\r\n```python\r\nfrom astropy.modeling import models as m\r\nfrom astropy.modeling.separable import separability_matrix\r\n\r\ncm = m.Linear1D(10) & m.Linear1D(5)\r\n```\r\n\r\nIt's separability matrix as you might expect is a diagonal:\r\n\r\n```python\r\n>>> separability_matrix(cm)\r\narray([[ True, False],\r\n       [False,  True]])\r\n```\r\n\r\nIf I make the model more complex:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & m.Linear1D(10) & m.Linear1D(5))\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True, False],\r\n       [False, False, False,  True]])\r\n```\r\n\r\nThe output matrix is again, as expected, the outputs and inputs to the linear models are separable and independent of each other.\r\n\r\nIf however, I nest these compound models:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & cm)\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True,  True],\r\n       [False, False,  True,  True]])\r\n```\r\nSuddenly the inputs and outputs are no longer separable?\r\n\r\nThis feels like a bug to me, but I might be missing something?\n"
+        }
+      ]
+    },
+    "self_debug_single": {
+      "SWE-bench_LITE::gemini::gemini-2.5-pro": [
+        {
+          "timestamp": "2026-02-09_09-39-22",
+          "benchmark": "SWE-bench_LITE",
+          "task_id": "SWELITE/astropy__astropy-12907",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 1,
+          "num_passed": 1,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": "InvalidPatch",
+          "initial_error_message": "Patch is empty.",
+          "initial_raw_prompt": "TASK (SWE-bench_LITE)\n------------------\nYou are an expert software engineer working on the repository:\n\n          astropy/astropy\n\n      The current codebase is at commit:\n\n          d16bfe05a744909de4b27f5875fe0d4ed41ce607\n\n      A bug has been reported with the following problem statement:\n\n      Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels\nConsider the following model:\r\n\r\n```python\r\nfrom astropy.modeling import models as m\r\nfrom astropy.modeling.separable import separability_matrix\r\n\r\ncm = m.Linear1D(10) & m.Linear1D(5)\r\n```\r\n\r\nIt's separability matrix as you might expect is a diagonal:\r\n\r\n```python\r\n>>> separability_matrix(cm)\r\narray([[ True, False],\r\n       [False,  True]])\r\n```\r\n\r\nIf I make the model more complex:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & m.Linear1D(10) & m.Linear1D(5))\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True, False],\r\n       [False, False, False,  True]])\r\n```\r\n\r\nThe output matrix is again, as expected, the outputs and inputs to the linear models are separable and independent of each other.\r\n\r\nIf however, I nest these compound models:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & cm)\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True,  True],\r\n       [False, False,  True,  True]])\r\n```\r\nSuddenly the inputs and outputs are no longer separable?\r\n\r\nThis feels like a bug to me, but I might be missing something?\n\n\n\n      The test suite is structured so that:\n      - FAIL_TO_PASS: tests that currently fail, but should pass after your fix.\n        Example / preview: astropy/modeling/tests/test_separable.py::test_separable[compound_model6-result6], astropy/modeling/tests/test_separable.py::test_separable[compound_model9-result9]\n      - PASS_TO_PASS: tests that already pass and must continue to pass.\n        Example / preview: astropy/modeling/tests/test_separable.py::test_coord_matrix, astropy/modeling/tests/test_separable.py::test_cdot, astropy/modeling/tests/test_separable.py::test_cstack, astropy/modeling/tests/test_separable.py::test_arith_oper, astropy/modeling/tests/test_separable.py::test_separable[compound_model0-result0], astropy/modeling/tests/test_separable.py::test_separable[compound_model1-result1], astropy/modeling/tests/test_separable.py::test_separable[compound_model2-result2], astropy/modeling/tests/test_separable.py::test_separable[compound_model3-result3], astropy/modeling/tests/test_separable.py::test_separable[compound_model4-result4], astropy/modeling/tests/test_separable.py::test_separable[compound_model5-result5], astropy/modeling/tests/test_separable.py::test_separable[compound_model7-result7], astropy/modeling/tests/test_separable.py::test_separable[compound_model8-result8], astropy/modeling/tests/test_separable.py::test_custom_model_separable\n\n      Your job is to produce a git patch that fixes the bug while preserving existing behavior.\n\n      IMPORTANT REQUIREMENTS:\n      - Output must be a unified diff (git patch) that can be applied on top of the base commit.\n      - Do NOT include explanations, markdown, or prose in the final answer.\n      - Do NOT modify tests unless absolutely necessary.\n      - Try to keep the patch as small and focused as possible.\n\n      Return ONLY the patch, in standard unified diff format, starting with lines like:\n\n          diff --git a/path/to/file.py b/path/to/file.py\n\nReturn ONLY JSON with keys: plan, patch, explanation.\nNo markdown fences.",
+          "initial_plan": "",
+          "initial_code": "",
+          "final_code": "diff --git a/astropy/modeling/separable.py b/astropy/modeling/separable.py\nindex 1234567..89abcde 100644\n--- a/astropy/modeling/separable.py\n+++ b/astropy/modeling/separable.py\n@@ -45,7 +45,7 @@ def separability_matrix(model):\n     # Existing logic to handle simple models\n     if not isinstance(model, CompoundModel):\n         return _compute_simple_separability(model)\n \n-    # Incorrect logic for nested CompoundModels\n-    sub_matrices = [separability_matrix(sub_model) for sub_model in model._submodels]\n+    # Correct logic for nested CompoundModels\n+    sub_matrices = [separability_matrix(sub_model) if isinstance(sub_model, CompoundModel) else _compute_simple_separability(sub_model) for sub_model in model._submodels]\n \n     # Combine sub-matrices into a single separability matrix\n     return _combine_separability_matrices(sub_matrices)",
+          "patch_models_used": [
+            "openai:gpt-4o"
+          ],
+          "patch_explanations": [
+            "The updated patch ensures that each submodel within a CompoundModel is checked for its type and processed accordingly, allowing for correct computation of separability even when models are nested. This addresses the issue where nested models were incorrectly marked as inseparable."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "patch_model": "gpt-4o",
+              "patch_explanation": "The updated patch ensures that each submodel within a CompoundModel is checked for its type and processed accordingly, allowing for correct computation of separability even when models are nested. This addresses the issue where nested models were incorrectly marked as inseparable.",
+              "updated_code": "diff --git a/astropy/modeling/separable.py b/astropy/modeling/separable.py\nindex 1234567..89abcde 100644\n--- a/astropy/modeling/separable.py\n+++ b/astropy/modeling/separable.py\n@@ -45,7 +45,7 @@ def separability_matrix(model):\n     # Existing logic to handle simple models\n     if not isinstance(model, CompoundModel):\n         return _compute_simple_separability(model)\n \n-    # Incorrect logic for nested CompoundModels\n-    sub_matrices = [separability_matrix(sub_model) for sub_model in model._submodels]\n+    # Correct logic for nested CompoundModels\n+    sub_matrices = [separability_matrix(sub_model) if isinstance(sub_model, CompoundModel) else _compute_simple_separability(sub_model) for sub_model in model._submodels]\n \n     # Combine sub-matrices into a single separability matrix\n     return _combine_separability_matrices(sub_matrices)",
+              "exec_result": {
+                "passed": true,
+                "num_tests": 1,
+                "num_passed": 1,
+                "error_type": null,
+                "error_message": null,
+                "traceback_str": null,
+                "stdout": "[SWE] Patch validation: Patch format OK.\n[SWE] Repo: astropy/astropy\n[SWE] Base commit: d16bfe05a744909de4b27f5875fe0d4ed41ce607\n",
+                "stderr": ""
+              }
+            }
+          ],
+          "traceback_str": null,
+          "stdout": "[SWE] Patch validation: Patch format OK.\n[SWE] Repo: astropy/astropy\n[SWE] Base commit: d16bfe05a744909de4b27f5875fe0d4ed41ce607\n",
+          "stderr": "",
+          "prompt": "Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels\nConsider the following model:\r\n\r\n```python\r\nfrom astropy.modeling import models as m\r\nfrom astropy.modeling.separable import separability_matrix\r\n\r\ncm = m.Linear1D(10) & m.Linear1D(5)\r\n```\r\n\r\nIt's separability matrix as you might expect is a diagonal:\r\n\r\n```python\r\n>>> separability_matrix(cm)\r\narray([[ True, False],\r\n       [False,  True]])\r\n```\r\n\r\nIf I make the model more complex:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & m.Linear1D(10) & m.Linear1D(5))\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True, False],\r\n       [False, False, False,  True]])\r\n```\r\n\r\nThe output matrix is again, as expected, the outputs and inputs to the linear models are separable and independent of each other.\r\n\r\nIf however, I nest these compound models:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & cm)\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True,  True],\r\n       [False, False,  True,  True]])\r\n```\r\nSuddenly the inputs and outputs are no longer separable?\r\n\r\nThis feels like a bug to me, but I might be missing something?\n"
+        }
+      ]
+    },
+    "sequential_handoff": {
+      "SWE-bench_LITE::gemini::gemini-2.5-pro": {
+        "2": [
+          {
+            "timestamp": "2026-02-09_09-39-22",
+            "benchmark": "SWE-bench_LITE",
+            "task_id": "SWELITE/astropy__astropy-12907",
+            "provider": "gemini",
+            "model": "gemini-2.5-pro",
+            "mode_tag": "handoff_2agents",
+            "passed": true,
+            "num_tests": 1,
+            "num_passed": 1,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (SWE-bench_LITE)\n------------------\nYou are an expert software engineer working on the repository:\n\n          astropy/astropy\n\n      The current codebase is at commit:\n\n          d16bfe05a744909de4b27f5875fe0d4ed41ce607\n\n      A bug has been reported with the following problem statement:\n\n      Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels\nConsider the following model:\r\n\r\n```python\r\nfrom astropy.modeling import models as m\r\nfrom astropy.modeling.separable import separability_matrix\r\n\r\ncm = m.Linear1D(10) & m.Linear1D(5)\r\n```\r\n\r\nIt's separability matrix as you might expect is a diagonal:\r\n\r\n```python\r\n>>> separability_matrix(cm)\r\narray([[ True, False],\r\n       [False,  True]])\r\n```\r\n\r\nIf I make the model more complex:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & m.Linear1D(10) & m.Linear1D(5))\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True, False],\r\n       [False, False, False,  True]])\r\n```\r\n\r\nThe output matrix is again, as expected, the outputs and inputs to the linear models are separable and independent of each other.\r\n\r\nIf however, I nest these compound models:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & cm)\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True,  True],\r\n       [False, False,  True,  True]])\r\n```\r\nSuddenly the inputs and outputs are no longer separable?\r\n\r\nThis feels like a bug to me, but I might be missing something?\n\n\n\n      The test suite is structured so that:\n      - FAIL_TO_PASS: tests that currently fail, but should pass after your fix.\n        Example / preview: astropy/modeling/tests/test_separable.py::test_separable[compound_model6-result6], astropy/modeling/tests/test_separable.py::test_separable[compound_model9-result9]\n      - PASS_TO_PASS: tests that already pass and must continue to pass.\n        Example / preview: astropy/modeling/tests/test_separable.py::test_coord_matrix, astropy/modeling/tests/test_separable.py::test_cdot, astropy/modeling/tests/test_separable.py::test_cstack, astropy/modeling/tests/test_separable.py::test_arith_oper, astropy/modeling/tests/test_separable.py::test_separable[compound_model0-result0], astropy/modeling/tests/test_separable.py::test_separable[compound_model1-result1], astropy/modeling/tests/test_separable.py::test_separable[compound_model2-result2], astropy/modeling/tests/test_separable.py::test_separable[compound_model3-result3], astropy/modeling/tests/test_separable.py::test_separable[compound_model4-result4], astropy/modeling/tests/test_separable.py::test_separable[compound_model5-result5], astropy/modeling/tests/test_separable.py::test_separable[compound_model7-result7], astropy/modeling/tests/test_separable.py::test_separable[compound_model8-result8], astropy/modeling/tests/test_separable.py::test_custom_model_separable\n\n      Your job is to produce a git patch that fixes the bug while preserving existing behavior.\n\n      IMPORTANT REQUIREMENTS:\n      - Output must be a unified diff (git patch) that can be applied on top of the base commit.\n      - Do NOT include explanations, markdown, or prose in the final answer.\n      - Do NOT modify tests unless absolutely necessary.\n      - Try to keep the patch as small and focused as possible.\n\n      Return ONLY the patch, in standard unified diff format, starting with lines like:\n\n          diff --git a/path/to/file.py b/path/to/file.py\n\nReturn ONLY JSON with keys: plan, patch, explanation.\nNo markdown fences.",
+            "initial_plan": "",
+            "initial_code": "",
+            "final_code": "diff --git a/astropy/modeling/separable.py b/astropy/modeling/separable.py\nindex 1234567..89abcde 100644\n--- a/astropy/modeling/separable.py\n+++ b/astropy/modeling/separable.py\n@@ -45,7 +45,7 @@ def separability_matrix(model):\n     # Existing logic to handle simple models\n     if not isinstance(model, CompoundModel):\n         return _compute_simple_separability(model)\n \n-    # Incorrect logic for nested CompoundModels\n-    sub_matrices = [separability_matrix(sub_model) for sub_model in model._submodels]\n+    # Correct logic for nested CompoundModels\n+    sub_matrices = [separability_matrix(sub_model) if isinstance(sub_model, CompoundModel) else _compute_simple_separability(sub_model) for sub_model in model._submodels]\n \n     # Combine sub-matrices into a single separability matrix\n     return _combine_separability_matrices(sub_matrices)",
+            "patch_models_used": [],
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "Modeling's `separability_matrix` does not compute separability correctly for nested CompoundModels\nConsider the following model:\r\n\r\n```python\r\nfrom astropy.modeling import models as m\r\nfrom astropy.modeling.separable import separability_matrix\r\n\r\ncm = m.Linear1D(10) & m.Linear1D(5)\r\n```\r\n\r\nIt's separability matrix as you might expect is a diagonal:\r\n\r\n```python\r\n>>> separability_matrix(cm)\r\narray([[ True, False],\r\n       [False,  True]])\r\n```\r\n\r\nIf I make the model more complex:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & m.Linear1D(10) & m.Linear1D(5))\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True, False],\r\n       [False, False, False,  True]])\r\n```\r\n\r\nThe output matrix is again, as expected, the outputs and inputs to the linear models are separable and independent of each other.\r\n\r\nIf however, I nest these compound models:\r\n```python\r\n>>> separability_matrix(m.Pix2Sky_TAN() & cm)\r\narray([[ True,  True, False, False],\r\n       [ True,  True, False, False],\r\n       [False, False,  True,  True],\r\n       [False, False,  True,  True]])\r\n```\r\nSuddenly the inputs and outputs are no longer separable?\r\n\r\nThis feels like a bug to me, but I might be missing something?\n",
+            "skipped_reason": "self_debug_solved"
+          }
+        ]
+      }
+    }
+  },
+  "artifacts": {
+    "run_dir": "results/run_2026-02-09_09-39-22",
+    "plots_dir": "results/run_2026-02-09_09-39-22/plots",
+    "plots": {
+      "pass_rates": [
+        "results/run_2026-02-09_09-39-22/plots/pass_rates_SWE-bench_LITE_clean.png"
+      ],
+      "improvement_vs_k": [
+        "results/run_2026-02-09_09-39-22/plots/improvement_vs_k_SWE-bench_LITE.png"
+      ]
+    },
+    "summary_report_text": [
+      "SWE-bench_LITE on gemini:gemini-2.5-pro",
+      "Baseline: 0/1 (0.00%)",
+      "Self-debug (only on failures): 1/1 (100.00%)",
+      "Handoff (2): 1/1 (100.00%)"
+    ]
+  },
+  "summary_report_text": [
+    "SWE-bench_LITE on gemini:gemini-2.5-pro",
+    "Baseline: 0/1 (0.00%)",
+    "Self-debug (only on failures): 1/1 (100.00%)",
+    "Handoff (2): 1/1 (100.00%)"
+  ]
+}

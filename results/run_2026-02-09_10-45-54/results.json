@@ -1,0 +1,246 @@
+{
+  "timestamp": "2026-02-09_10-45-54",
+  "config": {
+    "benchmarks": [
+      "HumanEval"
+    ],
+    "configs": [
+      [
+        "gemini",
+        "gemini-2.5-pro"
+      ]
+    ],
+    "max_tasks": 3,
+    "max_self_debug_iters": 1,
+    "single_patch_model": "gpt-4o",
+    "patch_pool": [
+      {
+        "provider": "openai",
+        "model": "gpt-4.1-mini"
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-4.1"
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-5-mini"
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-5"
+      }
+    ],
+    "k_values": [
+      2
+    ],
+    "openai_default_model": "gpt-4o",
+    "gemini_default_model": "gemini-2.0-flash"
+  },
+  "summaries": [
+    {
+      "mode_tag": "baseline",
+      "benchmark": "HumanEval",
+      "provider": "gemini",
+      "model": "gemini-2.5-pro",
+      "mode": "baseline",
+      "num_tasks": 3,
+      "num_passed": 0,
+      "pass_rate": 0.0,
+      "details": [
+        {
+          "timestamp": "2026-02-09_10-45-54",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 7,
+          "num_passed": 6,
+          "artifact": "",
+          "error_type": "NameError",
+          "error_message": "name 'code' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1, in <module>\nNameError: name 'code' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "1. The problem asks to find if any two numbers in a list have a difference smaller than a given threshold.\n2. A naive approach would be to compare every pair of numbers, which would take O(n^2) time.\n3. A more efficient approach is to first sort the list of numbers. If any two numbers are close, then after sorting, there must be two adjacent numbers that are close.\n4. So, the plan is to sort the input list `numbers` in ascending order.\n5. Then, iterate through the sorted list once, from the first element to the second-to-last element.\n6. In each iteration, calculate the difference between the current element and the next element.\n7. If this difference is less than the `threshold`, we have found a pair that satisfies the condition, so we can immediately return `True`.\n8. If the loop finishes without finding such a pair, it means no two elements are closer than the threshold, and we should return `False`.",
+          "initial_code": "code",
+          "final_code": "code",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-09_10-45-54",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 4,
+          "num_passed": 3,
+          "artifact": "",
+          "error_type": "NameError",
+          "error_message": "name 'code' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1, in <module>\nNameError: name 'code' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "1. Sanitize the input string by removing all spaces to simplify processing.\n2. Initialize an empty list `groups` to store the final separated parenthetical groups.\n3. Initialize an empty string `current_group` to build the string for the current group being processed.\n4. Initialize a counter `balance` to 0. This counter will track the nesting level of parentheses.\n5. Iterate through each character of the sanitized string.\n6. For each character:\n   a. Append the character to the `current_group` string.\n   b. If the character is an opening parenthesis '(', increment the `balance` counter.\n   c. If the character is a closing parenthesis ')', decrement the `balance` counter.\n   d. After updating the counter, check if it has returned to 0. A balance of 0 signifies that a complete, top-level parenthetical group has been formed.\n   e. If `balance` is 0, add the `current_group` to the `groups` list and reset `current_group` to an empty string to prepare for the next group.\n7. After the loop completes, return the `groups` list.",
+          "initial_code": "code",
+          "final_code": "code",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-09_10-45-54",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/2",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 3,
+          "num_passed": 2,
+          "artifact": "",
+          "error_type": "NameError",
+          "error_message": "name 'code' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1, in <module>\nNameError: name 'code' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\n\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "1. The function takes a positive floating-point number as input.\n2. The problem defines the number as having an integer part and a decimal part.\n3. To isolate the decimal part, we first need to find the integer part.\n4. For a positive float, casting it to an integer using `int()` truncates the decimal places, effectively giving us the integer part.\n5. Subtract this integer part from the original number.\n6. The result of the subtraction is the decimal part, which should be returned.",
+          "initial_code": "code",
+          "final_code": "code",
+          "prompt": "\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n"
+        }
+      ]
+    },
+    {
+      "mode_tag": "self_debug_single",
+      "benchmark": "HumanEval",
+      "provider": "gemini",
+      "model": "gemini-2.5-pro",
+      "mode": "self_debug_single",
+      "num_tasks": 0,
+      "num_passed": 0,
+      "pass_rate": 0.0,
+      "details": []
+    },
+    {
+      "mode_tag": "handoff_2agents",
+      "benchmark": "HumanEval",
+      "provider": "gemini",
+      "model": "gemini-2.5-pro",
+      "mode": "handoff_2agents",
+      "num_tasks": 0,
+      "num_passed": 0,
+      "pass_rate": 0.0,
+      "details": []
+    }
+  ],
+  "details": {
+    "baseline": {
+      "HumanEval::gemini::gemini-2.5-pro": [
+        {
+          "timestamp": "2026-02-09_10-45-54",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 7,
+          "num_passed": 6,
+          "artifact": "",
+          "error_type": "NameError",
+          "error_message": "name 'code' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1, in <module>\nNameError: name 'code' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "1. The problem asks to find if any two numbers in a list have a difference smaller than a given threshold.\n2. A naive approach would be to compare every pair of numbers, which would take O(n^2) time.\n3. A more efficient approach is to first sort the list of numbers. If any two numbers are close, then after sorting, there must be two adjacent numbers that are close.\n4. So, the plan is to sort the input list `numbers` in ascending order.\n5. Then, iterate through the sorted list once, from the first element to the second-to-last element.\n6. In each iteration, calculate the difference between the current element and the next element.\n7. If this difference is less than the `threshold`, we have found a pair that satisfies the condition, so we can immediately return `True`.\n8. If the loop finishes without finding such a pair, it means no two elements are closer than the threshold, and we should return `False`.",
+          "initial_code": "code",
+          "final_code": "code",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-09_10-45-54",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 4,
+          "num_passed": 3,
+          "artifact": "",
+          "error_type": "NameError",
+          "error_message": "name 'code' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1, in <module>\nNameError: name 'code' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "1. Sanitize the input string by removing all spaces to simplify processing.\n2. Initialize an empty list `groups` to store the final separated parenthetical groups.\n3. Initialize an empty string `current_group` to build the string for the current group being processed.\n4. Initialize a counter `balance` to 0. This counter will track the nesting level of parentheses.\n5. Iterate through each character of the sanitized string.\n6. For each character:\n   a. Append the character to the `current_group` string.\n   b. If the character is an opening parenthesis '(', increment the `balance` counter.\n   c. If the character is a closing parenthesis ')', decrement the `balance` counter.\n   d. After updating the counter, check if it has returned to 0. A balance of 0 signifies that a complete, top-level parenthetical group has been formed.\n   e. If `balance` is 0, add the `current_group` to the `groups` list and reset `current_group` to an empty string to prepare for the next group.\n7. After the loop completes, return the `groups` list.",
+          "initial_code": "code",
+          "final_code": "code",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-02-09_10-45-54",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/2",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 3,
+          "num_passed": 2,
+          "artifact": "",
+          "error_type": "NameError",
+          "error_message": "name 'code' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1, in <module>\nNameError: name 'code' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\n\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "1. The function takes a positive floating-point number as input.\n2. The problem defines the number as having an integer part and a decimal part.\n3. To isolate the decimal part, we first need to find the integer part.\n4. For a positive float, casting it to an integer using `int()` truncates the decimal places, effectively giving us the integer part.\n5. Subtract this integer part from the original number.\n6. The result of the subtraction is the decimal part, which should be returned.",
+          "initial_code": "code",
+          "final_code": "code",
+          "prompt": "\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    \"\"\"\n"
+        }
+      ]
+    },
+    "self_debug_single": {
+      "HumanEval::gemini::gemini-2.5-pro": []
+    },
+    "sequential_handoff": {
+      "HumanEval::gemini::gemini-2.5-pro": {
+        "2": []
+      }
+    }
+  },
+  "artifacts": {
+    "run_dir": "results/run_2026-02-09_10-45-54",
+    "plots_dir": "results/run_2026-02-09_10-45-54/plots",
+    "plots": {
+      "pass_rates": [
+        "results/run_2026-02-09_10-45-54/plots/pass_rates_HumanEval_clean.png"
+      ],
+      "improvement_vs_k": [
+        "results/run_2026-02-09_10-45-54/plots/improvement_vs_k_HumanEval.png"
+      ]
+    },
+    "summary_report_text": [
+      "HumanEval on gemini:gemini-2.5-pro",
+      "Baseline: 0/3 (0.00%)",
+      "Self-debug (only on failures): 0/0 (0.00%)",
+      "Handoff (2): 0/0 (0.00%)"
+    ]
+  },
+  "summary_report_text": [
+    "HumanEval on gemini:gemini-2.5-pro",
+    "Baseline: 0/3 (0.00%)",
+    "Self-debug (only on failures): 0/0 (0.00%)",
+    "Handoff (2): 0/0 (0.00%)"
+  ]
+}

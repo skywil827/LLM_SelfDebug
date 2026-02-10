@@ -1,0 +1,158 @@
+{
+  "timestamp": "2026-02-09_10-44-47",
+  "config": {
+    "benchmarks": [
+      "HumanEval"
+    ],
+    "configs": [
+      [
+        "gemini",
+        "gemini-2.5-pro"
+      ]
+    ],
+    "max_tasks": 1,
+    "max_self_debug_iters": 1,
+    "single_patch_model": "gpt-4o",
+    "patch_pool": [
+      {
+        "provider": "openai",
+        "model": "gpt-4.1-mini"
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-4.1"
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-5-mini"
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-5"
+      }
+    ],
+    "k_values": [
+      2
+    ],
+    "openai_default_model": "gpt-4o",
+    "gemini_default_model": "gemini-2.0-flash"
+  },
+  "summaries": [
+    {
+      "mode_tag": "baseline",
+      "benchmark": "HumanEval",
+      "provider": "gemini",
+      "model": "gemini-2.5-pro",
+      "mode": "baseline",
+      "num_tasks": 1,
+      "num_passed": 0,
+      "pass_rate": 0.0,
+      "details": [
+        {
+          "timestamp": "2026-02-09_10-44-47",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 7,
+          "num_passed": 6,
+          "artifact": "",
+          "error_type": "NameError",
+          "error_message": "name 'code' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1, in <module>\nNameError: name 'code' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "1. Sort the input list `numbers` in ascending order. Sorting brings numbers that are close in value next to each other.\n2. Iterate through the sorted list from the first element up to the second-to-last element.\n3. In each iteration, calculate the difference between the current element and the one immediately following it (`numbers[i+1] - numbers[i]`).\n4. If this difference is less than the `threshold`, it means a pair of close elements has been found, and the function can immediately return `True`.\n5. If the loop completes without finding any pair closer than the threshold, it means no such pair exists. The function should then return `False`.",
+          "initial_code": "code",
+          "final_code": "code",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        }
+      ]
+    },
+    {
+      "mode_tag": "self_debug_single",
+      "benchmark": "HumanEval",
+      "provider": "gemini",
+      "model": "gemini-2.5-pro",
+      "mode": "self_debug_single",
+      "num_tasks": 0,
+      "num_passed": 0,
+      "pass_rate": 0.0,
+      "details": []
+    },
+    {
+      "mode_tag": "handoff_2agents",
+      "benchmark": "HumanEval",
+      "provider": "gemini",
+      "model": "gemini-2.5-pro",
+      "mode": "handoff_2agents",
+      "num_tasks": 0,
+      "num_passed": 0,
+      "pass_rate": 0.0,
+      "details": []
+    }
+  ],
+  "details": {
+    "baseline": {
+      "HumanEval::gemini::gemini-2.5-pro": [
+        {
+          "timestamp": "2026-02-09_10-44-47",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "gemini",
+          "model": "gemini-2.5-pro",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 7,
+          "num_passed": 6,
+          "artifact": "",
+          "error_type": "NameError",
+          "error_message": "name 'code' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1, in <module>\nNameError: name 'code' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn ONLY JSON with keys: plan, code, explanation.\nNo markdown fences.",
+          "initial_plan": "1. Sort the input list `numbers` in ascending order. Sorting brings numbers that are close in value next to each other.\n2. Iterate through the sorted list from the first element up to the second-to-last element.\n3. In each iteration, calculate the difference between the current element and the one immediately following it (`numbers[i+1] - numbers[i]`).\n4. If this difference is less than the `threshold`, it means a pair of close elements has been found, and the function can immediately return `True`.\n5. If the loop completes without finding any pair closer than the threshold, it means no such pair exists. The function should then return `False`.",
+          "initial_code": "code",
+          "final_code": "code",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        }
+      ]
+    },
+    "self_debug_single": {
+      "HumanEval::gemini::gemini-2.5-pro": []
+    },
+    "sequential_handoff": {
+      "HumanEval::gemini::gemini-2.5-pro": {
+        "2": []
+      }
+    }
+  },
+  "artifacts": {
+    "run_dir": "results/run_2026-02-09_10-44-47",
+    "plots_dir": "results/run_2026-02-09_10-44-47/plots",
+    "plots": {
+      "pass_rates": [
+        "results/run_2026-02-09_10-44-47/plots/pass_rates_HumanEval_clean.png"
+      ],
+      "improvement_vs_k": [
+        "results/run_2026-02-09_10-44-47/plots/improvement_vs_k_HumanEval.png"
+      ]
+    },
+    "summary_report_text": [
+      "HumanEval on gemini:gemini-2.5-pro",
+      "Baseline: 0/1 (0.00%)",
+      "Self-debug (only on failures): 0/0 (0.00%)",
+      "Handoff (2): 0/0 (0.00%)"
+    ]
+  },
+  "summary_report_text": [
+    "HumanEval on gemini:gemini-2.5-pro",
+    "Baseline: 0/1 (0.00%)",
+    "Self-debug (only on failures): 0/0 (0.00%)",
+    "Handoff (2): 0/0 (0.00%)"
+  ]
+}

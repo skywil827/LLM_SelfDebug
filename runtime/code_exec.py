@@ -69,6 +69,7 @@ class ExecutionResult:
     traceback_str: Optional[str]
     stdout: str
     stderr: str
+    patch: str
 
 
 def _get_task_identity(task) -> tuple[str, str]:
@@ -131,6 +132,7 @@ def _run_code_with_test_code(
         passed=passed,
         num_tests=num_tests,
         num_passed=num_passed,
+        patch="", # Testing
         error_type=err_type,
         error_message=err_msg,
         traceback_str=tb_str,
@@ -162,6 +164,7 @@ def _run_apps_code(task: APPSTask, code: str) -> ExecutionResult:
                 passed=False,
                 num_tests=0,
                 num_passed=0,
+                patch="", # Testing
                 error_type=type(e).__name__,
                 error_message=str(e),
                 traceback_str=traceback.format_exc(),
@@ -183,6 +186,7 @@ def _run_apps_code(task: APPSTask, code: str) -> ExecutionResult:
                     passed=False,
                     num_tests=0,
                     num_passed=0,
+                    patch="", # Testing
                     error_type="NameError",
                     error_message=f"Function '{fn_name}' not found.",
                     traceback_str=None,
@@ -203,6 +207,7 @@ def _run_apps_code(task: APPSTask, code: str) -> ExecutionResult:
                             passed=False,
                             num_tests=num_tests,
                             num_passed=num_passed,
+                            patch="", # Testing
                             error_type="AssertionError",
                             error_message=f"Expected {expected}, got {got}",
                             traceback_str=None,
@@ -216,6 +221,7 @@ def _run_apps_code(task: APPSTask, code: str) -> ExecutionResult:
                         passed=False,
                         num_tests=num_tests,
                         num_passed=num_passed,
+                        patch="", # Testing
                         error_type=type(e).__name__,
                         error_message=str(e),
                         traceback_str=traceback.format_exc(),
@@ -234,6 +240,7 @@ def _run_apps_code(task: APPSTask, code: str) -> ExecutionResult:
         passed=passed,
         num_tests=num_tests,
         num_passed=num_passed,
+        patch="", # Testing
         error_type=err_type,
         error_message=err_msg,
         traceback_str=tb_str,
@@ -254,6 +261,7 @@ _UNIFIED_DIFF_RE = re.compile(
 def _validate_unified_diff(patch_text: str) -> Tuple[bool, str]:
     if patch_text is None:
         return False, "Patch is None."
+    
     t = str(patch_text).strip()
     if not t:
         return False, "Patch is empty."
@@ -289,6 +297,7 @@ def execute_swe_task_patch(task: SWELITETask, patch: str) -> ExecutionResult:
         passed=passed,
         num_tests=num_tests,
         num_passed=num_passed,
+        patch=patch,
         error_type=err_type,
         error_message=err_msg,
         traceback_str=None,
@@ -328,6 +337,7 @@ def execute_task_code(task: TaskType, code: str) -> ExecutionResult:
                 passed=True,
                 num_tests=0,
                 num_passed=0,
+                patch="", # Testing
                 error_type=None,
                 error_message=None,
                 traceback_str=None,
@@ -341,6 +351,7 @@ def execute_task_code(task: TaskType, code: str) -> ExecutionResult:
                 passed=False,
                 num_tests=0,
                 num_passed=0,
+                patch="", # Testing
                 error_type=type(e).__name__,
                 error_message=str(e),
                 traceback_str=traceback.format_exc(),

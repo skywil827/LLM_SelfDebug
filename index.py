@@ -173,6 +173,7 @@ def generate_initial_code_with_openai(task: TaskType, model: str = OPENAI_MODEL)
     if isinstance(task, SWELITETask):
         base_prompt = build_swe_prompt(task)
         artifact_key = "patch"
+
         response_schema = """
         {
           "plan": "...",
@@ -207,15 +208,14 @@ def generate_initial_code_with_openai(task: TaskType, model: str = OPENAI_MODEL)
     )
 
     user_instructions = f"""
-TASK ({benchmark})
-------------------
-{base_prompt}
+        TASK ({benchmark})
+        ------------------
+        {base_prompt}
 
-Return JSON:
-{response_schema}
+        Return JSON:
+        {response_schema}
 
-{constraints_block}
-""".strip()
+        """.strip()
 
     response = openai_client.chat.completions.create(
         model=model,
@@ -246,31 +246,65 @@ Return JSON:
 
 def generate_initial_code_with_gemini(task: TaskType, model: str = GOOGLE_MODEL) -> InitialCodeResult:
     benchmark, tid = _get_task_identity(task)
+    # expected_key = ""
 
     if isinstance(task, SWELITETask):
         base_prompt = build_swe_prompt(task)
         expected_key = "patch"
+
+        response_schema = """
+        {
+          "plan": "...",
+          "patch": "...",
+          "explanation": "..."
+        }
+        """
+        constraints_block = """
+        Constraints:
+        - The "patch" MUST be a valid unified diff starting with: diff --git a/... b/...
+        - Do NOT include backticks or Markdown fences.
+        """
     else:
         base_prompt = task.build_prompt()
         expected_key = "code"
 
-    user_instructions = f"""
-TASK ({benchmark})
-------------------
-{base_prompt}
+        response_schema = """
+        {
+          "plan": "...",
+          "code": "...",
+          "explanation": "..."
+        }
+        """
+        constraints_block = """
+        Constraints:
+        - The "code" MUST be valid Python.
+        - Do NOT include backticks or Markdown fences.
+        """
 
-Return ONLY JSON with keys: plan, {expected_key}, explanation.
-No markdown fences.
-""".strip()
+    user_instructions = f"""
+        TASK ({benchmark})
+        ------------------
+        {base_prompt}
+
+        Return JSON:
+        {response_schema}
+
+        """.strip()
+
+
+    # Return ONLY JSON with keys: plan, {expected_key}, explanation.
+    # No markdown fences.
+    # """.strip()
 
     response = gemini_client.models.generate_content(
         model=model,
         contents=types.Part.from_text(text=user_instructions),
-        config=types.GenerateContentConfig(temperature=0.3),
+        # config=types.GenerateContentConfig(temperature=0.3),
     )
 
     content = getattr(response, "text", "") or str(response)
     content = content.strip()
+
     if content.startswith("```"):
         lines = content.splitlines()[1:]
         if lines and lines[-1].strip().startswith("```"):
@@ -714,13 +748,13 @@ if __name__ == "__main__":
     print("=" * 80)
 
     configs = [
-        ("gemini", "gemini-2.5-pro"),
-        # ("openai", "gpt-4o"),
+        # ("gemini", "gemini-3-flash-preview"),
+        ("openai", "gpt-4o"),
     ]
     # benchmarks = ["HumanEval", "MBPP", "APPS", "SWE-bench_LITE"]
-    benchmarks = ["MBPP"]
-    max_tasks = 3
-    max_self_debug_iters = 2
+    benchmarks = ["SWE-bench_LITE"]
+    max_tasks = 200
+    max_self_debug_iters = 5
 
     single_patch_model = "gpt-4o"
 
@@ -730,7 +764,7 @@ if __name__ == "__main__":
         AgentSpec("openai", "gpt-5-mini"),
         AgentSpec("openai", "gpt-5"),
     ]
-    k_values = [2]
+    k_values = [2,3]
 
     all_results: List[Tuple[str, Dict[str, Any]]] = []
     all_details: Dict[str, Any] = {"baseline": {}, "self_debug_single": {}, "sequential_handoff": {}}
@@ -754,6 +788,11 @@ if __name__ == "__main__":
                 # 1) initial generation
                 init = generate_initial(task, provider, model_name)
                 candidate = init.code
+                # print(init)
+                # print("==" * 30)
+                # print(init.code)
+
+                # break
 
                 print("Initial raw prompt:\n")
                 print(init.raw_prompt)
@@ -761,7 +800,7 @@ if __name__ == "__main__":
                 print("\n\nInitial plan:")
                 print(init.plan if init.plan.strip() else "(none)")
 
-                print("\n\nInitial code:")
+                print("\n\nInitial code: ------------")
                 print(candidate if str(candidate).strip() else "(empty)")
 
                 # 2) baseline
@@ -783,6 +822,7 @@ if __name__ == "__main__":
                         "passed": base_exec.passed,
                         "num_tests": base_exec.num_tests,
                         "num_passed": base_exec.num_passed,
+                        "artifact": base_exec.patch,
                         "error_type": base_exec.error_type,
                         "error_message": base_exec.error_message,
                         "traceback_str": base_exec.traceback_str,

@@ -157,7 +157,6 @@ def generate_patched_code_with_openai(
             {"role": "system", "content": system_msg},
             {"role": "user", "content": user_msg},
         ],
-        temperature=0.2,
     )
 
     content = response.choices[0].message.content

@@ -113,6 +113,8 @@ def build_swe_prompt(task: SWELITETask) -> str:
 
   fail_tests_preview = ", ".join(task.fail_to_pass[:200]) or "Tests listed in FAIL_TO_PASS"
   pass_tests_preview = ", ".join(task.pass_to_pass[:200]) or "Existing passing tests in PASS_TO_PASS"
+  # fail_tests = ", ".join(task.fail_to_pass) or "Tests listed in FAIL_TO_PASS"
+  # pass_tests = ", ".join(task.pass_to_pass) or "Existing passing tests in PASS_TO_PASS"
   # pass_tests_preview = type(task.pass_to_pass)
 
   
