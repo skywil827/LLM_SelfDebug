@@ -7,6 +7,7 @@ from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv
 from openai import OpenAI
+import anthropic
 from google import genai
 from google.genai import types
 from datasets import load_dataset
@@ -111,15 +112,19 @@ def save_experiment_results(
 load_dotenv(override=True)
 openai_api_key = os.getenv("OPENAI_API_KEY")
 google_api_key = os.getenv("GOOGLE_API_KEY")
+anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
 
 openai_client = OpenAI()
 gemini_client = genai.Client(api_key=google_api_key)
+claude = anthropic.Anthropic()
 
 OPENAI_MODEL = "gpt-4o"
-GOOGLE_MODEL = "gemini-2.0-flash"
+GOOGLE_MODEL = "gemini-3-flash-preview"
+CLAUDE_MODEL = "claude-haiku-4-5-20251001"
 
 TaskType = Union[HumanEvalTask, MBPPTask, APPSTask, SWELITETask]
-Provider = Literal["openai", "gemini"]
+# Provider = Literal["openai", "gemini"]
+Provider = Literal["openai", "gemini", "anthropic"]
 
 
 @dataclass(frozen=True)
@@ -166,7 +171,7 @@ def _get_task_identity(task) -> tuple[str, str]:
 
 
 
-# Initial generation (OpenAI / Gemini)
+# Initial generation (OpenAI / Gemini / Claude)
 def generate_initial_code_with_openai(task: TaskType, model: str = OPENAI_MODEL) -> InitialCodeResult:
     benchmark, tid = _get_task_identity(task)
 
@@ -330,12 +335,92 @@ def generate_initial_code_with_gemini(task: TaskType, model: str = GOOGLE_MODEL)
     )
 
 
+def generate_initial_code_with_claude(task: TaskType, model: str = CLAUDE_MODEL) -> InitialCodeResult:
+    benchmark, tid = _get_task_identity(task)
+
+    if isinstance(task, SWELITETask):
+        base_prompt = build_swe_prompt(task)
+        artifact_key = "patch"
+
+        response_schema = """
+        {
+          "plan": "...",
+          "patch": "...",
+          "explanation": "..."
+        }
+        """
+        constraints_block = """
+        Constraints:
+        - The "patch" MUST be a valid unified diff starting with: diff --git a/... b/...
+        - Do NOT include backticks or Markdown fences.
+        """
+    else:
+        base_prompt = task.build_prompt()
+        artifact_key = "code"
+        response_schema = """
+        {
+          "plan": "...",
+          "code": "...",
+          "explanation": "..."
+        }
+        """
+        constraints_block = """
+        Constraints:
+        - The "code" MUST be valid Python.
+        - Do NOT include backticks or Markdown fences.
+        """
+
+    system_msg = (
+        "You are a highly reliable coding assistant. "
+        "Follow the schema and return JSON only."
+    )
+
+    user_instructions = f"""
+        TASK ({benchmark})
+        ------------------
+        {base_prompt}
+
+        Return JSON:
+        {response_schema}
+
+        """.strip()
+
+    response = claude.messages.create(
+        model=model,
+        max_tokens=1000,
+        system=system_msg,
+        messages=[
+            {"role": "user", "content": user_instructions},
+        ],
+    )
+
+    content = response.content[0].text
+    try:
+        parsed = json.loads(content)
+    except json.JSONDecodeError:
+        parsed = {"plan": "", artifact_key: "", "explanation": content}
+
+    return InitialCodeResult(
+        benchmark=benchmark,
+        task_id=tid,
+        model=model,
+        plan=str(parsed.get("plan", "") or "").strip(),
+        code=str(parsed.get(artifact_key, "") or "").strip(),
+        explanation=str(parsed.get("explanation", "") or "").strip(),
+        raw_response=response.model_dump() if hasattr(response, "model_dump") else {"raw": str(response)},
+        raw_prompt=user_instructions,
+    )
+
+
 def generate_initial(task: TaskType, provider: str, model_name: str) -> InitialCodeResult:
     if provider == "openai":
         return generate_initial_code_with_openai(task, model=model_name)
-    if provider == "gemini":
+    elif provider == "gemini":
         return generate_initial_code_with_gemini(task, model=model_name)
-    raise ValueError(f"Unknown provider: {provider}")
+    elif provider == "anthropic":
+        return generate_initial_code_with_claude(task, model=model_name)
+    else:
+        raise ValueError(f"Unknown provider: {provider}")
 
 
 def _print_task_header(task_idx: int) -> None:
@@ -749,12 +834,13 @@ if __name__ == "__main__":
 
     configs = [
         # ("gemini", "gemini-3-flash-preview"),
-        ("openai", "gpt-4o"),
+        # ("openai", "gpt-4o"),
+        ("anthropic", "claude-haiku-4-5-2025100"),
     ]
     # benchmarks = ["HumanEval", "MBPP", "APPS", "SWE-bench_LITE"]
-    benchmarks = ["SWE-bench_LITE"]
-    max_tasks = 200
-    max_self_debug_iters = 5
+    benchmarks = ["HumanEval"]
+    max_tasks = 1
+    max_self_debug_iters = 0
 
     single_patch_model = "gpt-4o"
 
@@ -764,7 +850,7 @@ if __name__ == "__main__":
         AgentSpec("openai", "gpt-5-mini"),
         AgentSpec("openai", "gpt-5"),
     ]
-    k_values = [2,3]
+    k_values = [2]
 
     all_results: List[Tuple[str, Dict[str, Any]]] = []
     all_details: Dict[str, Any] = {"baseline": {}, "self_debug_single": {}, "sequential_handoff": {}}

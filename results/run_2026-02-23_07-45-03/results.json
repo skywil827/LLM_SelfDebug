@@ -1,0 +1,256 @@
+{
+  "timestamp": "2026-02-23_07-45-03",
+  "config": {
+    "benchmarks": [
+      "HumanEval"
+    ],
+    "configs": [
+      [
+        "anthropic",
+        "claude-opus-4-6"
+      ]
+    ],
+    "max_tasks": 1,
+    "max_self_debug_iters": 0,
+    "single_patch_model": "gpt-4o",
+    "patch_pool": [
+      {
+        "provider": "openai",
+        "model": "gpt-4.1-mini"
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-4.1"
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-5-mini"
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-5"
+      }
+    ],
+    "k_values": [
+      2
+    ],
+    "openai_default_model": "gpt-4o",
+    "gemini_default_model": "gemini-2.0-flash"
+  },
+  "summaries": [
+    {
+      "mode_tag": "baseline",
+      "benchmark": "HumanEval",
+      "provider": "anthropic",
+      "model": "claude-opus-4-6",
+      "mode": "baseline",
+      "num_tasks": 1,
+      "num_passed": 1,
+      "pass_rate": 1.0,
+      "details": [
+        {
+          "timestamp": "2026-02-23_07-45-03",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "anthropic",
+          "model": "claude-opus-4-6",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "artifact": "",
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\n        Return JSON:\n        \n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }",
+          "initial_plan": "Iterate through all pairs of numbers in the list and check if the absolute difference between any pair is less than the given threshold. If so, return True. Otherwise, return False.",
+          "initial_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False",
+          "final_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        }
+      ]
+    },
+    {
+      "mode_tag": "self_debug_single",
+      "benchmark": "HumanEval",
+      "provider": "anthropic",
+      "model": "claude-opus-4-6",
+      "mode": "self_debug_single",
+      "num_tasks": 1,
+      "num_passed": 1,
+      "pass_rate": 1.0,
+      "details": [
+        {
+          "timestamp": "2026-02-23_07-45-03",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "anthropic",
+          "model": "claude-opus-4-6",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\n        Return JSON:\n        \n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }",
+          "initial_plan": "Iterate through all pairs of numbers in the list and check if the absolute difference between any pair is less than the given threshold. If so, return True. Otherwise, return False.",
+          "initial_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False",
+          "final_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        }
+      ]
+    },
+    {
+      "mode_tag": "handoff_2agents",
+      "benchmark": "HumanEval",
+      "provider": "anthropic",
+      "model": "claude-opus-4-6",
+      "mode": "handoff_2agents",
+      "num_tasks": 1,
+      "num_passed": 1,
+      "pass_rate": 1.0,
+      "details": [
+        {
+          "timestamp": "2026-02-23_07-45-03",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "anthropic",
+          "model": "claude-opus-4-6",
+          "mode_tag": "handoff_2agents",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\n        Return JSON:\n        \n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }",
+          "initial_plan": "Iterate through all pairs of numbers in the list and check if the absolute difference between any pair is less than the given threshold. If so, return True. Otherwise, return False.",
+          "initial_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False",
+          "final_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        }
+      ]
+    }
+  ],
+  "details": {
+    "baseline": {
+      "HumanEval::anthropic::claude-opus-4-6": [
+        {
+          "timestamp": "2026-02-23_07-45-03",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "anthropic",
+          "model": "claude-opus-4-6",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "artifact": "",
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\n        Return JSON:\n        \n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }",
+          "initial_plan": "Iterate through all pairs of numbers in the list and check if the absolute difference between any pair is less than the given threshold. If so, return True. Otherwise, return False.",
+          "initial_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False",
+          "final_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        }
+      ]
+    },
+    "self_debug_single": {
+      "HumanEval::anthropic::claude-opus-4-6": [
+        {
+          "timestamp": "2026-02-23_07-45-03",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "anthropic",
+          "model": "claude-opus-4-6",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\n        Return JSON:\n        \n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }",
+          "initial_plan": "Iterate through all pairs of numbers in the list and check if the absolute difference between any pair is less than the given threshold. If so, return True. Otherwise, return False.",
+          "initial_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False",
+          "final_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        }
+      ]
+    },
+    "sequential_handoff": {
+      "HumanEval::anthropic::claude-opus-4-6": {
+        "2": [
+          {
+            "timestamp": "2026-02-23_07-45-03",
+            "benchmark": "HumanEval",
+            "task_id": "HumanEval/0",
+            "provider": "anthropic",
+            "model": "claude-opus-4-6",
+            "mode_tag": "handoff_2agents",
+            "passed": true,
+            "num_tests": 7,
+            "num_passed": 7,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\n        Return JSON:\n        \n        {\n          \"plan\": \"...\",\n          \"code\": \"...\",\n          \"explanation\": \"...\"\n        }",
+            "initial_plan": "Iterate through all pairs of numbers in the list and check if the absolute difference between any pair is less than the given threshold. If so, return True. Otherwise, return False.",
+            "initial_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False",
+            "final_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False",
+            "patch_models_used": [],
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+          }
+        ]
+      }
+    }
+  },
+  "artifacts": {
+    "run_dir": "results/run_2026-02-23_07-45-03",
+    "plots_dir": "results/run_2026-02-23_07-45-03/plots",
+    "plots": {
+      "pass_rates": [
+        "results/run_2026-02-23_07-45-03/plots/pass_rates_HumanEval_clean.png"
+      ],
+      "improvement_vs_k": [
+        "results/run_2026-02-23_07-45-03/plots/improvement_vs_k_HumanEval.png"
+      ]
+    },
+    "summary_report_text": [
+      "HumanEval on anthropic:claude-opus-4-6",
+      "Baseline: 1/1 (100.00%)",
+      "Self-debug (only on failures): 1/1 (100.00%)",
+      "Handoff (2): 1/1 (100.00%)"
+    ]
+  },
+  "summary_report_text": [
+    "HumanEval on anthropic:claude-opus-4-6",
+    "Baseline: 1/1 (100.00%)",
+    "Self-debug (only on failures): 1/1 (100.00%)",
+    "Handoff (2): 1/1 (100.00%)"
+  ]
+}
