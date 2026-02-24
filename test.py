@@ -1,41 +1,145 @@
+
 import os
 import json
 from dataclasses import dataclass
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional, Union, List, Literal, Tuple
+from collections import defaultdict
+from pathlib import Path
+from datetime import datetime
 from dotenv import load_dotenv
 from openai import OpenAI
-import google.generativeai
-from google.generativeai import GenerativeModel
 import anthropic
-from humanEvalInput import HumanEvalTask, load_humaneval_task
-from MBPPInput import MBPPTask, load_mbpp_task
-from APPSInput import APPSTask, load_apps_task
-from runtime.feedback_package import build_feedback_package
-from runtime.code_exec import ExecutionResult, execute_task_code
-from error_explanation import (
-    build_error_explanation_io,
-    diagnose_bug_with_openai,
-    build_error_explanation_text,
-)
-from patch_generation import produce_next_code_version
+from google import genai
+from google.genai import types
 from datasets import load_dataset
 from human_eval.data import read_problems
 import matplotlib.pyplot as plt
-import difflib 
+from humanEvalInput import HumanEvalTask, load_humaneval_task
+from MBPPInput import MBPPTask, load_mbpp_task
+from APPSInput import APPSTask, load_apps_task
+from sweBenchInput import load_swe_instance, build_swe_prompt, SWELITETask
+from runtime.feedback_package import build_feedback_package
+from runtime.code_exec import ExecutionResult, execute_task
+from error_explanation import (
+    build_error_explanation_io,
+    diagnose_bug_with_openai,
+    diagnose_bug_with_gemini,
+    diagnose_bug_with_claude,
+    build_error_explanation_text,
+)
+from patch_generation import produce_next_code_version
 
 
-# Environment & Clients
+
+def _now_ts() -> str:
+    return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+
+def make_run_dir(out_root: str = "results") -> Tuple[str, str, str]:
+    """
+    Creates:
+      results/run_<timestamp>/
+        - results.json
+        - plots/
+    Returns: (timestamp, run_dir, plots_dir)
+    """
+    ts = _now_ts()
+    run_dir = Path(out_root) / f"run_{ts}"
+    plots_dir = run_dir / "plots"
+    plots_dir.mkdir(parents=True, exist_ok=True)
+    return ts, str(run_dir), str(plots_dir)
+
+
+def build_summary_report_text(compact_summary_rows: List[Dict[str, Any]]) -> List[str]:
+    """
+    Builds a human-readable summary identical to terminal output,
+    suitable for inclusion at the end of results.json.
+    """
+    lines: List[str] = []
+
+    for row in compact_summary_rows:
+        bench = row["benchmark"]
+        provider = row["provider"]
+        model = row["model"]
+
+        bsum = row["baseline"]
+        ssum = row["self_debug"]
+
+        lines.append(f"{bench} on {provider}:{model}")
+        lines.append(
+            f"Baseline: {bsum['num_passed']}/{bsum['num_tasks']} "
+            f"({bsum['pass_rate']*100:.2f}%)"
+        )
+        lines.append(
+            f"Self-debug (only on failures): {ssum['num_passed']}/{ssum['num_tasks']} "
+            f"({ssum['pass_rate']*100:.2f}%)"
+        )
+
+        for k, hsum in row["handoff_by_k"].items():
+            lines.append(
+                f"Handoff ({k}): {hsum['num_passed']}/{hsum['num_tasks']} "
+                f"({hsum['pass_rate']*100:.2f}%)"
+            )
+
+        lines.append("")
+    if lines and lines[-1] == "":
+        lines.pop()
+
+    return lines
+
+
+def save_experiment_results(
+    *,
+    run_dir: str,
+    timestamp: str,
+    summaries: List[Tuple[str, Dict[str, Any]]],
+    details: Dict[str, Any],
+    config: Dict[str, Any],
+    artifacts: Dict[str, Any],
+) -> str:
+    out_path = Path(run_dir) / "results.json"
+    payload = {
+        "timestamp": timestamp,
+        "config": config,
+        "summaries": [{"mode_tag": mode_tag, **summary} for mode_tag, summary in summaries],
+        "details": details,
+        "artifacts": artifacts,
+        "summary_report_text": artifacts.get("summary_report_text"),
+    }
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
+    print(f"[LOG] Results saved to {out_path}")
+    return str(out_path)
+
+
 load_dotenv(override=True)
+openai_api_key = os.getenv("OPENAI_API_KEY")
+google_api_key = os.getenv("GOOGLE_API_KEY")
+anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
 
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
+openai_client = OpenAI()
+gemini_client = genai.Client(api_key=google_api_key)
+claude_client = anthropic.Anthropic()
 
-openai = OpenAI()
-google.generativeai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+OPENAI_MODEL = "gpt-4o"
+GOOGLE_MODEL = "gemini-3-flash-preview"
+CLAUDE_MODEL = "claude-haiku-4-5-20251001"
 
-# Safe defaults for models
-OPENAI_MODEL = "gpt-4o-mini"
-GOOGLE_MODEL = "gemini-2.0-flash"
+TaskType = Union[HumanEvalTask, MBPPTask, APPSTask, SWELITETask]
+# Provider = Literal["openai", "gemini"]
+Provider = Literal["openai", "gemini", "anthropic"]
+
+
+@dataclass(frozen=True)
+class AgentSpec:
+    provider: Provider
+    model: str
+
+
+def pick_fixer(patch_agents: List["AgentSpec"], iteration: int) -> "AgentSpec":
+    if not patch_agents:
+        raise ValueError("patch_agents cannot be empty for sequential handoff.")
+    return patch_agents[(iteration - 1) % len(patch_agents)]
 
 
 @dataclass
@@ -50,159 +154,183 @@ class InitialCodeResult:
     raw_prompt: str
 
 
-TaskType = Union[HumanEvalTask, MBPPTask, APPSTask]
+def _get_task_identity(task) -> tuple[str, str]:
+    constraints = getattr(task, "constraints", {}) or {}
+    benchmark = constraints.get("benchmark", "UNKNOWN")
+
+    if hasattr(task, "task_id") and getattr(task, "task_id") is not None:
+        tid = str(getattr(task, "task_id"))
+        if benchmark == "MBPP" and not tid.startswith("MBPP/"):
+            tid = f"MBPP/{tid}"
+        return benchmark, tid
+
+    if hasattr(task, "problem_id") and getattr(task, "problem_id") is not None:
+        return benchmark, f"APPS/{getattr(task, 'problem_id')}"
+
+    if hasattr(task, "instance_id") and getattr(task, "instance_id") is not None:
+        return benchmark, f"SWELITE/{getattr(task, 'instance_id')}"
+
+    return benchmark, "UNKNOWN"
 
 
-def _get_task_identity(task: TaskType) -> tuple[str, str]:
-    """
-    Helper: extract (benchmark, id_string) from any of the task types.
-    """
-    benchmark = task.constraints.get("benchmark", "UNKNOWN")
 
-    if isinstance(task, HumanEvalTask):
-        tid = task.task_id
-    elif isinstance(task, MBPPTask):
-        tid = f"MBPP/{task.task_id}"
-    elif isinstance(task, APPSTask):
-        tid = f"APPS/{task.problem_id}"
-    else:
-        tid = "UNKNOWN"
-
-    return benchmark, tid
-
-
-# Initial Code Generation – OpenAI
-def generate_initial_code_with_openai(
-    task: TaskType,
-    model: str = OPENAI_MODEL,
-) -> InitialCodeResult:
+# Initial generation (OpenAI / Gemini / Claude)
+def generate_initial_code_with_openai(task: TaskType, model: str = OPENAI_MODEL) -> InitialCodeResult:
     benchmark, tid = _get_task_identity(task)
-    base_prompt = task.build_prompt()
+
+    if isinstance(task, SWELITETask):
+        base_prompt = build_swe_prompt(task)
+        artifact_key = "patch"
+
+        response_schema = """
+        {
+          "plan": "...",
+          "patch": "...",
+          "explanation": "..."
+        }
+        """
+        constraints_block = """
+        Constraints:
+        - The "patch" MUST be a valid unified diff starting with: diff --git a/... b/...
+        - Do NOT include backticks or Markdown fences.
+        """
+    else:
+        base_prompt = task.build_prompt()
+        artifact_key = "code"
+        response_schema = """
+        {
+          "plan": "...",
+          "code": "...",
+          "explanation": "..."
+        }
+        """
+        constraints_block = """
+        Constraints:
+        - The "code" MUST be valid Python.
+        - Do NOT include backticks or Markdown fences.
+        """
 
     system_msg = (
         "You are a highly reliable coding assistant. "
-        "Your job is to understand the problem, propose a clear plan, "
-        "then write correct and clean Python code, and finally explain your solution."
+        "Follow the schema and return JSON only."
     )
 
     user_instructions = f"""
-        You will receive a programming task from the {benchmark} benchmark.
-
-        TASK SPECIFICATION
+        TASK ({benchmark})
         ------------------
         {base_prompt}
 
-        RESPONSE FORMAT (MANDATORY)
-        ---------------------------
-        Respond ONLY as a JSON object with the following fields:
+        Return JSON:
+        {response_schema}
 
-        {{
-          "plan": "Short step-by-step reasoning about how you will solve the problem.",
-          "code": "Python code implementing your solution. Do NOT wrap in ``` fences.",
-          "explanation": "A clear explanation of how the code works."
-        }}
+        """.strip()
 
-        Constraints:
-        - The "code" MUST be valid Python.
-        - Do NOT include backticks or Markdown fences in any field.
-        - For HumanEval/MBPP, implement ONLY the required function(s), not a CLI.
-        - For APPS, you may write a full program if needed, but keep it minimal and correct.
-    """
-
-    response = openai.chat.completions.create(
+    response = openai_client.chat.completions.create(
         model=model,
         response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": system_msg},
             {"role": "user", "content": user_instructions},
         ],
-        temperature=0.2,
     )
 
     content = response.choices[0].message.content
     try:
         parsed = json.loads(content)
     except json.JSONDecodeError:
-        parsed = {
-            "plan": "",
-            "code": "",
-            "explanation": content,
-        }
-
-    plan = parsed.get("plan", "").strip()
-    code = parsed.get("code", "").strip()
-    explanation = parsed.get("explanation", "").strip()
+        parsed = {"plan": "", artifact_key: "", "explanation": content}
 
     return InitialCodeResult(
         benchmark=benchmark,
         task_id=tid,
         model=model,
-        plan=plan,
-        code=code,
-        explanation=explanation,
-        raw_response=response.model_dump() if hasattr(response, "model_dump") else response,
+        plan=str(parsed.get("plan", "") or "").strip(),
+        code=str(parsed.get(artifact_key, "") or "").strip(),
+        explanation=str(parsed.get("explanation", "") or "").strip(),
+        raw_response=response.model_dump() if hasattr(response, "model_dump") else {"raw": str(response)},
         raw_prompt=user_instructions,
     )
 
 
-# Initial Code Generation – Gemini
-def generate_initial_code_with_gemini(
-    task: TaskType,
-    model: str = GOOGLE_MODEL,
-) -> InitialCodeResult:
+def generate_initial_code_with_gemini(task: TaskType, model: str = GOOGLE_MODEL) -> InitialCodeResult:
     benchmark, tid = _get_task_identity(task)
-    base_prompt = task.build_prompt()
+    # expected_key = ""
+
+    if isinstance(task, SWELITETask):
+        base_prompt = build_swe_prompt(task)
+        expected_key = "patch"
+
+        response_schema = """
+        {
+          "plan": "...",
+          "patch": "...",
+          "explanation": "..."
+        }
+        """
+        constraints_block = """
+        Constraints:
+        - The "patch" MUST be a valid unified diff starting with: diff --git a/... b/...
+        - Do NOT include backticks or Markdown fences.
+        """
+    else:
+        base_prompt = task.build_prompt()
+        expected_key = "code"
+
+        response_schema = """
+        {
+          "plan": "...",
+          "code": "...",
+          "explanation": "..."
+        }
+        """
+        constraints_block = """
+        Constraints:
+        - The "code" MUST be valid Python.
+        - Do NOT include backticks or Markdown fences.
+        """
 
     system_msg = (
         "You are a highly reliable coding assistant. "
-        "Your job is to understand the problem, propose a clear plan, "
-        "then write correct and clean Python code, and finally explain your solution."
+        "Follow the schema and return JSON only."
     )
 
     user_instructions = f"""
-        You will receive a programming task from the {benchmark} benchmark.
+         # Inlcude system message in user message
+        {system_msg}
 
-        TASK SPECIFICATION
+        TASK ({benchmark})
         ------------------
         {base_prompt}
 
-        RESPONSE FORMAT (MANDATORY)
-        ---------------------------
-        Respond ONLY as a JSON object with the following fields:
+        Return JSON:
+        {response_schema}
 
-        {{
-          "plan": "Short step-by-step reasoning about how you will solve the problem.",
-          "code": "Python code implementing your solution. Do NOT wrap in ``` fences.",
-          "explanation": "A clear explanation of how the code works."
-        }}
+        """.strip()
 
-        Constraints:
-        - The "code" MUST be valid Python.
-        - Do NOT include backticks or Markdown fences in any field.
-        - For HumanEval/MBPP, implement ONLY the required function(s), not a CLI.
-        - For APPS, you may write a full program if needed, but keep it minimal and correct.
 
-        System instructions:
-        {system_msg}
-    """
+    # Return ONLY JSON with keys: plan, {expected_key}, explanation.
+    # No markdown fences.
+    # """.strip()
 
-    model_obj = GenerativeModel(model)
-    response = model_obj.generate_content(user_instructions)
+    response = gemini_client.models.generate_content(
+        model=model,
+        contents=types.Part.from_text(text=user_instructions),
+        # config=types.GenerateContentConfig(temperature=0.3),
+    )
 
     content = getattr(response, "text", "") or str(response)
+    content = content.strip()
+
+    if content.startswith("```"):
+        lines = content.splitlines()[1:]
+        if lines and lines[-1].strip().startswith("```"):
+            lines = lines[:-1]
+        content = "\n".join(lines).strip()
 
     try:
         parsed = json.loads(content)
     except json.JSONDecodeError:
-        parsed = {
-            "plan": "",
-            "code": "",
-            "explanation": content,
-        }
-
-    plan = parsed.get("plan", "").strip()
-    code = parsed.get("code", "").strip()
-    explanation = parsed.get("explanation", "").strip()
+        parsed = {"plan": "", expected_key: "", "explanation": content}
 
     raw_response = response.to_dict() if hasattr(response, "to_dict") else {"raw": str(response)}
 
@@ -210,419 +338,909 @@ def generate_initial_code_with_gemini(
         benchmark=benchmark,
         task_id=tid,
         model=model,
-        plan=plan,
-        code=code,
-        explanation=explanation,
+        plan=str(parsed.get("plan", "") or "").strip(),
+        code=str(parsed.get(expected_key, "") or "").strip(),
+        explanation=str(parsed.get("explanation", "") or "").strip(),
         raw_response=raw_response,
         raw_prompt=user_instructions,
     )
 
 
-# Baseline (NO self-debugging)
-def run_single_task_no_self_debug(
-    task: TaskType,
-    provider: str,
-    model_name: str,
-) -> Dict[str, Any]:
+def generate_initial_code_with_claude(task: TaskType, model: str = CLAUDE_MODEL) -> InitialCodeResult:
+    benchmark, tid = _get_task_identity(task)
+
+    if isinstance(task, SWELITETask):
+        base_prompt = build_swe_prompt(task)
+        artifact_key = "patch"
+
+        response_schema = """
+        {
+          "plan": "...",
+          "patch": "...",
+          "explanation": "..."
+        }
+        """
+        constraints_block = """
+        Constraints:
+        - The "patch" MUST be a valid unified diff starting with: diff --git a/... b/...
+        - Do NOT include backticks or Markdown fences.
+        """
+    else:
+        base_prompt = task.build_prompt()
+        artifact_key = "code"
+        response_schema = """
+        {
+          "plan": "...",
+          "code": "...",
+          "explanation": "..."
+        }
+        """
+        constraints_block = """
+        Constraints:
+        - The "code" MUST be valid Python.
+        - Do NOT include backticks or Markdown fences.
+        """
+
+    system_msg = (
+        "You are a highly reliable coding assistant. "
+        "Follow the schema and return JSON only."
+    )
+
+    user_instructions = f"""
+        TASK ({benchmark})
+        ------------------
+        {base_prompt}
+
+        Return JSON:
+        {response_schema}
+
+        """.strip()
+
+    response = claude_client.messages.create(
+        model=model,
+        max_tokens=1000,
+        system=system_msg,
+        messages=[
+            {"role": "user", "content": user_instructions},
+        ],
+    )
+
+    content = response.content[0].text
+    try:
+        parsed = json.loads(content)
+    except json.JSONDecodeError:
+        parsed = {"plan": "", artifact_key: "", "explanation": content}
+
+    return InitialCodeResult(
+        benchmark=benchmark,
+        task_id=tid,
+        model=model,
+        plan=str(parsed.get("plan", "") or "").strip(),
+        code=str(parsed.get(artifact_key, "") or "").strip(),
+        explanation=str(parsed.get("explanation", "") or "").strip(),
+        raw_response=response.model_dump() if hasattr(response, "model_dump") else {"raw": str(response)},
+        raw_prompt=user_instructions,
+    )
+
+
+def generate_initial(task: TaskType, provider: str, model_name: str) -> InitialCodeResult:
     if provider == "openai":
-        init = generate_initial_code_with_openai(task, model=model_name)
+        return generate_initial_code_with_openai(task, model=model_name)
     elif provider == "gemini":
-        init = generate_initial_code_with_gemini(task, model=model_name)
+        return generate_initial_code_with_gemini(task, model=model_name)
+    elif provider == "anthropic":
+        return generate_initial_code_with_claude(task, model=model_name)
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
-    candidate_code = init.code
-    exec_result = execute_task_code(task, candidate_code)
 
-    return {
-        "benchmark": exec_result.benchmark,
-        "task_id": exec_result.task_id,
-        "provider": provider,
-        "model": model_name,
-        "mode": "baseline",
-        "passed": exec_result.passed,
-        "num_tests": exec_result.num_tests,
-        "num_passed": exec_result.num_passed,
-        "error_type": exec_result.error_type,
-        "error_message": exec_result.error_message,
-        "num_iterations": 1,
-        "self_debug_used": False,
-        "initial_model": f"{provider}:{model_name}",
-        "patch_model": None,
-        "initial_code": candidate_code,
-        "final_code": candidate_code,
-        "patch_explanations": [],
-    }
+def _print_task_header(task_idx: int) -> None:
+    print("\n" + "-" * 60)
+    print(f"TASK {task_idx}")
+    print("-" * 60)
 
 
-# Self-Debugging – Single Task
-def run_single_task_with_self_debug(
+def _print_iter_header(title: str) -> None:
+    print("\n" + "-" * 60)
+    print(title)
+    print("-" * 60)
+
+
+
+# Self-debug stream (single patch model)
+def self_debug_stream(
+    *,
     task: TaskType,
+    initial_code: str,
+    first_exec: ExecutionResult,
+    max_self_debug_iters: int,
+    # patch_model: str,
     provider: str,
-    model_name: str,
-    max_self_debug_iters: int = 3,
 ) -> Dict[str, Any]:
-    if provider == "openai":
-        init = generate_initial_code_with_openai(task, model=model_name)
-    elif provider == "gemini":
-        init = generate_initial_code_with_gemini(task, model=model_name)
-    else:
-        raise ValueError(f"Unknown provider: {provider}")
+    if first_exec.passed or first_exec.num_tests == 0:
+        return {
+            "self_debug_used": False,
+            "num_iterations": 1,
+            "patch_models_used": [],
+            "patch_explanations": [],
+            "initial_code": initial_code,
+            "final_code": initial_code,
+            "passed": first_exec.passed,
+            "num_tests": first_exec.num_tests,
+            "num_passed": first_exec.num_passed,
+            "error_type": first_exec.error_type,
+            "error_message": first_exec.error_message,
+            "traceback_str": first_exec.traceback_str,
+            "stdout": first_exec.stdout,
+            "stderr": first_exec.stderr,
+            "initial_error_type": first_exec.error_type,
+            "initial_error_message": first_exec.error_message,
+            "iterations": [],
+        }
 
-    current_code = init.code
-    initial_code = current_code
-    patch_explanations = []
-    num_iterations = 0
-    used_self_debug = False
-    final_exec_result: Optional[ExecutionResult] = None
-    initial_error_type = None
-    initial_error_message = None
-    initial_num_tests = None
-    initial_num_passed = None
+    current = initial_code
+    final_exec_result: ExecutionResult = first_exec
 
-    for it in range(max_self_debug_iters + 1):
-        num_iterations = it + 1
+    patch_explanations: List[str] = []
+    patch_models_used: List[str] = []
+    iterations: List[Dict[str, Any]] = []
+    diag = None
+    err_expl = None
+    next_candidate: str = ""
+    patch_info: str = ""
 
-        exec_result = execute_task_code(task, current_code)
+
+    for it in range(1, max_self_debug_iters + 1):
+        _print_iter_header(f"Self-debug iteration {it}")
+
+        feedback = build_feedback_package(task, current, final_exec_result)
+        io_bundle = build_error_explanation_io(task, current, feedback)
+        
+        if provider == "openai":
+            diag = diagnose_bug_with_openai(io_bundle)
+            err_expl = build_error_explanation_text(io_bundle, diag)
+            next_candidate, patch_info, patch_model = produce_next_code_version_single(task, current, err_expl, provider=provider)
+        elif provider == "gemini":
+            diag = diagnose_bug_with_openai(io_bundle)
+            err_expl = build_error_explanation_text(io_bundle, diag)
+            next_candidate, patch_info, patch_model = produce_next_code_version_single(task, current, err_expl, provider=provider)
+        elif provider == "anthropic":
+            diag = diagnose_bug_with_openai(io_bundle)
+            err_expl = build_error_explanation_text(io_bundle, diag)
+            next_candidate, patch_info, patch_model = produce_next_code_version_single(task, current, err_expl, provider=provider)
+        else:
+            print(f"Provider {provider} cannot be found.")
+
+        # next_candidate, patch_info = produce_next_code_version(task, current, err_expl, model=patch_model)
+        # next_candidate, patch_info = produce_next_code_version(task, current, err_expl, model=patch_model)
+        patch_text = getattr(patch_info, "rationale", None) or ""
+        current = next_candidate
+
+        print("Patch explanation:")
+        print(patch_text.strip() if patch_text.strip() else "(none)")
+        print("\nUpdated code:")
+        print(current)
+
+        # patch_models_used.append(f"openai:{patch_model}")
+        patch_models_used.append(f"{provider}:{patch_model}")
+        patch_explanations.append(patch_text)
+
+        exec_result = execute_task(task, current)
         final_exec_result = exec_result
 
-        if it == 0:
-            initial_error_type = exec_result.error_type
-            initial_error_message = exec_result.error_message
-            initial_num_tests = exec_result.num_tests
-            initial_num_passed = exec_result.num_passed
-
-        if exec_result.passed or exec_result.num_tests == 0:
-            break
-
-        if it == max_self_debug_iters:
-            break
-
-        used_self_debug = True
-
-        feedback = build_feedback_package(task, current_code, exec_result)
-        io_bundle = build_error_explanation_io(task, current_code, feedback)
-        diag = diagnose_bug_with_openai(io_bundle)
-        err_expl = build_error_explanation_text(io_bundle, diag)
-
-        next_code, patch_info = produce_next_code_version(task, current_code, err_expl)
-        current_code = next_code
-
-        rationale = getattr(patch_info, "rationale", None)
-        if rationale:
-            patch_explanations.append(rationale)
-        else:
-            patch_explanations.append(
-                "Patch applied, but no explicit rationale was returned from patch_generation."
-            )
-
-    if final_exec_result is None:
-        benchmark, tid = _get_task_identity(task)
-        final_exec_result = ExecutionResult(
-            benchmark=benchmark,
-            task_id=tid,
-            passed=False,
-            num_tests=0,
-            num_passed=0,
-            error_type="RuntimeError",
-            error_message="Self-debug loop did not produce any execution result.",
-            traceback_str=None,
-            stdout="",
-            stderr="",
+        iterations.append(
+            {
+                "iteration": it,
+                "patch_model": patch_model,
+                "patch_explanation": patch_text,
+                "updated_code": current,
+                "exec_result": {
+                    "passed": exec_result.passed,
+                    "num_tests": exec_result.num_tests,
+                    "num_passed": exec_result.num_passed,
+                    "error_type": exec_result.error_type,
+                    "error_message": exec_result.error_message,
+                    "traceback_str": exec_result.traceback_str,
+                    "stdout": exec_result.stdout,
+                    "stderr": exec_result.stderr,
+                },
+            }
         )
 
+        if exec_result.passed or exec_result.num_tests == 0:
+            print("\nTask solved")
+            break
+
     return {
-        "benchmark": final_exec_result.benchmark,
-        "task_id": final_exec_result.task_id,
-        "provider": provider,
-        "model": model_name,
-        "mode": "self_debug",
+        "self_debug_used": True,
+        "num_iterations": 1 + len(iterations),
+        "patch_models_used": patch_models_used,
+        "patch_explanations": patch_explanations,
+        "initial_code": initial_code,
+        "final_code": current,
         "passed": final_exec_result.passed,
         "num_tests": final_exec_result.num_tests,
         "num_passed": final_exec_result.num_passed,
         "error_type": final_exec_result.error_type,
         "error_message": final_exec_result.error_message,
-        "num_iterations": num_iterations,
-        "self_debug_used": used_self_debug,
-        "initial_model": f"{provider}:{model_name}",
-        "patch_model": "openai:gpt-4o",
-        "initial_code": initial_code,
-        "final_code": current_code,
-        "patch_explanations": patch_explanations,
-        "prompt_to_model": init.raw_prompt,
-        "initial_explanation": init.explanation,
-        "initial_error_type": initial_error_type,
-        "initial_error_message": initial_error_message,
-        "initial_num_tests": initial_num_tests,
-        "initial_num_passed": initial_num_passed,
+        "traceback_str": final_exec_result.traceback_str,
+        "stdout": final_exec_result.stdout,
+        "stderr": final_exec_result.stderr,
+        "initial_error_type": first_exec.error_type,
+        "initial_error_message": first_exec.error_message,
+        "iterations": iterations,
     }
 
 
-# Benchmark runner
-def evaluate_benchmark_on_model(
-    benchmark: str,
-    provider: str,
-    model_name: str,
-    max_tasks: Optional[int] = None,
-    mode: str = "baseline",
-    max_self_debug_iters: int = 3,
+# Sequential handoff stream (multiple patch agents)
+def sequential_handoff_stream(
+    *,
+    task: TaskType,
+    initial_code: str,
+    first_exec: ExecutionResult,
+    patch_agents: List[AgentSpec],
+    max_iters: int,
 ) -> Dict[str, Any]:
-    total_tasks = 0
-    total_passed = 0
-    per_task = []
+    if first_exec.passed or first_exec.num_tests == 0:
+        return {
+            "handoff_used": False,
+            "num_iterations": 1,
+            "patch_models_used": [],
+            "patch_explanations": [],
+            "initial_code": initial_code,
+            "final_code": initial_code,
+            "passed": first_exec.passed,
+            "num_tests": first_exec.num_tests,
+            "num_passed": first_exec.num_passed,
+            "error_type": first_exec.error_type,
+            "error_message": first_exec.error_message,
+            "iterations": [],
+        }
 
-    def run_task(task: TaskType) -> Dict[str, Any]:
-        if mode == "baseline":
-            return run_single_task_no_self_debug(task, provider, model_name)
-        elif mode == "self_debug":
-            return run_single_task_with_self_debug(
-                task, provider, model_name, max_self_debug_iters=max_self_debug_iters
-            )
+    current = initial_code
+    final_exec_result: ExecutionResult = first_exec
+
+    patch_explanations: List[str] = []
+    patch_models_used: List[str] = []
+    iterations: List[Dict[str, Any]] = []
+
+    for it in range(1, max_iters + 1):
+        fixer = pick_fixer(patch_agents, it)
+
+        _print_iter_header(f"Sequential handoff iteration {it}  (fixer: {fixer.model})")
+        feedback = build_feedback_package(task, current, final_exec_result)
+        io_bundle = build_error_explanation_io(task, current, feedback)
+
+        if fixer.provider == "openai":
+            diag = diagnose_bug_with_openai(io_bundle)
+        elif fixer.provider == "gemini":
+            diag = diagnose_bug_with_gemini(io_bundle)
+        elif fixer.provider == "anthropic":
+            diag = diagnose_bug_with_claude(io_bundle)
         else:
-            raise ValueError(f"Unknown mode: {mode}")
+            raise ValueError("Sequential handoff failed to select provider.")
 
+        err_expl = build_error_explanation_text(io_bundle, diag)
+        next_candidate, patch_info = produce_next_code_version(task, current, err_expl, model=fixer.model, provider=fixer.provider)
+        patch_text = getattr(patch_info, "rationale", None) or ""
+        current = next_candidate
+
+        print("Patch explanation:")
+        print(patch_text.strip() if patch_text.strip() else "(none)")
+        print("\nUpdated code:")
+        print(current)
+
+        patch_models_used.append(f"{fixer.provider}:{fixer.model}")
+        patch_explanations.append(patch_text)
+
+        exec_result = execute_task(task, current)
+        final_exec_result = exec_result
+
+        iterations.append(
+            {
+                "iteration": it,
+                "fixer": {"provider": fixer.provider, "model": fixer.model},
+                "patch_explanation": patch_text,
+                "updated_code": current,
+                "exec_result": {
+                    "passed": exec_result.passed,
+                    "num_tests": exec_result.num_tests,
+                    "num_passed": exec_result.num_passed,
+                    "error_type": exec_result.error_type,
+                    "error_message": exec_result.error_message,
+                    "traceback_str": exec_result.traceback_str,
+                    "stdout": exec_result.stdout,
+                    "stderr": exec_result.stderr,
+                },
+            }
+        )
+
+        if exec_result.passed or exec_result.num_tests == 0:
+            print("\nTask solved (handoff)")
+            break
+
+    return {
+        "handoff_used": True,
+        "num_iterations": 1 + len(iterations),
+        "patch_models_used": patch_models_used,
+        "patch_explanations": patch_explanations,
+        "initial_code": initial_code,
+        "final_code": current,
+        "passed": final_exec_result.passed,
+        "num_tests": final_exec_result.num_tests,
+        "num_passed": final_exec_result.num_passed,
+        "error_type": final_exec_result.error_type,
+        "error_message": final_exec_result.error_message,
+        "iterations": iterations,
+    }
+
+
+
+# Plotting
+def shorten(s: str, max_len: int = 26) -> str:
+    s = (s or "").replace("\n", " ").strip()
+    return s if len(s) <= max_len else s[: max_len - 1] + "…"
+
+
+# def add_value_labels(ax, bars):
+#     for b in bars:
+#         h = float(b.get_height() or 0.0)
+#         ax.annotate(
+#             f"{h:.1f}%",
+#             (b.get_x() + b.get_width() / 2, h),
+#             textcoords="offset points",
+#             xytext=(0, 3),
+#             ha="center",
+#             va="bottom",
+#             fontsize=9,
+#         )
+
+def _benchmark_task_counts_from_results(all_results: List[tuple]) -> Dict[str, int]:
+    """
+    Returns {benchmark: N} where N is the maximum num_tasks observed for that benchmark
+    (across providers/models/modes). This reflects actual loaded tasks, not just max_tasks.
+    """
+    counts: Dict[str, int] = {}
+    for _, summary in all_results:
+        bench = summary.get("benchmark")
+        n = int(summary.get("num_tasks") or 0)
+        if bench:
+            counts[bench] = max(counts.get(bench, 0), n)
+    return counts
+
+
+def plot_clean_grouped_bars(all_results: List[tuple], k_values: List[int], out_dir: str) -> List[str]:
+    outp = Path(out_dir)
+    outp.mkdir(parents=True, exist_ok=True)
+    bench_counts = _benchmark_task_counts_from_results(all_results)
+
+    saved_paths: List[str] = []
+    by_benchmark = defaultdict(list)
+    for mode_tag, summary in all_results:
+        by_benchmark[summary["benchmark"]].append((mode_tag, summary))
+
+    series_order = ["baseline", "self_debug_single"] + [f"handoff_{k}agents" for k in k_values]
+
+    for benchmark, entries in by_benchmark.items():
+        grouped = defaultdict(dict)
+        for mode_tag, summary in entries:
+            key = (summary["provider"], summary["model"])
+            grouped[key][mode_tag] = summary["pass_rate"] * 100.0
+
+        keys = list(grouped.keys())
+        labels = [shorten(f"{p}:{m}", 28) for (p, m) in keys]
+        series_vals = {s: [grouped[k].get(s, 0.0) for k in keys] for s in series_order}
+
+        x = list(range(len(keys)))
+        width = 0.12
+        mid = (len(series_order) - 1) / 2.0
+        offsets = [(i - mid) * width for i in range(len(series_order))]
+
+        fig, ax = plt.subplots(figsize=(12, 5.5))
+        ax.set_axisbelow(True)
+        ax.grid(True, axis="y", linestyle="--", linewidth=0.7, alpha=0.6)
+
+        for i, s in enumerate(series_order):
+            bars = ax.bar([xi + offsets[i] for xi in x], series_vals[s], width, label=s)
+            # add_value_labels(ax, bars)
+
+        n_tasks = bench_counts.get(benchmark, 0)    
+        ax.set_title(f"{benchmark} (N={n_tasks}): Baseline vs Single Self-Debug vs Sequential Handoff")
+        ax.set_ylabel("Pass Rate (%)")
+        ax.set_ylim(0, 100)
+        ax.set_xticks(x)
+        ax.set_xticklabels(labels, rotation=0)
+        ax.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0)
+
+        fig.tight_layout()
+        out_file = outp / f"pass_rates_{benchmark}_clean.png".replace("/", "_")
+        plt.savefig(out_file, dpi=220, bbox_inches="tight")
+        plt.close(fig)
+        saved_paths.append(str(out_file))
+
+    return saved_paths
+
+
+def plot_improvement_over_baseline(all_results: List[tuple], k_values: List[int], out_dir: str) -> List[str]:
+    outp = Path(out_dir)
+    outp.mkdir(parents=True, exist_ok=True)
+    bench_counts = _benchmark_task_counts_from_results(all_results)
+
+    saved_paths: List[str] = []
+    baseline_lookup: Dict[tuple, float] = {}
+    rates_lookup: Dict[tuple, Dict[str, float]] = defaultdict(dict)
+
+    for mode_tag, summary in all_results:
+        key = (summary["benchmark"], summary["provider"], summary["model"])
+        rate = summary["pass_rate"] * 100.0
+        rates_lookup[key][mode_tag] = rate
+        if mode_tag == "baseline":
+            baseline_lookup[key] = rate
+
+    benchmarks_in_results = sorted({k[0] for k in rates_lookup.keys()})
+
+    for bench in benchmarks_in_results:
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.set_axisbelow(True)
+        ax.grid(True, axis="y", linestyle="--", linewidth=0.7, alpha=0.6)
+
+        for (b, provider, model), modes in rates_lookup.items():
+            if b != bench:
+                continue
+            base = baseline_lookup.get((b, provider, model), 0.0)
+
+            xs = [1]
+            ys = [modes.get("self_debug_single", 0.0) - base]
+
+            for k in k_values:
+                tag = f"handoff_{k}agents"
+                xs.append(k)
+                ys.append(modes.get(tag, 0.0) - base)
+
+            label = shorten(f"{provider}:{model}", 35)
+            ax.plot(xs, ys, marker="o", label=label)
+
+        ax.axhline(0, linewidth=1)
+        n_tasks = bench_counts.get(bench, 0)
+        ax.set_title(f"{bench} (N={n_tasks}): Improvement over Baseline vs # Patch Agents (Sequential Handoff)")
+        ax.set_xlabel("Number of patch agents (K)")
+        ax.set_ylabel("Pass Rate (percentage points)")
+        ax.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0)
+
+        fig.tight_layout()
+        out_file = outp / f"improvement_vs_k_{bench}.png".replace("/", "_")
+        plt.savefig(out_file, dpi=220, bbox_inches="tight")
+        plt.close(fig)
+        saved_paths.append(str(out_file))
+
+    return saved_paths
+
+
+def load_tasks_for_benchmark(benchmark: str, max_tasks: Optional[int]) -> List[TaskType]:
     if benchmark == "HumanEval":
         problems = read_problems()
         task_ids = list(problems.keys())
         if max_tasks is not None:
             task_ids = task_ids[:max_tasks]
+        return [load_humaneval_task(tid) for tid in task_ids]
 
-        for tid in task_ids:
-            task = load_humaneval_task(tid)
-            res = run_task(task)
-            per_task.append(res)
-            total_tasks += 1
-            if res["passed"]:
-                total_passed += 1
-
-    elif benchmark == "MBPP":
+    if benchmark == "MBPP":
         ds = load_dataset("mbpp", "sanitized", split="test")
         if max_tasks is not None:
             ds = ds.select(range(max_tasks))
+        return [load_mbpp_task(int(row["task_id"])) for row in ds]
 
-        for row in ds:
-            tid = int(row["task_id"])
-            task = load_mbpp_task(tid)
-            res = run_task(task)
-            per_task.append(res)
-            total_tasks += 1
-            if res["passed"]:
-                total_passed += 1
-
-    elif benchmark == "APPS":
+    if benchmark == "APPS":
         ds = load_dataset("codeparrot/apps", split="test")
         if max_tasks is not None:
             ds = ds.select(range(max_tasks))
+        return [load_apps_task(int(row["problem_id"]), split="test") for row in ds]
 
-        for row in ds:
-            pid = int(row["problem_id"])
-            task = load_apps_task(pid, split="test")
-            res = run_task(task)
-            per_task.append(res)
-            total_tasks += 1
-            if res["passed"]:
-                total_passed += 1
+    if benchmark == "SWE-bench_LITE":
+        ds = load_dataset("princeton-nlp/SWE-bench_Lite", split="test")
+        if max_tasks is not None:
+            ds = ds.select(range(max_tasks))
+        return [load_swe_instance(row["instance_id"]) for row in ds]
 
-    else:
-        raise ValueError(f"Unknown benchmark: {benchmark}")
+    raise ValueError(f"Unknown benchmark: {benchmark}")
 
-    pass_rate = (total_passed / total_tasks) if total_tasks > 0 else 0.0
 
+def summarize_results(details: List[Dict[str, Any]], benchmark: str, provider: str, model: str, mode: str) -> Dict[str, Any]:
+    total = len(details)
+    passed = sum(1 for d in details if d.get("passed"))
     return {
         "benchmark": benchmark,
         "provider": provider,
-        "model": model_name,
+        "model": model,
         "mode": mode,
-        "num_tasks": total_tasks,
-        "num_passed": total_passed,
-        "pass_rate": pass_rate,
-        "details": per_task,
+        "num_tasks": total,
+        "num_passed": passed,
+        "pass_rate": (passed / total) if total else 0.0,
+        "details": details,
     }
 
 
+
+
 if __name__ == "__main__":
+    ts, run_dir, plots_dir = make_run_dir("results")
+
+    print("\n" + "=" * 80)
+    print("STARTING EXPERIMENT")
+    print("=" * 80)
+
     configs = [
-        ("openai", "gpt-4o"),
-        ("openai", "gpt-4o-mini"),
-        ("openai", "gpt-5.1"),
-        ("gemini", "gemini-2.0-flash"),
-        ("gemini", "gemini-2.5-pro"),
+        ("gemini", "gemini-3-flash-preview"),
+        # ("openai", "gpt-4o"),
+        # ("anthropic", "claude-haiku-4-5-20251001"),
+    ]
+    # benchmarks = ["HumanEval", "MBPP", "APPS", "SWE-bench_LITE"]
+    benchmarks = ["HumanEval"]
+    max_tasks = 3
+    max_self_debug_iters = 0
+
+    single_patch_model = "gpt-4o"
+
+    patch_pool: List[AgentSpec] = [
+        AgentSpec("openai", "gpt-4.1-mini"),
+        AgentSpec("openai", "gpt-4.1"),
+        AgentSpec("openai", "gpt-5-mini"),
+        AgentSpec("openai", "gpt-5"),
     ]
 
-    # benchmarks = ["HumanEval", "MBPP", "APPS"]
-    benchmarks = ["HumanEval", "MBPP"]
+    gemini_patch_pool: List[AgentSpec] = [
+        AgentSpec("gemini", "gemini-3.1-pro-preview"),
+        AgentSpec("gemini", "gemini-3-pro-preview"),
+        AgentSpec("gemini", "gemini-2.5-flash"),
+    ]
 
-    max_tasks = 3
-    max_self_debug_iters = 2
-
-    all_results = []
-
-    for provider, model_name in configs:
-        for benchmark in benchmarks:
-            print(f"\n{benchmark} on {provider}:{model_name} | BASELINE")
-            baseline_summary = evaluate_benchmark_on_model(
-                benchmark=benchmark,
-                provider=provider,
-                model_name=model_name,
-                max_tasks=max_tasks,
-                mode="baseline",
-            )
-
-            print(
-                f"Baseline: {baseline_summary['num_passed']}/"
-                f"{baseline_summary['num_tasks']} "
-                f"({baseline_summary['pass_rate']*100:.2f}% pass rate)"
-            )
-
-            print(f"{benchmark} on {provider}:{model_name} | SELF-DEBUG")
-            selfdbg_summary = evaluate_benchmark_on_model(
-                benchmark=benchmark,
-                provider=provider,
-                model_name=model_name,
-                max_tasks=max_tasks,
-                mode="self_debug",
-                max_self_debug_iters=max_self_debug_iters,
-            )
-
-            print(
-                f"Self-debug: {selfdbg_summary['num_passed']}/"
-                f"{selfdbg_summary['num_tasks']} "
-                f"({selfdbg_summary['pass_rate']*100:.2f}% pass rate)"
-
-            )
-
-            delta_pass = selfdbg_summary["num_passed"] - baseline_summary["num_passed"]
-            delta_rate = (selfdbg_summary["pass_rate"] - baseline_summary["pass_rate"]) * 100.0
-
-            print(
-                f"Improvement: +{delta_pass} tasks, "
-                f"{delta_rate:+.4f} percentage points"
-            )
-
-            all_results.append(("baseline", baseline_summary))
-            all_results.append(("self_debug", selfdbg_summary))
+    claude_patch_pool: List[AgentSpec] = [
+        AgentSpec("anthropic", "claude-opus-4-6"),
+        AgentSpec("anthropic", "claude-sonnet-4-6"),
+    ]
 
 
+    k_values = [2,3]
 
-    # Bar Chart: Baseline vs Self-Debug pass rates
-    combined: Dict[tuple, Dict[str, float]] = {}
-    for mode, summary in all_results:
-        key = (summary["benchmark"], summary["provider"], summary["model"])
-        if key not in combined:
-            combined[key] = {}
-        combined[key][mode] = summary["pass_rate"] * 100.0
+    all_results: List[Tuple[str, Dict[str, Any]]] = []
+    all_details: Dict[str, Any] = {"baseline": {}, "self_debug_single": {}, "sequential_handoff": {}}
+    compact_summary_rows: List[Dict[str, Any]] = []
 
-    labels = []
-    baseline_rates = []
-    selfdebug_rates = []
+    for benchmark in benchmarks:
+        for provider, model_name in configs:
+            print("\n" + "=" * 80)
+            print(f"{benchmark} :: {provider}:{model_name}")
+            print("=" * 80)
 
-    for (benchmark, provider, model), modes in combined.items():
-        if "baseline" in modes and "self_debug" in modes:
-            labels.append(f"{benchmark}\n{provider}:{model}")
-            baseline_rates.append(modes["baseline"])
-            selfdebug_rates.append(modes["self_debug"])
+            tasks = load_tasks_for_benchmark(benchmark, max_tasks)
 
-    if labels:
-        x = range(len(labels))
-        width = 0.4
+            baseline_details: List[Dict[str, Any]] = []
+            self_debug_details: List[Dict[str, Any]] = []
+            handoff_details_by_k: Dict[int, List[Dict[str, Any]]] = {k: [] for k in k_values}
 
-        plt.figure(figsize=(12, 6))
-        plt.bar([i - width / 2 for i in x], baseline_rates, width, label="Baseline")
-        plt.bar([i + width / 2 for i in x], selfdebug_rates, width, label="Self-Debug")
+            for idx, task in enumerate(tasks, start=1):
+                _print_task_header(idx)
 
-        plt.xticks(list(x), labels, rotation=30, ha="right")
-        plt.ylabel("Pass Rate (%)")
-        plt.title("Baseline vs Self-Debugging Pass Rates\n(per Benchmark & Model)")
-        plt.legend()
-        plt.tight_layout()
-        plt.savefig("self_debug_comparison.png")
-        plt.show()
+                # 1) initial generation
+                init = generate_initial(task, provider, model_name)
+                candidate = init.code
+                # print(init)
+                # print("==" * 30)
+                # print(init.code)
 
+                # break
 
-    print("\nSAMPLE ORIGINAL VS CORRECTED CODE (ONLY SUCCESSFUL SELF-DEBUG CASES)\n")
+                print("Initial raw prompt:\n")
+                print(init.raw_prompt)
 
-    sample_count = 0
-    max_samples = 2 
+                print("\n\nInitial plan:")
+                print(init.plan if init.plan.strip() else "(none)")
 
-    for mode, summary in all_results:
-        if sample_count >= max_samples:
-            break
+                print("\n\nInitial code: ------------")
+                print(candidate if str(candidate).strip() else "(empty)")
 
-        if mode != "self_debug":
-            continue
+                # 2) baseline
+                base_exec = execute_task(task, candidate)
 
-        details = summary.get("details", [])
-        if not details:
-            continue
+                print("\n\nBaseline result:")
+                print(f"Passed: {base_exec.passed}")
+                print(f"Initial error type: {base_exec.error_type}")
+                print(f"Initial error message: {base_exec.error_message}")
 
-        for d in details:
-            if sample_count >= max_samples:
-                break
+                baseline_details.append(
+                    {
+                        "timestamp": ts,
+                        "benchmark": base_exec.benchmark,
+                        "task_id": base_exec.task_id,
+                        "provider": provider,
+                        "model": model_name,
+                        "mode_tag": "baseline",
+                        "passed": base_exec.passed,
+                        "num_tests": base_exec.num_tests,
+                        "num_passed": base_exec.num_passed,
+                        "artifact": base_exec.patch,
+                        "error_type": base_exec.error_type,
+                        "error_message": base_exec.error_message,
+                        "traceback_str": base_exec.traceback_str,
+                        "stdout": base_exec.stdout,
+                        "stderr": base_exec.stderr,
+                        "initial_raw_prompt": init.raw_prompt,
+                        "initial_plan": init.plan,
+                        "initial_code": candidate,
+                        "final_code": candidate,
+                        "prompt": task.build_prompt() if hasattr(task, "build_prompt") else "",
+                    }
+                )
 
-            # We only want:
-            # - self-debug was actually used
-            # - initial code failed
-            # - final code passed
-            # - there was at least one patch (num_iterations > 1)
-            used_self_debug = d.get("self_debug_used", False)
-            final_passed = d.get("passed", False)
-            num_iters = d.get("num_iterations", 1)
-            init_num_passed = d.get("initial_num_passed", None)
-            init_num_tests = d.get("initial_num_tests", None)
+                # If baseline already passed, skip add self-debug and handoff
+                if base_exec.passed or base_exec.num_tests == 0:
+                    sd_noop = {
+                        "timestamp": ts,
+                        "benchmark": base_exec.benchmark,
+                        "task_id": base_exec.task_id,
+                        "provider": provider,
+                        "model": model_name,
+                        "mode_tag": "self_debug_single",
+                        "passed": base_exec.passed,
+                        "num_tests": base_exec.num_tests,
+                        "num_passed": base_exec.num_passed,
+                        "error_type": base_exec.error_type,
+                        "error_message": base_exec.error_message,
+                        "initial_error_type": base_exec.error_type,
+                        "initial_error_message": base_exec.error_message,
+                        "initial_raw_prompt": init.raw_prompt,
+                        "initial_plan": init.plan,
+                        "initial_code": candidate,
+                        "final_code": candidate,
+                        "patch_models_used": [],
+                        "patch_explanations": [],
+                        "iterations": [],
+                        "traceback_str": base_exec.traceback_str,
+                        "stdout": base_exec.stdout,
+                        "stderr": base_exec.stderr,
+                        "prompt": task.build_prompt() if hasattr(task, "build_prompt") else "",
+                    }
+                    self_debug_details.append(sd_noop)
 
-            if not used_self_debug:
-                continue
-            if not final_passed:
-                continue
-            if num_iters <= 1:
-                continue
-            # initial must have failed: either 0 passed or < total tests
-            if init_num_tests is not None and init_num_passed is not None:
-                if init_num_passed == init_num_tests:
-                    # initial already passed all tests; skip
+                    for k in k_values:
+                        handoff_details_by_k[k].append(
+                            {
+                                "timestamp": ts,
+                                "benchmark": base_exec.benchmark,
+                                "task_id": base_exec.task_id,
+                                "provider": provider,
+                               "base_model": model_name,
+                                "handoff_models_used": handoff.get("patch_models_used", []),
+                                "mode_tag": f"handoff_{k}agents",
+                                "passed": base_exec.passed,
+                                "num_tests": base_exec.num_tests,
+                                "num_passed": base_exec.num_passed,
+                                "error_type": base_exec.error_type,
+                                "error_message": base_exec.error_message,
+                                "initial_raw_prompt": init.raw_prompt,
+                                "initial_plan": init.plan,
+                                "initial_code": candidate,
+                                "final_code": candidate,
+                                "patch_models_used": [],
+                                "patch_explanations": [],
+                                "iterations": [],
+                                "prompt": task.build_prompt() if hasattr(task, "build_prompt") else "",
+                            }
+                        )
                     continue
 
-            init_code = d.get("initial_code", "") or ""
-            final_code = d.get("final_code", "") or ""
-            patch_explanations = d.get("patch_explanations", []) or []
-            prompt_to_model = d.get("prompt_to_model", "") or ""
-            initial_explanation = d.get("initial_explanation", "") or ""
-            initial_error_type = d.get("initial_error_type", "") or ""
-            initial_error_message = d.get("initial_error_message", "") or ""
+                # 3) self-debug only if baseline failed
+                sd = self_debug_stream(
+                    task=task,
+                    initial_code=candidate,
+                    first_exec=base_exec,
+                    max_self_debug_iters=max_self_debug_iters,
+                    provider=provider,
+                )
 
-            print("============================================================")
-            print(f"Benchmark: {summary['benchmark']}")
-            print(f"Model: {summary['provider']}:{summary['model']}")
-            print(f"Task ID: {d.get('task_id')}")
-            print(f"Initial tests: {init_num_passed}/{init_num_tests}")
-            print(f"Final tests: {d.get('num_passed')}/{d.get('num_tests')}")
-            print(f"Iterations used: {num_iters}")
-            print("============================================================\n")
+                print("\n\nFinal code:")
+                print(sd["final_code"])
 
-            # 1) Raw prompt sent to the model
-            print(">>> RAW PROMPT SENT TO MODEL (TRUNCATED) <<<\n")
-            # You can truncate if it's too long
-            print(prompt_to_model[:2000])
-            if len(prompt_to_model) > 2000:
-                print("\n...[prompt truncated]...\n")
+                if sd.get("patch_explanations"):
+                    non_empty = [p for p in sd["patch_explanations"] if str(p).strip()]
+                    if non_empty:
+                        print("\n\nPatch explanations:")
+                        for p in non_empty:
+                            print(f"- {p.strip()}")
 
-            print("\n>>> INITIAL CODE (FAILED) <<<\n")
-            print(init_code)
+                self_debug_details.append(
+                    {
+                        "timestamp": ts,
+                        "benchmark": base_exec.benchmark,
+                        "task_id": base_exec.task_id,
+                        "provider": provider,
+                        "model": model_name,
+                        "mode_tag": "self_debug_single",
+                        "passed": sd["passed"],
+                        "num_tests": sd["num_tests"],
+                        "num_passed": sd["num_passed"],
+                        "error_type": sd.get("error_type"),
+                        "error_message": sd.get("error_message"),
+                        "initial_error_type": sd.get("initial_error_type"),
+                        "initial_error_message": sd.get("initial_error_message"),
+                        "initial_raw_prompt": init.raw_prompt,
+                        "initial_plan": init.plan,
+                        "initial_code": candidate,
+                        "final_code": sd["final_code"],
+                        "patch_models_used": sd.get("patch_models_used", []),
+                        "patch_explanations": sd.get("patch_explanations", []),
+                        "iterations": sd.get("iterations", []),
+                        "traceback_str": sd.get("traceback_str"),
+                        "stdout": sd.get("stdout"),
+                        "stderr": sd.get("stderr"),
+                        "prompt": task.build_prompt() if hasattr(task, "build_prompt") else "",
+                    }
+                )
 
-            print("\n>>> INITIAL CODE EXPLANATION <<<\n")
-            print(initial_explanation)
-      
-            print("\n>>> INITIAL ERROR <<<\n")
-            print(f"Error type: {initial_error_type}")
-            print(f"Error message: {initial_error_message}")
+                # If self-debug solved, do nnot run handoff; log as skipped for each k
+                if sd.get("passed") or sd.get("num_tests", 0) == 0:
+                    for k in k_values:
+                        handoff_details_by_k[k].append(
+                            {
+                                "timestamp": ts,
+                                "benchmark": base_exec.benchmark,
+                                "task_id": base_exec.task_id,
+                                "provider": provider,
+                                "model": model_name,
+                                "mode_tag": f"handoff_{k}agents",
+                                "passed": sd["passed"],
+                                "num_tests": sd["num_tests"],
+                                "num_passed": sd["num_passed"],
+                                "error_type": sd.get("error_type"),
+                                "error_message": sd.get("error_message"),
+                                "initial_raw_prompt": init.raw_prompt,
+                                "initial_plan": init.plan,
+                                "initial_code": candidate,
+                                "final_code": sd["final_code"],
+                                "patch_models_used": [],
+                                "patch_explanations": [],
+                                "iterations": [],
+                                "prompt": task.build_prompt() if hasattr(task, "build_prompt") else "",
+                                "skipped_reason": "self_debug_solved",
+                            }
+                        )
+                    continue
 
-            print("\n>>> CORRECTED CODE (ALL TESTS PASSED) <<<\n")
-            print(final_code)
-    
-            if patch_explanations:
-                print("\n>>> PATCH EXPLANATION(S) <<<")
-                for i, expl in enumerate(patch_explanations, 1):
-                    print(f"\n[Patch {i}]\n{expl}")
+                # 4) Run sequential handoff only if self-debug failed
+                for k in k_values:
+                    if provider == "openai":
+                        agents_k = patch_pool[:k]
+                    elif provider == "gemini":
+                        agents_k = gemini_patch_pool[:k]
+                    elif provider == "anthropic":
+                        agents_k = claude_patch_pool[:k]
+                    else:
+                        raise ValueError(f"Unknown provider for handoff: {provider}")
 
-            sample_count += 1
+                    handoff = sequential_handoff_stream(
+                        task=task,
+                        initial_code=candidate,
+                        first_exec=base_exec,
+                        patch_agents=agents_k,
+                        max_iters=max_self_debug_iters,
+                    )
 
+                    handoff_details_by_k[k].append(
+                        {
+                            "timestamp": ts,
+                            "benchmark": base_exec.benchmark,
+                            "task_id": base_exec.task_id,
+                            "provider": provider,
+                            "model": model_name,
+                            "mode_tag": f"handoff_{k}agents",
+                            "passed": handoff["passed"],
+                            "num_tests": handoff["num_tests"],
+                            "num_passed": handoff["num_passed"],
+                            "error_type": handoff.get("error_type"),
+                            "error_message": handoff.get("error_message"),
+                            "initial_raw_prompt": init.raw_prompt,
+                            "initial_plan": init.plan,
+                            "initial_code": candidate,
+                            "final_code": handoff["final_code"],
+                            "patch_models_used": handoff.get("patch_models_used", []),
+                            "patch_explanations": handoff.get("patch_explanations", []),
+                            "iterations": handoff.get("iterations", []),
+                            "prompt": task.build_prompt() if hasattr(task, "build_prompt") else "",
+                        }
+                    )
+
+
+            # summaries (benchmark, provider, model)
+            baseline_summary = summarize_results(baseline_details, benchmark, provider, model_name, "baseline")
+            self_debug_summary = summarize_results(self_debug_details, benchmark, provider, model_name, "self_debug_single")
+
+            all_results.append(("baseline", baseline_summary))
+            all_results.append(("self_debug_single", self_debug_summary))
+
+            for k in k_values:
+                tag = f"handoff_{k}agents"
+                summary_k = summarize_results(handoff_details_by_k[k], benchmark, provider, model_name, tag)
+                all_results.append((tag, summary_k))
+
+            run_key = f"{benchmark}::{provider}::{model_name}"
+            all_details["baseline"][run_key] = baseline_details
+            all_details["self_debug_single"][run_key] = self_debug_details
+            all_details["sequential_handoff"][run_key] = {str(k): handoff_details_by_k[k] for k in k_values}
+
+            compact_row = {
+                "benchmark": benchmark,
+                "provider": provider,
+                "model": model_name,
+                "baseline": baseline_summary,
+                "self_debug": self_debug_summary,
+                "handoff_by_k": {
+                    k: next(
+                        s
+                        for t, s in all_results
+                        if t == f"handoff_{k}agents"
+                        and s["benchmark"] == benchmark
+                        and s["provider"] == provider
+                        and s["model"] == model_name
+                    )
+                    for k in k_values
+                },
+            }
+            compact_summary_rows.append(compact_row)
+
+    # plot graphs
+    pass_rate_plot_paths = plot_clean_grouped_bars(all_results, k_values, plots_dir)
+    improvement_plot_paths = plot_improvement_over_baseline(all_results, k_values, plots_dir)
+
+    experiment_config = {
+        "benchmarks": benchmarks,
+        "configs": configs,
+        "max_tasks": max_tasks,
+        "max_self_debug_iters": max_self_debug_iters,
+        "single_patch_model": single_patch_model,
+        "patch_pool": [{"provider": a.provider, "model": a.model} for a in patch_pool],
+        "k_values": k_values,
+        "openai_default_model": OPENAI_MODEL,
+        "gemini_default_model": GOOGLE_MODEL,
+    }
+
+    summary_report_text = build_summary_report_text(compact_summary_rows)
+
+    artifacts = {
+        "run_dir": run_dir,
+        "plots_dir": plots_dir,
+        "plots": {
+            "pass_rates": pass_rate_plot_paths,
+            "improvement_vs_k": improvement_plot_paths,
+        },
+        "summary_report_text": summary_report_text,
+    }
+
+    saved_path = save_experiment_results(
+        run_dir=run_dir,
+        timestamp=ts,
+        summaries=all_results,
+        details=all_details,
+        config=experiment_config,
+        artifacts=artifacts,
+    )
+
+    print("\n")
+    for row in compact_summary_rows:
+        bench = row["benchmark"]
+        provider = row["provider"]
+        model = row["model"]
+
+        bsum = row["baseline"]
+        ssum = row["self_debug"]
+
+        print(f"{bench} on {provider}:{model}")
+        print(f"Baseline: {bsum['num_passed']}/{bsum['num_tasks']} ({bsum['pass_rate']*100:.2f}%)")
+        print(f"Self-debug (only on failures(baseline)): {ssum['num_passed']}/{ssum['num_tasks']} ({ssum['pass_rate']*100:.2f}%)")
+
+        for k, hsum in row["handoff_by_k"].items():
+            print(f"Handoff ({k}): {hsum['num_passed']}/{hsum['num_tasks']} ({hsum['pass_rate']*100:.2f}%)")
+
+        print("")
+
+    print(f"[LOG] Results saved to {saved_path}")
+    print("\nEXPERIMENT COMPLETE")

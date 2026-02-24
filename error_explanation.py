@@ -4,15 +4,26 @@ import os
 import json
 from dotenv import load_dotenv
 from openai import OpenAI
+from google import genai
+from google.genai import types
+import anthropic
+from dataclasses import dataclass
 from runtime.feedback_package import FeedbackPackage, TaskType, _get_task_identity
 
-load_dotenv(override=True)
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    raise RuntimeError("OPENAI_API_KEY not set")
 
-openai = OpenAI(api_key=OPENAI_API_KEY)
-OPENAI_MODEL = "gpt-4o-mini" 
+
+load_dotenv(override=True)
+openai_api_key = os.getenv("OPENAI_API_KEY")
+google_api_key = os.getenv("GOOGLE_API_KEY")
+anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
+
+openai_client = OpenAI()
+gemini_client = genai.Client(api_key=google_api_key)
+claude_client = anthropic.Anthropic()
+
+OPENAI_MODEL = "gpt-4o"
+GOOGLE_MODEL = "gemini-3-flash-preview"
+CLAUDE_MODEL = "claude-haiku-4-5-20251001"
 
 
 @dataclass
@@ -53,7 +64,7 @@ class BugDiagnosisResult:
 
     raw_response: Dict[str, Any]
 
-from dataclasses import dataclass
+
 
 @dataclass
 class ErrorExplanationResult:
@@ -92,6 +103,24 @@ def build_error_explanation_io(
     )
 
 
+swe_system_msg = (
+            "You are a highly skilled debugging assistant for SWE-bench. "
+            "You receive: (1) the repository bug report prompt, "
+            "(2) the current candidate patch (unified diff), and "
+            "(3) execution feedback (e.g., patch validation or test failures). "
+            "Your job is ONLY to diagnose what is wrong with the patch or why it fails. "
+            "Do NOT propose or write any new patch in this step."
+        )
+
+reg_swe_system_msg = (
+            "You are a highly skilled debugging assistant. "
+            "You receive: (1) the original programming problem, "
+            "(2) the current Python solution code, and "
+            "(3) execution feedback (test results, errors, stdout/stderr). "
+            "Your job in THIS STEP is ONLY to diagnose the bug. "
+            "Do NOT propose or write any new code in this step."
+        )
+
 def diagnose_bug_with_openai(
     io: ErrorExplanationIO,
     model: str = OPENAI_MODEL,
@@ -102,24 +131,10 @@ def diagnose_bug_with_openai(
 
     is_swe = (io.benchmark == "SWE-bench_LITE" or io.benchmark.upper().startswith("SWE"))
     if is_swe:
-        system_msg = (
-            "You are a highly skilled debugging assistant for SWE-bench. "
-            "You receive: (1) the repository bug report prompt, "
-            "(2) the current candidate patch (unified diff), and "
-            "(3) execution feedback (e.g., patch validation or test failures). "
-            "Your job is ONLY to diagnose what is wrong with the patch or why it fails. "
-            "Do NOT propose or write any new patch in this step."
-        )
+        system_msg = swe_system_msg
         code_label = "CURRENT PATCH (unified diff)"
     else:
-        system_msg = (
-            "You are a highly skilled debugging assistant. "
-            "You receive: (1) the original programming problem, "
-            "(2) the current Python solution code, and "
-            "(3) execution feedback (test results, errors, stdout/stderr). "
-            "Your job in THIS STEP is ONLY to diagnose the bug. "
-            "Do NOT propose or write any new code in this step."
-        )
+        system_msg = reg_swe_system_msg
         code_label = "CURRENT PYTHON CODE"
 
 
@@ -163,17 +178,220 @@ def diagnose_bug_with_openai(
         - If all tests passed and you see no clear bug, clearly say that in all fields.
     """
 
-    response = openai.chat.completions.create(
+    response = openai_client.chat.completions.create(
         model=model,
         response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": system_msg},
             {"role": "user",  "content": user_msg},
         ],
-        temperature=0.1,
     )
 
     content = response.choices[0].message.content
+
+    try:
+        parsed = json.loads(content)
+    except json.JSONDecodeError:
+    
+        parsed = {
+            "failing_behaviour": content,
+            "suspected_bug_location": "",
+            "what_is_wrong": "",
+            "why_it_is_wrong": "",
+        }
+
+    failing_behaviour = parsed.get("failing_behaviour", "").strip()
+    suspected_bug_location = parsed.get("suspected_bug_location", "").strip()
+    what_is_wrong = parsed.get("what_is_wrong", "").strip()
+    why_it_is_wrong = parsed.get("why_it_is_wrong", "").strip()
+
+    try:
+        raw_resp: Dict[str, Any] = response.model_dump()
+    except Exception:
+        raw_resp = {"raw": str(response)}
+
+    return BugDiagnosisResult(
+        benchmark=benchmark,
+        task_id=tid,
+        model=model,
+        failing_behaviour=failing_behaviour,
+        suspected_bug_location=suspected_bug_location,
+        what_is_wrong=what_is_wrong,
+        why_it_is_wrong=why_it_is_wrong,
+        raw_response=raw_resp,
+    )
+
+
+def diagnose_bug_with_gemini(
+    io: ErrorExplanationIO,
+    model: str = GOOGLE_MODEL,
+) -> BugDiagnosisResult:
+
+    benchmark = io.benchmark
+    tid = io.task_id
+
+    is_swe = (io.benchmark == "SWE-bench_LITE" or io.benchmark.upper().startswith("SWE"))
+    if is_swe:
+        system_msg = swe_system_msg
+        code_label = "CURRENT PATCH (unified diff)"
+    else:
+        system_msg = reg_swe_system_msg
+        code_label = "CURRENT PYTHON CODE"
+
+
+    user_msg = f"""
+        # Inlcude system message in user message
+        {system_msg}
+
+        # (1) PROBLEM SPECIFICATION
+        {io.problem_spec}
+
+        # (2) code_label
+        {io.current_code}
+
+        # (3) EXECUTION FEEDBACK
+        {io.feedback_block}
+
+        # YOUR TASK (Step 4.2 – Bug Diagnosis Only)
+
+        You MUST:
+
+        1. Map the failing tests and/or error messages to specific parts of the code.
+        2. Identify what is wrong in the logic, such as:
+        - Wrong condition
+        - Wrong formula or arithmetic
+        - Missing base case
+        - Wrong loop bounds
+        - Incorrect handling of edge cases
+        - Misuse of data structures
+        3. Explain WHY this is wrong, explicitly referencing the problem requirements.
+
+        RESPONSE FORMAT (MANDATORY)
+        Respond ONLY as a JSON object with the following fields:
+
+        {{
+        "failing_behaviour": "Summarize what the code currently does wrong based on the feedback (tests / errors).",
+        "suspected_bug_location": "Describe which function, block, or lines are most likely responsible for the bug.",
+        "what_is_wrong": "Describe the logical or algorithmic mistake (wrong condition, formula, missing case, etc.).",
+        "why_it_is_wrong": "Explain why this behaviour violates the problem's requirements, using those requirements explicitly."
+        }}
+
+        Rules:
+        - Do NOT include any Python code in the JSON fields.
+        - Do NOT include backticks or Markdown fences inside the JSON.
+        - If all tests passed and you see no clear bug, clearly say that in all fields.
+    """
+
+    response = gemini_client.models.generate_content(
+        model=model,
+        contents=types.Part.from_text(text=user_msg),
+        # config=types.GenerateContentConfig(temperature=0.3),
+    )
+
+    content = getattr(response, "text", "") or str(response)
+    content = content.strip()
+
+    try:
+        parsed = json.loads(content)
+    except json.JSONDecodeError:
+    
+        parsed = {
+            "failing_behaviour": content,
+            "suspected_bug_location": "",
+            "what_is_wrong": "",
+            "why_it_is_wrong": "",
+        }
+
+    failing_behaviour = parsed.get("failing_behaviour", "").strip()
+    suspected_bug_location = parsed.get("suspected_bug_location", "").strip()
+    what_is_wrong = parsed.get("what_is_wrong", "").strip()
+    why_it_is_wrong = parsed.get("why_it_is_wrong", "").strip()
+
+    try:
+        raw_resp: Dict[str, Any] = response.model_dump()
+    except Exception:
+        raw_resp = {"raw": str(response)}
+
+    return BugDiagnosisResult(
+        benchmark=benchmark,
+        task_id=tid,
+        model=model,
+        failing_behaviour=failing_behaviour,
+        suspected_bug_location=suspected_bug_location,
+        what_is_wrong=what_is_wrong,
+        why_it_is_wrong=why_it_is_wrong,
+        raw_response=raw_resp,
+    )
+
+
+
+def diagnose_bug_with_claude(
+    io: ErrorExplanationIO,
+    model: str = CLAUDE_MODEL,
+) -> BugDiagnosisResult:
+
+    benchmark = io.benchmark
+    tid = io.task_id
+
+    is_swe = (io.benchmark == "SWE-bench_LITE" or io.benchmark.upper().startswith("SWE"))
+    if is_swe:
+        system_msg = swe_system_msg
+        code_label = "CURRENT PATCH (unified diff)"
+    else:
+        system_msg = reg_swe_system_msg
+        code_label = "CURRENT PYTHON CODE"
+
+
+    user_msg = f"""
+        # (1) PROBLEM SPECIFICATION
+        {io.problem_spec}
+
+        # (2) code_label
+        {io.current_code}
+
+        # (3) EXECUTION FEEDBACK
+        {io.feedback_block}
+
+        # YOUR TASK (Step 4.2 – Bug Diagnosis Only)
+
+        You MUST:
+
+        1. Map the failing tests and/or error messages to specific parts of the code.
+        2. Identify what is wrong in the logic, such as:
+        - Wrong condition
+        - Wrong formula or arithmetic
+        - Missing base case
+        - Wrong loop bounds
+        - Incorrect handling of edge cases
+        - Misuse of data structures
+        3. Explain WHY this is wrong, explicitly referencing the problem requirements.
+
+        RESPONSE FORMAT (MANDATORY)
+        Respond ONLY as a JSON object with the following fields:
+
+        {{
+        "failing_behaviour": "Summarize what the code currently does wrong based on the feedback (tests / errors).",
+        "suspected_bug_location": "Describe which function, block, or lines are most likely responsible for the bug.",
+        "what_is_wrong": "Describe the logical or algorithmic mistake (wrong condition, formula, missing case, etc.).",
+        "why_it_is_wrong": "Explain why this behaviour violates the problem's requirements, using those requirements explicitly."
+        }}
+
+        Rules:
+        - Do NOT include any Python code in the JSON fields.
+        - Do NOT include backticks or Markdown fences inside the JSON.
+        - If all tests passed and you see no clear bug, clearly say that in all fields.
+    """
+
+    response = claude_client.messages.create(
+        model=model,
+        max_tokens=1000,
+        system=system_msg,
+        messages=[
+            {"role": "user", "content": user_msg},
+        ],
+    )
+
+    content = response.content[0].text
 
     try:
         parsed = json.loads(content)
