@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
-from typing import Dict, Optional
-from typing_extensions import Literal, Required, TypedDict
+from typing import Dict, Union, Optional
+from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
+from .direct_caller_param import DirectCallerParam
+from .server_tool_caller_param import ServerToolCallerParam
 from .cache_control_ephemeral_param import CacheControlEphemeralParam
+from .server_tool_caller_20260120_param import ServerToolCaller20260120Param
 
-__all__ = ["ToolUseBlockParam"]
+__all__ = ["ToolUseBlockParam", "Caller"]
+
+Caller: TypeAlias = Union[DirectCallerParam, ServerToolCallerParam, ServerToolCaller20260120Param]
 
 
 class ToolUseBlockParam(TypedDict, total=False):
@@ -21,3 +26,6 @@ class ToolUseBlockParam(TypedDict, total=False):
 
     cache_control: Optional[CacheControlEphemeralParam]
     """Create a cache control breakpoint at this content block."""
+
+    caller: Caller
+    """Tool invocation directly from the model."""

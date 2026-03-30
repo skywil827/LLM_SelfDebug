@@ -23,7 +23,7 @@ claude_client = anthropic.Anthropic()
 
 OPENAI_MODEL = "gpt-4o"
 GOOGLE_MODEL = "gemini-3-flash-preview"
-CLAUDE_MODEL = "claude-haiku-4-5-20251001"
+CLAUDE_MODEL = "claude-haiku-4-5"
 
 
 @dataclass

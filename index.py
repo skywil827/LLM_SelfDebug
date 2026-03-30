@@ -5,25 +5,20 @@ from typing import Dict, Any, Optional, Union, List, Literal, Tuple
 from collections import defaultdict
 from pathlib import Path
 from datetime import datetime
-
 from dotenv import load_dotenv
 from openai import OpenAI
 import anthropic
 from google import genai
 from google.genai import types
-
 from datasets import load_dataset
 from human_eval.data import read_problems
 import matplotlib.pyplot as plt
-
 from humanEvalInput import HumanEvalTask, load_humaneval_task
 from MBPPInput import MBPPTask, load_mbpp_task
 from APPSInput import APPSTask, load_apps_task
 from sweBenchInput import load_swe_instance, build_swe_prompt, SWELITETask
-
 from runtime.feedback_package import build_feedback_package
 from runtime.code_exec import ExecutionResult, execute_task
-
 from error_explanation import (
     build_error_explanation_io,
     diagnose_bug_with_openai,
@@ -40,13 +35,6 @@ def _now_ts() -> str:
 
 
 def make_run_dir(out_root: str = "results") -> Tuple[str, str, str]:
-    """
-    Creates:
-      results/run_<timestamp>/
-        - results.json
-        - plots/
-    Returns: (timestamp, run_dir, plots_dir)
-    """
     ts = _now_ts()
     run_dir = Path(out_root) / f"run_{ts}"
     plots_dir = run_dir / "plots"
@@ -57,12 +45,12 @@ def make_run_dir(out_root: str = "results") -> Tuple[str, str, str]:
 def build_summary_report_text(compact_summary_rows: List[Dict[str, Any]]) -> List[str]:
     lines: List[str] = []
     for row in compact_summary_rows:
-        bench = row["benchmark"]
-        provider = row["provider"]
-        model = row["model"]
+        bench = row["benchmark"] #string
+        provider = row["provider"] #string
+        model = row["model"] #string
 
-        bsum = row["baseline"]
-        ssum = row["self_debug"]
+        bsum = row["baseline"]  #dict
+        ssum = row["self_debug"] #dict
 
         lines.append(f"{bench} on {provider}:{model}")
         lines.append(f"Baseline: {bsum['num_passed']}/{bsum['num_tasks']} ({bsum['pass_rate']*100:.2f}%)")
@@ -115,7 +103,7 @@ claude_client = anthropic.Anthropic(api_key=anthropic_api_key)
 
 OPENAI_MODEL = "gpt-4o"
 GOOGLE_MODEL = "gemini-3-flash-preview"
-CLAUDE_MODEL = "claude-3-haiku-20240307"
+CLAUDE_MODEL = "claude-haiku-4-5"
 
 TaskType = Union[HumanEvalTask, MBPPTask, APPSTask, SWELITETask]
 Provider = Literal["openai", "gemini", "anthropic"]
@@ -146,7 +134,7 @@ class InitialCodeResult:
 
 
 def _get_task_identity(task) -> tuple[str, str]:
-    constraints = getattr(task, "constraints", {}) or {}
+    constraints = getattr(task, "constraints", {})
     benchmark = constraints.get("benchmark", "UNKNOWN")
 
     if hasattr(task, "task_id") and getattr(task, "task_id") is not None:
@@ -155,13 +143,13 @@ def _get_task_identity(task) -> tuple[str, str]:
             tid = f"MBPP/{tid}"
         return benchmark, tid
 
-    if hasattr(task, "problem_id") and getattr(task, "problem_id") is not None:
+    elif hasattr(task, "problem_id") and getattr(task, "problem_id") is not None:
         return benchmark, f"APPS/{getattr(task, 'problem_id')}"
 
-    if hasattr(task, "instance_id") and getattr(task, "instance_id") is not None:
+    elif hasattr(task, "instance_id") and getattr(task, "instance_id") is not None:
         return benchmark, f"SWELITE/{getattr(task, 'instance_id')}"
-
-    return benchmark, "UNKNOWN"
+    else:
+        return benchmark, "UNKNOWN"
 
 
 
@@ -268,63 +256,75 @@ def generate_initial_code_with_gemini(task: TaskType, model: str = GOOGLE_MODEL)
         raw_response=raw_response,
         raw_prompt=user_instructions,
     )
-
-
 def generate_initial_code_with_claude(task: TaskType, model: str = CLAUDE_MODEL) -> InitialCodeResult:
     benchmark, tid = _get_task_identity(task)
 
     if isinstance(task, SWELITETask):
         base_prompt = build_swe_prompt(task)
         artifact_key = "patch"
-        response_schema = """{ "plan": "...", "patch": "...", "explanation": "..." }"""
     else:
         base_prompt = task.build_prompt()
         artifact_key = "code"
-        response_schema = """{ "plan": "...", "code": "...", "explanation": "..." }"""
 
-    system_msg = "You are a highly reliable coding assistant. Follow the schema and return JSON only."
+    system_msg = "You are a highly reliable coding assistant."
     user_instructions = f"""
-        TASK ({benchmark})
-        ------------------
-        {base_prompt}
+    TASK ({benchmark})
+    ------------------
+    {base_prompt}
 
-        Return JSON:
-        {response_schema}
+    Return JSON with keys: plan, {artifact_key}, explanation.
     """.strip()
+
+    json_schema = {
+        "type": "object",
+        "properties": {
+            "plan": {"type": "string"},
+            "code": {"type": "string"},
+            "patch": {"type": "string"},
+            "explanation": {"type": "string"},
+        },
+        "required": ["plan", "explanation"],
+        "additionalProperties": False,
+    }
+    schema = dict(json_schema)
+    schema["required"] = ["plan", artifact_key, "explanation"]
 
     response = claude_client.messages.create(
         model=model,
-        max_tokens=1200,
+        max_tokens=3000,
         system=system_msg,
         messages=[{"role": "user", "content": user_instructions}],
+        output_config={
+            "format": {
+                "type": "json_schema",
+                "schema": schema,
+            }
+        },
     )
 
     content = response.content[0].text
-    try:
-        parsed = json.loads(content)
-    except json.JSONDecodeError:
-        parsed = {"plan": "", artifact_key: "", "explanation": content}
+    parsed = json.loads(content)
 
     return InitialCodeResult(
         benchmark=benchmark,
         task_id=tid,
         model=model,
-        plan=str(parsed.get("plan", "") or "").strip(),
-        code=str(parsed.get(artifact_key, "") or "").strip(),
-        explanation=str(parsed.get("explanation", "") or "").strip(),
+        plan=parsed["plan"].strip(),
+        code=parsed[artifact_key].strip(),
+        explanation=parsed["explanation"].strip(),
         raw_response=response.model_dump() if hasattr(response, "model_dump") else {"raw": str(response)},
         raw_prompt=user_instructions,
     )
 
-
 def generate_initial(task: TaskType, provider: str, model_name: str) -> InitialCodeResult:
     if provider == "openai":
         return generate_initial_code_with_openai(task, model=model_name)
-    if provider == "gemini":
+    elif provider == "gemini":
         return generate_initial_code_with_gemini(task, model=model_name)
-    if provider == "anthropic":
+    elif provider == "anthropic":
         return generate_initial_code_with_claude(task, model=model_name)
-    raise ValueError(f"Unknown provider: {provider}")
+    else:
+        raise ValueError(f"Unknown provider: {provider}")
 
 
 def _print_task_header(task_idx: int) -> None:
@@ -753,6 +753,9 @@ def get_patch_agents_for_provider(provider: Provider, k: int,
 
 
 if __name__ == "__main__":
+
+    # print(generate_initial_code_with_claude(load_humaneval_task('HumanEval/13')))
+    # print(generate_initial_code_with_gemini(load_humaneval_task('HumanEval/13')))
     ts, run_dir, plots_dir = make_run_dir("results")
 
     print("\n" + "=" * 80)
@@ -760,14 +763,14 @@ if __name__ == "__main__":
     print("=" * 80)
 
     configs: List[Tuple[Provider, str]] = [
-        ("gemini", "gemini-3-flash-preview"),
-        ("openai", "gpt-4o"),
-        ("anthropic", "claude-3-haiku-20240307"),
+        # ("gemini", "gemini-3-flash-preview"),
+        # ("openai", "gpt-4o"),
+        ("anthropic", "claude-sonnet-4-6"),
     ]
+    # benchmarks = ["HumanEval", "MBPP", "APPS", "SWE-bench_LITE"]
+    benchmarks = ["SWE-bench_LITE"]
 
-    benchmarks = ["HumanEval"]
-    max_tasks = 3
-
+    max_tasks = 100
     max_self_debug_iters = 2
 
     # Patch pools used for sequential handoff 
@@ -785,12 +788,12 @@ if __name__ == "__main__":
     ]
 
     claude_patch_pool: List[AgentSpec] = [
-        AgentSpec("anthropic", "claude-3-5-sonnet-20241022"),
-        AgentSpec("anthropic", "claude-3-haiku-20240307"),
+        AgentSpec("anthropic", "claude-opus-4-6"),
+        # AgentSpec("anthropic", "claude-sonnet-4-6"),
     ]
 
     # handoff K values
-    k_values = [2, 3]
+    k_values = [2]
 
     all_results: List[Tuple[str, Dict[str, Any]]] = []
     all_details: Dict[str, Any] = {"baseline": {}, "self_debug_single": {}, "sequential_handoff": {}}
@@ -1032,7 +1035,7 @@ if __name__ == "__main__":
             all_results.append(("baseline", baseline_summary))
             all_results.append(("self_debug_single", self_debug_summary))
 
-            # IMPORTANT: for handoff summaries, set model to a HANDOFF LABEL (not baseline model_name)
+           
             handoff_summaries_by_k: Dict[int, Dict[str, Any]] = {}
             for k in k_values:
                 agents_k = get_patch_agents_for_provider(provider, k, patch_pool, gemini_patch_pool, claude_patch_pool)
@@ -1050,7 +1053,7 @@ if __name__ == "__main__":
             compact_row = {
                 "benchmark": benchmark,
                 "provider": provider,
-                "model": model_name,  # baseline model for the row title
+                "model": model_name,
                 "baseline": baseline_summary,
                 "self_debug": self_debug_summary,
                 "handoff_by_k": {k: handoff_summaries_by_k[k] for k in k_values},
