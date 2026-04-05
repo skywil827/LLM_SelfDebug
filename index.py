@@ -763,14 +763,15 @@ if __name__ == "__main__":
     print("=" * 80)
 
     configs: List[Tuple[Provider, str]] = [
-        # ("gemini", "gemini-3-flash-preview"),
+        ("gemini", "gemini-3-flash-preview"),
         # ("openai", "gpt-4o"),
-        ("anthropic", "claude-sonnet-4-6"),
+        # ("openai", "o3-mini"),
+        # ("anthropic", "claude-sonnet-4-6"),
     ]
     # benchmarks = ["HumanEval", "MBPP", "APPS", "SWE-bench_LITE"]
-    benchmarks = ["SWE-bench_LITE"]
+    benchmarks = ["APPS"]
 
-    max_tasks = 100
+    max_tasks = 20
     max_self_debug_iters = 2
 
     # Patch pools used for sequential handoff 
