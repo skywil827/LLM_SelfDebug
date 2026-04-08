@@ -101,9 +101,13 @@ openai_client = OpenAI()
 gemini_client = genai.Client(api_key=google_api_key)
 claude_client = anthropic.Anthropic(api_key=anthropic_api_key)
 
-OPENAI_MODEL = "gpt-4o"
-GOOGLE_MODEL = "gemini-3-flash-preview"
-CLAUDE_MODEL = "claude-haiku-4-5"
+# OPENAI_MODEL = "gpt-4o"
+# GOOGLE_MODEL = "gemini-3-flash-preview"
+# CLAUDE_MODEL = "claude-haiku-4-5"
+
+OPENAI_MODEL = "gpt-5.4"
+GOOGLE_MODEL = "gemini-3.1-pro-preview"
+CLAUDE_MODEL = "claude-opus-4-6"
 
 TaskType = Union[HumanEvalTask, MBPPTask, APPSTask, SWELITETask]
 Provider = Literal["openai", "gemini", "anthropic"]
@@ -178,7 +182,7 @@ def generate_initial_code_with_openai(task: TaskType, model: str = OPENAI_MODEL)
 
     response = openai_client.chat.completions.create(
         model=model,
-        response_format={"type": "json_object"},
+        # response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": system_msg},
             {"role": "user", "content": user_instructions},
@@ -256,6 +260,7 @@ def generate_initial_code_with_gemini(task: TaskType, model: str = GOOGLE_MODEL)
         raw_response=raw_response,
         raw_prompt=user_instructions,
     )
+
 def generate_initial_code_with_claude(task: TaskType, model: str = CLAUDE_MODEL) -> InitialCodeResult:
     benchmark, tid = _get_task_identity(task)
 
@@ -268,12 +273,21 @@ def generate_initial_code_with_claude(task: TaskType, model: str = CLAUDE_MODEL)
 
     system_msg = "You are a highly reliable coding assistant."
     user_instructions = f"""
-    TASK ({benchmark})
-    ------------------
-    {base_prompt}
+TASK ({benchmark})
+------------------
+{base_prompt}
 
-    Return JSON with keys: plan, {artifact_key}, explanation.
-    """.strip()
+Return ONLY valid JSON.
+Do not use markdown fences.
+Do not add any extra text.
+
+Use exactly this format:
+{{
+  "plan": "...",
+  "{artifact_key}": "...",
+  "explanation": "..."
+}}
+""".strip()
 
     json_schema = {
         "type": "object",
@@ -283,35 +297,52 @@ def generate_initial_code_with_claude(task: TaskType, model: str = CLAUDE_MODEL)
             "patch": {"type": "string"},
             "explanation": {"type": "string"},
         },
-        "required": ["plan", "explanation"],
+        "required": ["plan", artifact_key, "explanation"],
         "additionalProperties": False,
     }
-    schema = dict(json_schema)
-    schema["required"] = ["plan", artifact_key, "explanation"]
 
     response = claude_client.messages.create(
         model=model,
-        max_tokens=3000,
+        max_tokens=6000,
         system=system_msg,
         messages=[{"role": "user", "content": user_instructions}],
         output_config={
             "format": {
                 "type": "json_schema",
-                "schema": schema,
+                "schema": json_schema,
             }
         },
     )
 
-    content = response.content[0].text
-    parsed = json.loads(content)
+    content = (response.content[0].text or "").strip()
+
+    if content.startswith("```"):
+        lines = content.splitlines()[1:]
+        if lines and lines[-1].strip().startswith("```"):
+            lines = lines[:-1]
+        content = "\n".join(lines).strip()
+
+    try:
+        parsed = json.loads(content)
+    except json.JSONDecodeError as e:
+        print("\n[CLAUDE JSON ERROR]")
+        print(f"Failed to parse Claude output: {e}")
+        print("Raw content:")
+        print(content)
+
+        parsed = {
+            "plan": "",
+            artifact_key: "",
+            "explanation": content,
+        }
 
     return InitialCodeResult(
         benchmark=benchmark,
         task_id=tid,
         model=model,
-        plan=parsed["plan"].strip(),
-        code=parsed[artifact_key].strip(),
-        explanation=parsed["explanation"].strip(),
+        plan=str(parsed.get("plan", "")).strip(),
+        code=str(parsed.get(artifact_key, "")).strip(),
+        explanation=str(parsed.get("explanation", "")).strip(),
         raw_response=response.model_dump() if hasattr(response, "model_dump") else {"raw": str(response)},
         raw_prompt=user_instructions,
     )
@@ -588,6 +619,7 @@ def plot_clean_grouped_bars(all_results: List[tuple], k_values: List[int], out_d
 
     saved_paths: List[str] = []
     by_benchmark = defaultdict(list)
+
     for mode_tag, summary in all_results:
         by_benchmark[summary["benchmark"]].append((mode_tag, summary))
 
@@ -595,20 +627,24 @@ def plot_clean_grouped_bars(all_results: List[tuple], k_values: List[int], out_d
 
     for benchmark, entries in by_benchmark.items():
         grouped = defaultdict(dict)
+        models_by_mode = defaultdict(list)
+
         for mode_tag, summary in entries:
             key = (summary["provider"], summary["model"])
             grouped[key][mode_tag] = summary["pass_rate"] * 100.0
+            models_by_mode[mode_tag].append(f"{summary['provider']}:{summary['model']}")
 
         keys = list(grouped.keys())
         labels = [shorten(f"{p}:{m}", 28) for (p, m) in keys]
         series_vals = {s: [grouped[k].get(s, 0.0) for k in keys] for s in series_order}
 
         x = list(range(len(keys)))
-        width = 0.12
+        width = 0.15
+
         mid = (len(series_order) - 1) / 2.0
         offsets = [(i - mid) * width for i in range(len(series_order))]
 
-        fig, ax = plt.subplots(figsize=(12, 5.5))
+        fig, ax = plt.subplots(figsize=(16, 6))
         ax.set_axisbelow(True)
         ax.grid(True, axis="y", linestyle="--", linewidth=0.7, alpha=0.6)
 
@@ -621,71 +657,100 @@ def plot_clean_grouped_bars(all_results: List[tuple], k_values: List[int], out_d
         ax.set_ylim(0, 100)
         ax.set_xticks(x)
         ax.set_xticklabels(labels, rotation=0)
+
         ax.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0)
 
-        fig.tight_layout()
+        left_text_lines = []
+
+        left_text_lines.append("Baseline:")
+        left_text_lines.extend(sorted(set(models_by_mode.get("baseline", []))) or ["  - None"])
+        left_text_lines.append("")
+
+        left_text_lines.append("Self-Debug:")
+        left_text_lines.extend(sorted(set(models_by_mode.get("self_debug_single", []))) or ["  - None"])
+        left_text_lines.append("")
+
+        for k in k_values:
+            tag = f"handoff_{k}agents"
+            left_text_lines.append(f"Handoff ({k} agents):")
+            left_text_lines.extend(sorted(set(models_by_mode.get(tag, []))) or ["  - None"])
+            left_text_lines.append("")
+
+        left_text = "\n".join(left_text_lines)
+
+        fig.subplots_adjust(left=0.08, right=0.72)
+
+        fig.text(
+            0.75, 0.5, left_text,
+            ha="left", va="center", fontsize=9,
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.9)
+        )
+
         out_file = outp / f"pass_rates_{benchmark}_clean.png".replace("/", "_")
         plt.savefig(out_file, dpi=220, bbox_inches="tight")
         plt.close(fig)
+
         saved_paths.append(str(out_file))
 
     return saved_paths
 
 
-def plot_improvement_over_baseline(all_results: List[tuple], k_values: List[int], out_dir: str) -> List[str]:
-    outp = Path(out_dir)
-    outp.mkdir(parents=True, exist_ok=True)
-    bench_counts = _benchmark_task_counts_from_results(all_results)
 
-    saved_paths: List[str] = []
-    baseline_lookup: Dict[tuple, float] = {}
-    rates_lookup: Dict[tuple, Dict[str, float]] = defaultdict(dict)
+# def plot_improvement_over_baseline(all_results: List[tuple], k_values: List[int], out_dir: str) -> List[str]:
+#     outp = Path(out_dir)
+#     outp.mkdir(parents=True, exist_ok=True)
+#     bench_counts = _benchmark_task_counts_from_results(all_results)
 
-    for mode_tag, summary in all_results:
-        key = (summary["benchmark"], summary["provider"], summary["model"])
-        rate = summary["pass_rate"] * 100.0
-        rates_lookup[key][mode_tag] = rate
-        if mode_tag == "baseline":
-            baseline_lookup[key] = rate
+#     saved_paths: List[str] = []
+#     by_benchmark = defaultdict(list)
 
-    benchmarks_in_results = sorted({k[0] for k in rates_lookup.keys()})
+#     for mode_tag, summary in all_results:
+#         by_benchmark[summary["benchmark"]].append((mode_tag, summary))
 
-    for bench in benchmarks_in_results:
-        fig, ax = plt.subplots(figsize=(10, 5))
-        ax.set_axisbelow(True)
-        ax.grid(True, axis="y", linestyle="--", linewidth=0.7, alpha=0.6)
+#     series_order = ["self_debug_single"] + [f"handoff_{k}agents" for k in k_values]
 
-        for (b, provider, model), modes in rates_lookup.items():
-            if b != bench:
-                continue
-            base = baseline_lookup.get((b, provider, model), 0.0)
+#     for benchmark, entries in by_benchmark.items():
+#         grouped = defaultdict(dict)
 
-            xs = [1]
-            ys = [modes.get("self_debug_single", 0.0) - base]
+#         for mode_tag, summary in entries:
+#             key = (summary["provider"], summary["model"])
+#             grouped[key][mode_tag] = summary["pass_rate"] * 100.0
 
-            for k in k_values:
-                tag = f"handoff_{k}agents"
-                xs.append(k)
-                ys.append(modes.get(tag, 0.0) - base)
+#         keys = list(grouped.keys())
+#         labels = [shorten(f"{p}:{m}", 35) for (p, m) in keys]
 
-            label = shorten(f"{provider}:{model}", 35)
-            ax.plot(xs, ys, marker="o", label=label)
+#         fig, ax = plt.subplots(figsize=(12, 5.5))
+#         ax.set_axisbelow(True)
+#         ax.grid(True, axis="y", linestyle="--", linewidth=0.7, alpha=0.6)
 
-        ax.axhline(0, linewidth=1)
-        n_tasks = bench_counts.get(bench, 0)
-        ax.set_title(f"{bench} (N={n_tasks}): Improvement over Baseline vs # Patch Agents (Sequential Handoff)")
-        ax.set_xlabel("Number of patch agents (K)")
-        ax.set_ylabel("Pass Rate (percentage points)")
-        ax.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0)
+#         for idx, key in enumerate(keys):
+#             baseline = grouped[key].get("baseline", 0.0)
 
-        fig.tight_layout()
-        out_file = outp / f"improvement_vs_k_{bench}.png".replace("/", "_")
-        plt.savefig(out_file, dpi=220, bbox_inches="tight")
-        plt.close(fig)
-        saved_paths.append(str(out_file))
+#             xs = [1]
+#             ys = [grouped[key].get("self_debug_single", 0.0) - baseline]
 
-    return saved_paths
+#             for k in k_values:
+#                 tag = f"handoff_{k}agents"
+#                 xs.append(k)
+#                 ys.append(grouped[key].get(tag, 0.0) - baseline)
 
+#             ax.plot(xs, ys, marker="o", linewidth=2, label=labels[idx])
+
+#         ax.axhline(0, linewidth=1)
+
+#         n_tasks = bench_counts.get(benchmark, 0)
+#         ax.set_title(f"{benchmark} (N={n_tasks}): Improvement over Baseline vs # Patch Agents (Sequential Handoff)")
+#         ax.set_xlabel("Number of patch agents (K)")
+#         ax.set_ylabel("Pass Rate Improvement (percentage points)")
+#         ax.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0)
+
+#         fig.tight_layout()
+#         out_file = outp / f"improvement_vs_k_{benchmark}.png".replace("/", "_")
+#         plt.savefig(out_file, dpi=220, bbox_inches="tight")
+#         plt.close(fig)
+#         saved_paths.append(str(out_file))
+
+#     return saved_paths
 
 
 # Loading tasks + summaries
@@ -763,38 +828,46 @@ if __name__ == "__main__":
     print("=" * 80)
 
     configs: List[Tuple[Provider, str]] = [
-        ("gemini", "gemini-3-flash-preview"),
-        # ("openai", "gpt-4o"),
-        # ("openai", "o3-mini"),
-        # ("anthropic", "claude-sonnet-4-6"),
+        ("gemini", "gemini-3.1-pro-preview"),
+        # ("openai", "gpt-5.4"),
+        # ("anthropic", "claude-opus-4-6"),
+
+
     ]
     # benchmarks = ["HumanEval", "MBPP", "APPS", "SWE-bench_LITE"]
-    benchmarks = ["APPS"]
+    benchmarks = ["HumanEval"]
 
-    max_tasks = 20
-    max_self_debug_iters = 2
+    max_tasks = 150
+    max_self_debug_iters = 5
 
     # Patch pools used for sequential handoff 
     patch_pool: List[AgentSpec] = [
-        AgentSpec("openai", "gpt-4.1-mini"),
-        AgentSpec("openai", "gpt-4.1"),
-        AgentSpec("openai", "gpt-5-mini"),
+        # AgentSpec("openai", "gpt-4.1-mini"),
+        # AgentSpec("openai", "gpt-4.1"),
+        # AgentSpec("openai", "gpt-5-mini"),
+        AgentSpec("openai", "gpt-5.4"),
+        AgentSpec("openai", "gpt-5.4-mini"),
+        AgentSpec("openai", "gpt-5.4-nano"),
         AgentSpec("openai", "gpt-5"),
+        AgentSpec("openai", "gpt-5-mini"),
     ]
 
     gemini_patch_pool: List[AgentSpec] = [
         AgentSpec("gemini", "gemini-3.1-pro-preview"),
+        AgentSpec("gemini", "gemini-3-flash-preview"),
         AgentSpec("gemini", "gemini-3-pro-preview"),
+        AgentSpec("gemini", "gemini-3.1-flash-lite-preview"),
         AgentSpec("gemini", "gemini-2.5-flash"),
     ]
 
     claude_patch_pool: List[AgentSpec] = [
         AgentSpec("anthropic", "claude-opus-4-6"),
-        # AgentSpec("anthropic", "claude-sonnet-4-6"),
+        AgentSpec("anthropic", "claude-sonnet-4-6"),
+        AgentSpec("anthropic", "claude-haiku-4-5"),
     ]
 
     # handoff K values
-    k_values = [2]
+    k_values = [2,3]
 
     all_results: List[Tuple[str, Dict[str, Any]]] = []
     all_details: Dict[str, Any] = {"baseline": {}, "self_debug_single": {}, "sequential_handoff": {}}
@@ -1063,7 +1136,7 @@ if __name__ == "__main__":
 
     # --- plots ---
     pass_rate_plot_paths = plot_clean_grouped_bars(all_results, k_values, plots_dir)
-    improvement_plot_paths = plot_improvement_over_baseline(all_results, k_values, plots_dir)
+    # improvement_plot_paths = plot_improvement_over_baseline(all_results, k_values, plots_dir)
 
     experiment_config = {
         "benchmarks": benchmarks,
@@ -1088,7 +1161,7 @@ if __name__ == "__main__":
         "plots_dir": plots_dir,
         "plots": {
             "pass_rates": pass_rate_plot_paths,
-            "improvement_vs_k": improvement_plot_paths,
+            # "improvement_vs_k": improvement_plot_paths,
         },
         "summary_report_text": summary_report_text,
     }
