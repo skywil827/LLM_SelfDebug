@@ -73,7 +73,7 @@ Self-debug: 28/30 (93.33% pass rate)
 Improvement: +28 tasks, +93.3333 percentage points
 ```
 
-**Performance Summary Across Benchmarks**
+### Performance Summary Across Benchmarks
 
 The results below show how self-debugging and handoff strategies improve code generation across all the benchmarks, such as SWE-bench LITE, HumanEval, MBPP, and APPS, using these frontier models like GPT-5.4, Claude Opus 4.6, and Gemini 3.1 Pro Preview.
 
