@@ -81,6 +81,7 @@ The results show that baseline performance is different across benchmarks and mo
 Sequential handoff allows multiple models to work on the same task one after another. If a model cannot fully solve a task after a certain number of attempts, the task is passed to another step for further improvement. The results show that handoff gives extra improvement after self-debugging and often helps reach 100%, especially on SWE-bench LITE and MBPP. However, the improvement from handoff is usually smaller compared to the improvement from baseline to self-debugging. In many cases, performance stops improving once it gets close to perfect, so running more iterations does not help much. 
 When the baseline performance is already very high or perfect, such as in many HumanEval and APPS tests, both self-debugging and handoff do not make much difference. This is because there are very few or no errors left to fix.
 
+```
 Model:  HumanEval Results (GPT-5.4)
 Tasks	Baseline	Self-Debug	Handoff (2)	Handoff (3)
 50	50/50 (100%)	50/50 (100%)	50/50 (100%)	50/50 (100%)
@@ -128,3 +129,4 @@ Model: HumanEval (Gemini 3.1 Pro Preview)
 Tasks	Baseline	Self-Debug	Handoff (2)	Handoff (3)
 50	46/50 (92%)	50/50 (100%)	50/50 (100%)	50/50 (100%)
 100	96/100 (96%)	100/100 (100%)	100/100 (100%)	100/100 (100%)
+```
