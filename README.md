@@ -73,7 +73,7 @@ Self-debug: 28/30 (93.33% pass rate)
 Improvement: +28 tasks, +93.3333 percentage points
 ```
 
-Performance Summary Across Benchmarks
+**Performance Summary Across Benchmarks**
 
 The results below show how self-debugging and handoff strategies improve code generation across all the benchmarks, such as SWE-bench LITE, HumanEval, MBPP, and APPS, using these frontier models like GPT-5.4, Claude Opus 4.6, and Gemini 3.1 Pro Preview.
 I ran several tests with different dataset sizes to make sure the results are reliable and not due to chance. For example, I tested GPT-5.4 and Claude Opus 4.6 on different numbers of tasks (50, 100, 150, 200, and 300) to show that the results are consistent. Larger runs help confirm overall performance, while smaller runs help show how stable the model is across different sets of problems. This is important because it shows that self-debugging works well in my proposed framework, and smaller runs still help explain the results clearly.
