@@ -9,13 +9,25 @@ from google.genai import types
 import anthropic
 from dataclasses import dataclass
 from runtime.feedback_package import FeedbackPackage, TaskType, _get_task_identity
-
+from ollama import Client
 
 
 load_dotenv(override=True)
 openai_api_key = os.getenv("OPENAI_API_KEY")
 google_api_key = os.getenv("GOOGLE_API_KEY")
 anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
+ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+ollama_api_key = os.getenv("OLLAMA_API_KEY")
+
+ollama_headers = {}
+if ollama_api_key:
+    ollama_headers["Authorization"] = f"Bearer {ollama_api_key}"
+
+ollama_client = Client(
+    host=ollama_host,
+    headers=ollama_headers if ollama_headers else None,
+)
+
 
 openai_client = OpenAI()
 gemini_client = genai.Client(api_key=google_api_key)
@@ -24,6 +36,7 @@ claude_client = anthropic.Anthropic()
 OPENAI_MODEL = "gpt-4o"
 GOOGLE_MODEL = "gemini-3-flash-preview"
 CLAUDE_MODEL = "claude-haiku-4-5"
+OLLAMA_MODEL = "qwen2.5-coder:3b"
 
 
 @dataclass
@@ -425,6 +438,86 @@ def diagnose_bug_with_claude(
         raw_response=raw_resp,
     )
 
+
+def diagnose_bug_with_ollama(
+    io: ErrorExplanationIO,
+    model: str = OLLAMA_MODEL,
+) -> BugDiagnosisResult:
+
+    benchmark = io.benchmark
+    tid = io.task_id
+
+    is_swe = (io.benchmark == "SWE-bench_LITE" or io.benchmark.upper().startswith("SWE"))
+    if is_swe:
+        system_msg = swe_system_msg
+        code_label = "CURRENT PATCH (unified diff)"
+    else:
+        system_msg = reg_swe_system_msg
+        code_label = "CURRENT PYTHON CODE"
+
+    user_msg = f"""
+{system_msg}
+
+# (1) PROBLEM SPECIFICATION
+{io.problem_spec}
+
+# (2) {code_label}
+{io.current_code}
+
+# (3) EXECUTION FEEDBACK
+{io.feedback_block}
+
+# YOUR TASK (Step 4.2 – Bug Diagnosis Only)
+
+Respond ONLY as JSON:
+
+{{
+"failing_behaviour": "...",
+"suspected_bug_location": "...",
+"what_is_wrong": "...",
+"why_it_is_wrong": "..."
+}}
+"""
+
+    response = ollama_client.chat(
+        model=model,
+        messages=[
+            {"role": "user", "content": user_msg}
+        ],
+        stream=False,
+        options={"temperature": 0}
+    )
+
+    content = (response.get("message", {}) or {}).get("content", "") or ""
+    content = content.strip()
+
+    # Remove markdown fences if present
+    if content.startswith("```"):
+        lines = content.splitlines()[1:]
+        if lines and lines[-1].strip().startswith("```"):
+            lines = lines[:-1]
+        content = "\n".join(lines).strip()
+
+    try:
+        parsed = json.loads(content)
+    except json.JSONDecodeError:
+        parsed = {
+            "failing_behaviour": content,
+            "suspected_bug_location": "",
+            "what_is_wrong": "",
+            "why_it_is_wrong": "",
+        }
+
+    return BugDiagnosisResult(
+        benchmark=benchmark,
+        task_id=tid,
+        model=model,
+        failing_behaviour=parsed.get("failing_behaviour", "").strip(),
+        suspected_bug_location=parsed.get("suspected_bug_location", "").strip(),
+        what_is_wrong=parsed.get("what_is_wrong", "").strip(),
+        why_it_is_wrong=parsed.get("why_it_is_wrong", "").strip(),
+        raw_response=response,
+    )
 
 def build_error_explanation_text(
     io: ErrorExplanationIO,

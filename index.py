@@ -24,12 +24,11 @@ from error_explanation import (
     diagnose_bug_with_openai,
     diagnose_bug_with_gemini,
     diagnose_bug_with_claude,
+    diagnose_bug_with_ollama,
     build_error_explanation_text,
 )
-from patch_generation import produce_next_code_version 
-import ollama
-
-
+from patch_generation import produce_next_code_version
+from ollama import Client
 
 
 def _now_ts() -> str:
@@ -47,12 +46,12 @@ def make_run_dir(out_root: str = "results") -> Tuple[str, str, str]:
 def build_summary_report_text(compact_summary_rows: List[Dict[str, Any]]) -> List[str]:
     lines: List[str] = []
     for row in compact_summary_rows:
-        bench = row["benchmark"] #string
-        provider = row["provider"] #string
-        model = row["model"] #string
+        bench = row["benchmark"]
+        provider = row["provider"]
+        model = row["model"]
 
-        bsum = row["baseline"]  #dict
-        ssum = row["self_debug"] #dict
+        bsum = row["baseline"]
+        ssum = row["self_debug"]
 
         lines.append(f"{bench} on {provider}:{model}")
         lines.append(f"Baseline: {bsum['num_passed']}/{bsum['num_tasks']} ({bsum['pass_rate']*100:.2f}%)")
@@ -93,29 +92,33 @@ def save_experiment_results(
     return str(out_path)
 
 
-
 load_dotenv(override=True)
 openai_api_key = os.getenv("OPENAI_API_KEY")
 google_api_key = os.getenv("GOOGLE_API_KEY")
 anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
 ollama_api_key = os.getenv("OLLAMA_API_KEY")
-
+ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
 openai_client = OpenAI()
 gemini_client = genai.Client(api_key=google_api_key)
 claude_client = anthropic.Anthropic(api_key=anthropic_api_key)
 
-# OPENAI_MODEL = "gpt-4o"
-# GOOGLE_MODEL = "gemini-3-flash-preview"
-# CLAUDE_MODEL = "claude-haiku-4-5"
+ollama_headers = {}
+if ollama_api_key:
+    ollama_headers["Authorization"] = f"Bearer {ollama_api_key}"
+
+ollama_client = Client(
+    host=ollama_host,
+    headers=ollama_headers if ollama_headers else None,
+)
 
 OPENAI_MODEL = "gpt-5.4"
 GOOGLE_MODEL = "gemini-3.1-pro-preview"
-# CLAUDE_MODEL = "claude-opus-4-6"
 CLAUDE_MODEL = "claude-sonnet-4-6"
+OLLAMA_MODEL = "qwen2.5-coder:3b"
 
 TaskType = Union[HumanEvalTask, MBPPTask, APPSTask, SWELITETask]
-Provider = Literal["openai", "gemini", "anthropic"]
+Provider = Literal["openai", "gemini", "anthropic", "ollama"]
 
 
 @dataclass(frozen=True)
@@ -161,6 +164,45 @@ def _get_task_identity(task) -> tuple[str, str]:
         return benchmark, "UNKNOWN"
 
 
+def debug_print_raw_model_content(provider: str, content: str) -> None:
+    print("\n[Raw Model Content]")
+    print(f"Provider: {provider}")
+    print(repr(content))
+    print()
+
+
+def _make_empty_generation_result(task: TaskType, provider: str, model_name: str) -> ExecutionResult:
+    benchmark, tid = _get_task_identity(task)
+    return ExecutionResult(
+        benchmark=benchmark,
+        task_id=tid,
+        patch="",
+        passed=False,
+        num_tests=0,
+        num_passed=0,
+        error_type="EmptyGeneration",
+        error_message=f"Model returned empty code for {benchmark}:{tid} using {provider}:{model_name}",
+        traceback_str="",
+        stdout="",
+        stderr="",
+    )
+
+
+def safe_execute_generated_code(
+    task: TaskType,
+    generated_code: str,
+    provider: str,
+    model_name: str,
+) -> ExecutionResult:
+    if not (generated_code or "").strip():
+        print("\n[Empty Generation Detected]")
+        print(f"Provider: {provider}")
+        print(f"Model: {model_name}")
+        print("Generated code is empty.\n")
+        return _make_empty_generation_result(task, provider, model_name)
+
+    return execute_task(task, generated_code)
+
 
 # Initial generation
 def generate_initial_code_with_openai(task: TaskType, model: str = OPENAI_MODEL) -> InitialCodeResult:
@@ -170,16 +212,28 @@ def generate_initial_code_with_openai(task: TaskType, model: str = OPENAI_MODEL)
         base_prompt = build_swe_prompt(task)
         artifact_key = "patch"
         response_schema = """{ "plan": "...", "patch": "...", "explanation": "..." }"""
+        artifact_instruction = (
+            'The "patch" field must contain the full corrected unified diff patch only. '
+            "It must be complete and directly usable."
+        )
     else:
         base_prompt = task.build_prompt()
         artifact_key = "code"
         response_schema = """{ "plan": "...", "code": "...", "explanation": "..." }"""
+        artifact_instruction = (
+            'The "code" field must contain complete, self-contained Python code. '
+            "Include all required imports needed for execution"
+            "Do not omit imports from the problem specification if the generated code depends on them."
+        )
 
     system_msg = "You are a highly reliable coding assistant. Follow the schema and return JSON only."
     user_instructions = f"""
         TASK ({benchmark})
         ------------------
         {base_prompt}
+        
+        Return ONLY valid JSON
+        {artifact_instruction}
 
         Return JSON:
         {response_schema}
@@ -187,7 +241,6 @@ def generate_initial_code_with_openai(task: TaskType, model: str = OPENAI_MODEL)
 
     response = openai_client.chat.completions.create(
         model=model,
-        # response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": system_msg},
             {"role": "user", "content": user_instructions},
@@ -217,24 +270,35 @@ def generate_initial_code_with_gemini(task: TaskType, model: str = GOOGLE_MODEL)
 
     if isinstance(task, SWELITETask):
         base_prompt = build_swe_prompt(task)
-        expected_key = "patch"
+        artifact_key = "patch"
         response_schema = """{ "plan": "...", "patch": "...", "explanation": "..." }"""
+        artifact_instruction = (
+            'The "patch" field must contain the full corrected unified diff patch only. '
+            "It must be complete and directly usable."
+        )
     else:
         base_prompt = task.build_prompt()
-        expected_key = "code"
+        artifact_key = "code"
         response_schema = """{ "plan": "...", "code": "...", "explanation": "..." }"""
+        artifact_instruction = (
+            'The "code" field must contain complete, self-contained Python code. '
+            "Include all required imports needed for execution"
+            "Do not omit imports from the problem specification if the generated code depends on them."
+        )
 
     system_msg = "You are a highly reliable coding assistant. Follow the schema and return JSON only."
     user_instructions = f"""
-        {system_msg}
-
         TASK ({benchmark})
         ------------------
         {base_prompt}
+        
+        Return ONLY valid JSON
+        {artifact_instruction}
 
         Return JSON:
         {response_schema}
     """.strip()
+
 
     response = gemini_client.models.generate_content(
         model=model,
@@ -251,7 +315,7 @@ def generate_initial_code_with_gemini(task: TaskType, model: str = GOOGLE_MODEL)
     try:
         parsed = json.loads(content)
     except json.JSONDecodeError:
-        parsed = {"plan": "", expected_key: "", "explanation": content}
+        parsed = {"plan": "", artifact_key: "", "explanation": content}
 
     raw_response = response.to_dict() if hasattr(response, "to_dict") else {"raw": str(response)}
 
@@ -260,11 +324,12 @@ def generate_initial_code_with_gemini(task: TaskType, model: str = GOOGLE_MODEL)
         task_id=tid,
         model=model,
         plan=str(parsed.get("plan", "") or "").strip(),
-        code=str(parsed.get(expected_key, "") or "").strip(),
+        code=str(parsed.get(artifact_key, "") or "").strip(),
         explanation=str(parsed.get("explanation", "") or "").strip(),
         raw_response=raw_response,
         raw_prompt=user_instructions,
     )
+
 
 def generate_initial_code_with_claude(task: TaskType, model: str = CLAUDE_MODEL) -> InitialCodeResult:
     benchmark, tid = _get_task_identity(task)
@@ -272,27 +337,33 @@ def generate_initial_code_with_claude(task: TaskType, model: str = CLAUDE_MODEL)
     if isinstance(task, SWELITETask):
         base_prompt = build_swe_prompt(task)
         artifact_key = "patch"
+        response_schema = """{ "plan": "...", "patch": "...", "explanation": "..." }"""
+        artifact_instruction = (
+            'The "patch" field must contain the full corrected unified diff patch only. '
+            "It must be complete and directly usable."
+        )
     else:
         base_prompt = task.build_prompt()
         artifact_key = "code"
+        response_schema = """{ "plan": "...", "code": "...", "explanation": "..." }"""
+        artifact_instruction = (
+            'The "code" field must contain complete, self-contained Python code. '
+            "Include all required imports needed for execution"
+            "Do not omit imports from the problem specification if the generated code depends on them."
+        )
 
-    system_msg = "You are a highly reliable coding assistant."
+    system_msg = "You are a highly reliable coding assistant. Follow the schema and return JSON only."
     user_instructions = f"""
-TASK ({benchmark})
-------------------
-{base_prompt}
+        TASK ({benchmark})
+        ------------------
+        {base_prompt}
+        
+        Return ONLY valid JSON
+        {artifact_instruction}
 
-Return ONLY valid JSON.
-Do not use markdown fences.
-Do not add any extra text.
-
-Use exactly this format:
-{{
-  "plan": "...",
-  "{artifact_key}": "...",
-  "explanation": "..."
-}}
-""".strip()
+        Return JSON:
+        {response_schema}
+    """.strip()
 
     json_schema = {
         "type": "object",
@@ -352,6 +423,93 @@ Use exactly this format:
         raw_prompt=user_instructions,
     )
 
+
+def generate_initial_code_with_ollama(task: TaskType, model: str = OLLAMA_MODEL) -> InitialCodeResult:
+    benchmark, tid = _get_task_identity(task)
+
+    if isinstance(task, SWELITETask):
+        base_prompt = build_swe_prompt(task)
+        artifact_key = "patch"
+        response_schema = """{ "plan": "...", "patch": "...", "explanation": "..." }"""
+        artifact_instruction = (
+            'The "patch" field must contain the full corrected unified diff patch only. '
+            "It must be complete and directly usable."
+        )
+    else:
+        base_prompt = task.build_prompt()
+        artifact_key = "code"
+        response_schema = """{ "plan": "...", "code": "...", "explanation": "..." }"""
+        artifact_instruction = (
+            'The "code" field must contain complete, self-contained Python code. '
+            "Include all required imports needed for execution"
+            "Do not omit imports from the problem specification if the generated code depends on them."
+        )
+
+    system_msg = "You are a highly reliable coding assistant. Follow the schema and return JSON only."
+    user_instructions = f"""
+        TASK ({benchmark})
+        ------------------
+        {base_prompt}
+        
+        Return ONLY valid JSON
+        {artifact_instruction}
+
+        Return JSON:
+        {response_schema}
+    """.strip()
+
+
+    schema = {
+        "type": "object",
+        "properties": {
+            "plan": {"type": "string"},
+            "code": {"type": "string"},
+            "patch": {"type": "string"},
+            "explanation": {"type": "string"},
+        },
+        "required": ["plan", artifact_key, "explanation"],
+        "additionalProperties": False,
+    }
+
+    response = ollama_client.chat(
+        model=model,
+        messages=[
+            {"role": "system", "content": system_msg},
+            {"role": "user", "content": user_instructions},
+        ],
+        stream=False,
+        format=schema,
+        options={"temperature": 0},
+    )
+
+    content = (response.get("message", {}) or {}).get("content", "") or ""
+    content = content.strip()
+
+    debug_print_raw_model_content("ollama", content)
+
+    if content.startswith("```"):
+        lines = content.splitlines()[1:]
+        if lines and lines[-1].strip().startswith("```"):
+            lines = lines[:-1]
+        content = "\n".join(lines).strip()
+
+    try:
+        parsed = json.loads(content)
+    except json.JSONDecodeError:
+        parsed = {"plan": "", artifact_key: "", "explanation": content}
+
+    return InitialCodeResult(
+        benchmark=benchmark,
+        task_id=tid,
+        model=model,
+        plan=str(parsed.get("plan", "") or "").strip(),
+        code=str(parsed.get(artifact_key, "") or "").strip(),
+        explanation=str(parsed.get("explanation", "") or "").strip(),
+        raw_response=response,
+        raw_prompt=user_instructions,
+    )
+
+
 def generate_initial(task: TaskType, provider: str, model_name: str) -> InitialCodeResult:
     if provider == "openai":
         return generate_initial_code_with_openai(task, model=model_name)
@@ -359,6 +517,8 @@ def generate_initial(task: TaskType, provider: str, model_name: str) -> InitialC
         return generate_initial_code_with_gemini(task, model=model_name)
     elif provider == "anthropic":
         return generate_initial_code_with_claude(task, model=model_name)
+    elif provider == "ollama":
+        return generate_initial_code_with_ollama(task, model=model_name)
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
@@ -373,7 +533,6 @@ def _print_iter_header(title: str) -> None:
     print("\n" + "-" * 60)
     print(title)
     print("-" * 60)
-
 
 
 # Self-debug stream
@@ -426,6 +585,8 @@ def self_debug_stream(
             diag = diagnose_bug_with_gemini(io_bundle)
         elif provider == "anthropic":
             diag = diagnose_bug_with_claude(io_bundle)
+        elif provider == "ollama":
+            diag = diagnose_bug_with_ollama(io_bundle)
         else:
             raise ValueError(f"Unknown provider in self_debug_stream: {provider}")
 
@@ -446,7 +607,12 @@ def self_debug_stream(
         patch_models_used.append(f"{provider}:{patch_model}")
         patch_explanations.append(patch_text)
 
-        exec_result = execute_task(task, current)
+        exec_result = safe_execute_generated_code(
+            task=task,
+            generated_code=current,
+            provider=provider,
+            model_name=patch_model,
+        )
         final_exec_result = exec_result
 
         iterations.append(
@@ -491,7 +657,6 @@ def self_debug_stream(
         "initial_error_message": first_exec.error_message,
         "iterations": iterations,
     }
-
 
 
 # Sequential handoff
@@ -539,6 +704,8 @@ def sequential_handoff_stream(
             diag = diagnose_bug_with_gemini(io_bundle)
         elif fixer.provider == "anthropic":
             diag = diagnose_bug_with_claude(io_bundle)
+        elif fixer.provider == "ollama":
+            diag = diagnose_bug_with_ollama(io_bundle)
         else:
             raise ValueError("Sequential handoff failed to select provider.")
 
@@ -559,7 +726,12 @@ def sequential_handoff_stream(
         patch_models_used.append(f"{fixer.provider}:{fixer.model}")
         patch_explanations.append(patch_text)
 
-        exec_result = execute_task(task, current)
+        exec_result = safe_execute_generated_code(
+            task=task,
+            generated_code=current,
+            provider=fixer.provider,
+            model_name=fixer.model,
+        )
         final_exec_result = exec_result
 
         iterations.append(
@@ -700,64 +872,6 @@ def plot_clean_grouped_bars(all_results: List[tuple], k_values: List[int], out_d
     return saved_paths
 
 
-
-# def plot_improvement_over_baseline(all_results: List[tuple], k_values: List[int], out_dir: str) -> List[str]:
-#     outp = Path(out_dir)
-#     outp.mkdir(parents=True, exist_ok=True)
-#     bench_counts = _benchmark_task_counts_from_results(all_results)
-
-#     saved_paths: List[str] = []
-#     by_benchmark = defaultdict(list)
-
-#     for mode_tag, summary in all_results:
-#         by_benchmark[summary["benchmark"]].append((mode_tag, summary))
-
-#     series_order = ["self_debug_single"] + [f"handoff_{k}agents" for k in k_values]
-
-#     for benchmark, entries in by_benchmark.items():
-#         grouped = defaultdict(dict)
-
-#         for mode_tag, summary in entries:
-#             key = (summary["provider"], summary["model"])
-#             grouped[key][mode_tag] = summary["pass_rate"] * 100.0
-
-#         keys = list(grouped.keys())
-#         labels = [shorten(f"{p}:{m}", 35) for (p, m) in keys]
-
-#         fig, ax = plt.subplots(figsize=(12, 5.5))
-#         ax.set_axisbelow(True)
-#         ax.grid(True, axis="y", linestyle="--", linewidth=0.7, alpha=0.6)
-
-#         for idx, key in enumerate(keys):
-#             baseline = grouped[key].get("baseline", 0.0)
-
-#             xs = [1]
-#             ys = [grouped[key].get("self_debug_single", 0.0) - baseline]
-
-#             for k in k_values:
-#                 tag = f"handoff_{k}agents"
-#                 xs.append(k)
-#                 ys.append(grouped[key].get(tag, 0.0) - baseline)
-
-#             ax.plot(xs, ys, marker="o", linewidth=2, label=labels[idx])
-
-#         ax.axhline(0, linewidth=1)
-
-#         n_tasks = bench_counts.get(benchmark, 0)
-#         ax.set_title(f"{benchmark} (N={n_tasks}): Improvement over Baseline vs # Patch Agents (Sequential Handoff)")
-#         ax.set_xlabel("Number of patch agents (K)")
-#         ax.set_ylabel("Pass Rate Improvement (percentage points)")
-#         ax.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0)
-
-#         fig.tight_layout()
-#         out_file = outp / f"improvement_vs_k_{benchmark}.png".replace("/", "_")
-#         plt.savefig(out_file, dpi=220, bbox_inches="tight")
-#         plt.close(fig)
-#         saved_paths.append(str(out_file))
-
-#     return saved_paths
-
-
 # Loading tasks + summaries
 def load_tasks_for_benchmark(benchmark: str, max_tasks: Optional[int]) -> List[TaskType]:
     if benchmark == "HumanEval":
@@ -808,22 +922,26 @@ def handoff_model_label(provider: Provider, agents_k: List[AgentSpec]) -> str:
     return f"handoff[{provider}]:{models}"
 
 
-def get_patch_agents_for_provider(provider: Provider, k: int,
-                                 patch_pool: List[AgentSpec],
-                                 gemini_patch_pool: List[AgentSpec],
-                                 claude_patch_pool: List[AgentSpec]) -> List[AgentSpec]:
+def get_patch_agents_for_provider(
+    provider: Provider,
+    k: int,
+    patch_pool: List[AgentSpec],
+    gemini_patch_pool: List[AgentSpec],
+    claude_patch_pool: List[AgentSpec],
+    ollama_patch_pool: List[AgentSpec],
+) -> List[AgentSpec]:
     if provider == "openai":
         return patch_pool[:k]
     if provider == "gemini":
         return gemini_patch_pool[:k]
     if provider == "anthropic":
         return claude_patch_pool[:k]
+    if provider == "ollama":
+        return ollama_patch_pool[:k]
     raise ValueError(f"Unknown provider for handoff: {provider}")
 
 
-
 if __name__ == "__main__":
-
     # print(generate_initial_code_with_claude(load_humaneval_task('HumanEval/13')))
     # print(generate_initial_code_with_gemini(load_humaneval_task('HumanEval/13')))
     ts, run_dir, plots_dir = make_run_dir("results")
@@ -833,20 +951,19 @@ if __name__ == "__main__":
     print("=" * 80)
 
     configs: List[Tuple[Provider, str]] = [
-        ("gemini", "gemini-3.1-pro-preview"),
+        # ("gemini", "gemini-3.1-pro-preview"),
         # ("openai", "gpt-5.4"),
         # ("anthropic", "claude-opus-4-6"),
-        # ("anthropic", "claude-sonnet-4-6"),
-
-
+        ("ollama", "qwen2.5-coder:3b"),
     ]
+
+
     # benchmarks = ["HumanEval", "MBPP", "APPS", "SWE-bench_LITE"]
-    benchmarks = ["MBPP"]
+    benchmarks = ["SWE-bench_LITE"]
 
-    max_tasks = 100
-    max_self_debug_iters = 5
+    max_tasks = 2
+    max_self_debug_iters = 1
 
-    # Patch pools used for sequential handoff 
     patch_pool: List[AgentSpec] = [
         # AgentSpec("openai", "gpt-4.1-mini"),
         # AgentSpec("openai", "gpt-4.1"),
@@ -867,13 +984,24 @@ if __name__ == "__main__":
     ]
 
     claude_patch_pool: List[AgentSpec] = [
-        # AgentSpec("anthropic", "claude-opus-4-6"),
         AgentSpec("anthropic", "claude-sonnet-4-6"),
         AgentSpec("anthropic", "claude-haiku-4-5"),
     ]
 
-    # handoff K values
-    k_values = [2,3]
+    ollama_patch_pool: List[AgentSpec] = [
+        AgentSpec("ollama", "qwen2.5-coder:3b"),
+        AgentSpec("ollama", "qwen2.5-coder:1.5b"),
+        AgentSpec("ollama", "deepseek-coder:1.3b"),
+    ]
+
+    # ollama_patch_pool: List[AgentSpec] = [
+    #     AgentSpec("ollama", "qwen2.5-coder:7b"),
+    #     AgentSpec("ollama", "deepseek-coder:6.7b"),
+    #     AgentSpec("ollama", "llama3:8b"),
+    # ]
+
+
+    k_values = [2]
 
     all_results: List[Tuple[str, Dict[str, Any]]] = []
     all_details: Dict[str, Any] = {"baseline": {}, "self_debug_single": {}, "sequential_handoff": {}}
@@ -894,7 +1022,6 @@ if __name__ == "__main__":
             for idx, task in enumerate(tasks, start=1):
                 _print_task_header(idx)
 
-                # 1) initial generation
                 init = generate_initial(task, provider, model_name)
                 candidate = init.code
 
@@ -907,8 +1034,12 @@ if __name__ == "__main__":
                 print("\n\nInitial code: ------------")
                 print(candidate if str(candidate).strip() else "(empty)")
 
-                # 2) baseline
-                base_exec = execute_task(task, candidate)
+                base_exec = safe_execute_generated_code(
+                    task=task,
+                    generated_code=candidate,
+                    provider=provider,
+                    model_name=model_name,
+                )
 
                 print("\n\nBaseline result:")
                 print(f"Passed: {base_exec.passed}")
@@ -940,7 +1071,6 @@ if __name__ == "__main__":
                     }
                 )
 
-                # If baseline already passed, skip self-debug and handoff
                 if base_exec.passed or base_exec.num_tests == 0:
                     sd_noop = {
                         "timestamp": ts,
@@ -971,7 +1101,9 @@ if __name__ == "__main__":
                     self_debug_details.append(sd_noop)
 
                     for k in k_values:
-                        agents_k = get_patch_agents_for_provider(provider, k, patch_pool, gemini_patch_pool, claude_patch_pool)
+                        agents_k = get_patch_agents_for_provider(
+                            provider, k, patch_pool, gemini_patch_pool, claude_patch_pool, ollama_patch_pool
+                        )
                         handoff_details_by_k[k].append(
                             {
                                 "timestamp": ts,
@@ -998,7 +1130,6 @@ if __name__ == "__main__":
                         )
                     continue
 
-                # 3) self-debug only if baseline failed (use SAME provider + SAME model as baseline by default)
                 sd = self_debug_stream(
                     task=task,
                     initial_code=candidate,
@@ -1040,10 +1171,11 @@ if __name__ == "__main__":
                     }
                 )
 
-                # If self-debug solved, do not run handoff; log as skipped
                 if sd.get("passed") or sd.get("num_tests", 0) == 0:
                     for k in k_values:
-                        agents_k = get_patch_agents_for_provider(provider, k, patch_pool, gemini_patch_pool, claude_patch_pool)
+                        agents_k = get_patch_agents_for_provider(
+                            provider, k, patch_pool, gemini_patch_pool, claude_patch_pool, ollama_patch_pool
+                        )
                         handoff_details_by_k[k].append(
                             {
                                 "timestamp": ts,
@@ -1071,9 +1203,10 @@ if __name__ == "__main__":
                         )
                     continue
 
-                # 4) Run sequential handoff only if self-debug failed
                 for k in k_values:
-                    agents_k = get_patch_agents_for_provider(provider, k, patch_pool, gemini_patch_pool, claude_patch_pool)
+                    agents_k = get_patch_agents_for_provider(
+                        provider, k, patch_pool, gemini_patch_pool, claude_patch_pool, ollama_patch_pool
+                    )
 
                     handoff = sequential_handoff_stream(
                         task=task,
@@ -1108,17 +1241,17 @@ if __name__ == "__main__":
                         }
                     )
 
-            # --- summaries (benchmark, provider, model) ---
             baseline_summary = summarize_results(baseline_details, benchmark, provider, model_name, "baseline")
             self_debug_summary = summarize_results(self_debug_details, benchmark, provider, model_name, "self_debug_single")
 
             all_results.append(("baseline", baseline_summary))
             all_results.append(("self_debug_single", self_debug_summary))
 
-           
             handoff_summaries_by_k: Dict[int, Dict[str, Any]] = {}
             for k in k_values:
-                agents_k = get_patch_agents_for_provider(provider, k, patch_pool, gemini_patch_pool, claude_patch_pool)
+                agents_k = get_patch_agents_for_provider(
+                    provider, k, patch_pool, gemini_patch_pool, claude_patch_pool, ollama_patch_pool
+                )
                 tag = f"handoff_{k}agents"
                 label = handoff_model_label(provider, agents_k)
                 summary_k = summarize_results(handoff_details_by_k[k], benchmark, provider, label, tag)
@@ -1140,9 +1273,7 @@ if __name__ == "__main__":
             }
             compact_summary_rows.append(compact_row)
 
-    # --- plots ---
     pass_rate_plot_paths = plot_clean_grouped_bars(all_results, k_values, plots_dir)
-    # improvement_plot_paths = plot_improvement_over_baseline(all_results, k_values, plots_dir)
 
     experiment_config = {
         "benchmarks": benchmarks,
@@ -1153,11 +1284,13 @@ if __name__ == "__main__":
             "openai": [{"provider": a.provider, "model": a.model} for a in patch_pool],
             "gemini": [{"provider": a.provider, "model": a.model} for a in gemini_patch_pool],
             "anthropic": [{"provider": a.provider, "model": a.model} for a in claude_patch_pool],
+            "ollama": [{"provider": a.provider, "model": a.model} for a in ollama_patch_pool],
         },
         "k_values": k_values,
         "openai_default_model": OPENAI_MODEL,
         "gemini_default_model": GOOGLE_MODEL,
         "anthropic_default_model": CLAUDE_MODEL,
+        "ollama_default_model": OLLAMA_MODEL,
     }
 
     summary_report_text = build_summary_report_text(compact_summary_rows)
@@ -1167,7 +1300,6 @@ if __name__ == "__main__":
         "plots_dir": plots_dir,
         "plots": {
             "pass_rates": pass_rate_plot_paths,
-            # "improvement_vs_k": improvement_plot_paths,
         },
         "summary_report_text": summary_report_text,
     }
@@ -1181,7 +1313,6 @@ if __name__ == "__main__":
         artifacts=artifacts,
     )
 
-    # --- terminal summary ---
     print("\n")
     for row in compact_summary_rows:
         bench = row["benchmark"]
@@ -1196,7 +1327,6 @@ if __name__ == "__main__":
         print(f"Self-debug (only on failures(baseline)): {ssum['num_passed']}/{ssum['num_tasks']} ({ssum['pass_rate']*100:.2f}%)")
 
         for k, hsum in row["handoff_by_k"].items():
-            # hsum["model"] here is the handoff label, so output is honest
             print(f"Handoff ({k}) [{hsum['model']}]: {hsum['num_passed']}/{hsum['num_tasks']} ({hsum['pass_rate']*100:.2f}%)")
 
         print("")

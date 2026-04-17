@@ -1,0 +1,582 @@
+{
+  "timestamp": "2026-04-17_12-32-01",
+  "config": {
+    "benchmarks": [
+      "HumanEval"
+    ],
+    "configs": [
+      [
+        "ollama",
+        "qwen2.5-coder:3b"
+      ]
+    ],
+    "max_tasks": 2,
+    "max_self_debug_iters": 1,
+    "patch_pools": {
+      "openai": [
+        {
+          "provider": "openai",
+          "model": "gpt-5.4"
+        },
+        {
+          "provider": "openai",
+          "model": "gpt-5.4-mini"
+        },
+        {
+          "provider": "openai",
+          "model": "gpt-5.4-nano"
+        },
+        {
+          "provider": "openai",
+          "model": "gpt-5"
+        },
+        {
+          "provider": "openai",
+          "model": "gpt-5-mini"
+        }
+      ],
+      "gemini": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.1-pro-preview"
+        },
+        {
+          "provider": "gemini",
+          "model": "gemini-3-flash-preview"
+        },
+        {
+          "provider": "gemini",
+          "model": "gemini-3-pro-preview"
+        },
+        {
+          "provider": "gemini",
+          "model": "gemini-3.1-flash-lite-preview"
+        },
+        {
+          "provider": "gemini",
+          "model": "gemini-2.5-flash"
+        }
+      ],
+      "anthropic": [
+        {
+          "provider": "anthropic",
+          "model": "claude-sonnet-4-6"
+        },
+        {
+          "provider": "anthropic",
+          "model": "claude-haiku-4-5"
+        }
+      ],
+      "ollama": [
+        {
+          "provider": "ollama",
+          "model": "qwen2.5-coder:3b"
+        },
+        {
+          "provider": "ollama",
+          "model": "qwen2.5-coder:1.5b"
+        },
+        {
+          "provider": "ollama",
+          "model": "deepseek-coder:1.3b"
+        }
+      ]
+    },
+    "k_values": [
+      2
+    ],
+    "openai_default_model": "gpt-5.4",
+    "gemini_default_model": "gemini-3.1-pro-preview",
+    "anthropic_default_model": "claude-sonnet-4-6",
+    "ollama_default_model": "qwen2.5-coder:3b"
+  },
+  "summaries": [
+    {
+      "mode_tag": "baseline",
+      "benchmark": "HumanEval",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:3b",
+      "mode": "baseline",
+      "num_tasks": 2,
+      "num_passed": 0,
+      "pass_rate": 0.0,
+      "details": [
+        {
+          "timestamp": "2026-04-17_12-32-01",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "ollama",
+          "model": "qwen2.5-coder:3b",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 7,
+          "num_passed": 6,
+          "artifact": "",
+          "error_type": "NameError",
+          "error_message": "name 'List' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1, in <module>\nNameError: name 'List' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn only valid JSON.\nDo not use markdown fences.\nDo not add extra text.",
+          "initial_plan": "Iterate through the list of numbers and compare each number with every other number in the list to check if their absolute difference is less than the given threshold.",
+          "initial_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i, num1 in enumerate(numbers):\n        for j, num2 in enumerate(numbers):\n            if i != j and abs(num1 - num2) < threshold:\n                return True\n    return False",
+          "final_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i, num1 in enumerate(numbers):\n        for j, num2 in enumerate(numbers):\n            if i != j and abs(num1 - num2) < threshold:\n                return True\n    return False",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-04-17_12-32-01",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "ollama",
+          "model": "qwen2.5-coder:3b",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 4,
+          "num_passed": 3,
+          "artifact": "",
+          "error_type": "NameError",
+          "error_message": "name 'List' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1, in <module>\nNameError: name 'List' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn only valid JSON.\nDo not use markdown fences.\nDo not add extra text.",
+          "initial_plan": "1. Initialize an empty list to store the separated groups of parentheses.\n2. Iterate through each character in the input string, ignoring spaces.\n3. Use a counter to track the balance of parentheses:\n   - Increment the counter for an opening parenthesis '('.\n   - Decrement the counter for a closing parenthesis ')'.\n4. When the counter returns to zero after processing a group of balanced parentheses,\n   append that group to the list and reset the counter.\n5. Return the list of separated groups.",
+          "initial_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    result = []\n    balance = 0\n    current_group = ''\n\n    for char in paren_string.replace(' ', ''):\n        if char == '(':\n            balance += 1\n            current_group += char\n        elif char == ')':\n            balance -= 1\n            current_group += char\n\n            if balance == 0:\n                result.append(current_group)\n                current_group = ''\n\n    return result",
+          "final_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    result = []\n    balance = 0\n    current_group = ''\n\n    for char in paren_string.replace(' ', ''):\n        if char == '(':\n            balance += 1\n            current_group += char\n        elif char == ')':\n            balance -= 1\n            current_group += char\n\n            if balance == 0:\n                result.append(current_group)\n                current_group = ''\n\n    return result",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        }
+      ]
+    },
+    {
+      "mode_tag": "self_debug_single",
+      "benchmark": "HumanEval",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:3b",
+      "mode": "self_debug_single",
+      "num_tasks": 2,
+      "num_passed": 1,
+      "pass_rate": 0.5,
+      "details": [
+        {
+          "timestamp": "2026-04-17_12-32-01",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "ollama",
+          "model": "qwen2.5-coder:3b",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": "NameError",
+          "initial_error_message": "name 'List' is not defined",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn only valid JSON.\nDo not use markdown fences.\nDo not add extra text.",
+          "initial_plan": "Iterate through the list of numbers and compare each number with every other number in the list to check if their absolute difference is less than the given threshold.",
+          "initial_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i, num1 in enumerate(numbers):\n        for j, num2 in enumerate(numbers):\n            if i != j and abs(num1 - num2) < threshold:\n                return True\n    return False",
+          "final_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i, num1 in enumerate(numbers):\n        for j, num2 in enumerate(numbers):\n            if i != j and abs(num1 - num2) < threshold:\n                return True\n    return False",
+          "patch_models_used": [
+            "ollama:qwen2.5-coder:3b"
+          ],
+          "patch_explanations": [
+            "The error was due to the use of 'List' without importing it from the 'typing' module. This is necessary for type hinting in Python."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "patch_model": "ollama:qwen2.5-coder:3b",
+              "patch_explanation": "The error was due to the use of 'List' without importing it from the 'typing' module. This is necessary for type hinting in Python.",
+              "updated_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i, num1 in enumerate(numbers):\n        for j, num2 in enumerate(numbers):\n            if i != j and abs(num1 - num2) < threshold:\n                return True\n    return False",
+              "exec_result": {
+                "passed": true,
+                "num_tests": 7,
+                "num_passed": 7,
+                "error_type": null,
+                "error_message": null,
+                "traceback_str": null,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-04-17_12-32-01",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "ollama",
+          "model": "qwen2.5-coder:3b",
+          "mode_tag": "self_debug_single",
+          "passed": false,
+          "num_tests": 4,
+          "num_passed": 3,
+          "error_type": "SyntaxError",
+          "error_message": "'return' outside function (<string>, line 19)",
+          "initial_error_type": "NameError",
+          "initial_error_message": "name 'List' is not defined",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn only valid JSON.\nDo not use markdown fences.\nDo not add extra text.",
+          "initial_plan": "1. Initialize an empty list to store the separated groups of parentheses.\n2. Iterate through each character in the input string, ignoring spaces.\n3. Use a counter to track the balance of parentheses:\n   - Increment the counter for an opening parenthesis '('.\n   - Decrement the counter for a closing parenthesis ')'.\n4. When the counter returns to zero after processing a group of balanced parentheses,\n   append that group to the list and reset the counter.\n5. Return the list of separated groups.",
+          "initial_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    result = []\n    balance = 0\n    current_group = ''\n\n    for char in paren_string.replace(' ', ''):\n        if char == '(':\n            balance += 1\n            current_group += char\n        elif char == ')':\n            balance -= 1\n            current_group += char\n\n            if balance == 0:\n                result.append(current_group)\n                current_group = ''\n\n    return result",
+          "final_code": "result: List[str] = []\n\nbalance = 0\n\ncurrent_group = ''\n\nfor char in paren_string.replace(' ', ''):\n    if char == '(':\n        balance += 1\n        current_group += char\n    elif char == ')':\n        balance -= 1\n        current_group += char\n\n        if balance == 0:\n            result.append(current_group)\n            current_group = ''\n\nreturn result",
+          "patch_models_used": [
+            "ollama:qwen2.5-coder:3b"
+          ],
+          "patch_explanations": [
+            "By defining `result: List[str] = []`, we ensure that `result` is recognized as a list of strings, which resolves the `NameError`."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "patch_model": "ollama:qwen2.5-coder:3b",
+              "patch_explanation": "By defining `result: List[str] = []`, we ensure that `result` is recognized as a list of strings, which resolves the `NameError`.",
+              "updated_code": "result: List[str] = []\n\nbalance = 0\n\ncurrent_group = ''\n\nfor char in paren_string.replace(' ', ''):\n    if char == '(':\n        balance += 1\n        current_group += char\n    elif char == ')':\n        balance -= 1\n        current_group += char\n\n        if balance == 0:\n            result.append(current_group)\n            current_group = ''\n\nreturn result",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 4,
+                "num_passed": 3,
+                "error_type": "SyntaxError",
+                "error_message": "'return' outside function (<string>, line 19)",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 19\nSyntaxError: 'return' outside function\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 19\nSyntaxError: 'return' outside function\n",
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        }
+      ]
+    },
+    {
+      "mode_tag": "handoff_2agents",
+      "benchmark": "HumanEval",
+      "provider": "ollama",
+      "model": "handoff[ollama]:qwen2.5-coder:3b,qwen2.5-coder:1.5b",
+      "mode": "handoff_2agents",
+      "num_tasks": 2,
+      "num_passed": 1,
+      "pass_rate": 0.5,
+      "details": [
+        {
+          "timestamp": "2026-04-17_12-32-01",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "ollama",
+          "base_model": "qwen2.5-coder:3b",
+          "handoff_models_used": [],
+          "mode_tag": "handoff_2agents",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn only valid JSON.\nDo not use markdown fences.\nDo not add extra text.",
+          "initial_plan": "Iterate through the list of numbers and compare each number with every other number in the list to check if their absolute difference is less than the given threshold.",
+          "initial_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i, num1 in enumerate(numbers):\n        for j, num2 in enumerate(numbers):\n            if i != j and abs(num1 - num2) < threshold:\n                return True\n    return False",
+          "final_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i, num1 in enumerate(numbers):\n        for j, num2 in enumerate(numbers):\n            if i != j and abs(num1 - num2) < threshold:\n                return True\n    return False",
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n",
+          "skipped_reason": "self_debug_solved",
+          "handoff_label": "handoff[ollama]:qwen2.5-coder:3b,qwen2.5-coder:1.5b"
+        },
+        {
+          "timestamp": "2026-04-17_12-32-01",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "ollama",
+          "base_model": "qwen2.5-coder:3b",
+          "handoff_models_used": [
+            "ollama:qwen2.5-coder:3b"
+          ],
+          "mode_tag": "handoff_2agents",
+          "passed": false,
+          "num_tests": 4,
+          "num_passed": 3,
+          "error_type": "SyntaxError",
+          "error_message": "'return' outside function (<string>, line 19)",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn only valid JSON.\nDo not use markdown fences.\nDo not add extra text.",
+          "initial_plan": "1. Initialize an empty list to store the separated groups of parentheses.\n2. Iterate through each character in the input string, ignoring spaces.\n3. Use a counter to track the balance of parentheses:\n   - Increment the counter for an opening parenthesis '('.\n   - Decrement the counter for a closing parenthesis ')'.\n4. When the counter returns to zero after processing a group of balanced parentheses,\n   append that group to the list and reset the counter.\n5. Return the list of separated groups.",
+          "initial_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    result = []\n    balance = 0\n    current_group = ''\n\n    for char in paren_string.replace(' ', ''):\n        if char == '(':\n            balance += 1\n            current_group += char\n        elif char == ')':\n            balance -= 1\n            current_group += char\n\n            if balance == 0:\n                result.append(current_group)\n                current_group = ''\n\n    return result",
+          "final_code": "result: List[str] = []\n\nbalance = 0\n\ncurrent_group = ''\n\nfor char in paren_string.replace(' ', ''):\n    if char == '(':\n        balance += 1\n        current_group += char\n    elif char == ')':\n        balance -= 1\n        current_group += char\n\n        if balance == 0:\n            result.append(current_group)\n            current_group = ''\n\nreturn result",
+          "patch_explanations": [
+            "By defining `result: List[str] = []`, we ensure that `result` is recognized as a list of strings, which resolves the `NameError`."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "fixer": {
+                "provider": "ollama",
+                "model": "qwen2.5-coder:3b"
+              },
+              "patch_explanation": "By defining `result: List[str] = []`, we ensure that `result` is recognized as a list of strings, which resolves the `NameError`.",
+              "updated_code": "result: List[str] = []\n\nbalance = 0\n\ncurrent_group = ''\n\nfor char in paren_string.replace(' ', ''):\n    if char == '(':\n        balance += 1\n        current_group += char\n    elif char == ')':\n        balance -= 1\n        current_group += char\n\n        if balance == 0:\n            result.append(current_group)\n            current_group = ''\n\nreturn result",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 4,
+                "num_passed": 3,
+                "error_type": "SyntaxError",
+                "error_message": "'return' outside function (<string>, line 19)",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 19\nSyntaxError: 'return' outside function\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n",
+          "handoff_label": "handoff[ollama]:qwen2.5-coder:3b,qwen2.5-coder:1.5b"
+        }
+      ]
+    }
+  ],
+  "details": {
+    "baseline": {
+      "HumanEval::ollama::qwen2.5-coder:3b": [
+        {
+          "timestamp": "2026-04-17_12-32-01",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "ollama",
+          "model": "qwen2.5-coder:3b",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 7,
+          "num_passed": 6,
+          "artifact": "",
+          "error_type": "NameError",
+          "error_message": "name 'List' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1, in <module>\nNameError: name 'List' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn only valid JSON.\nDo not use markdown fences.\nDo not add extra text.",
+          "initial_plan": "Iterate through the list of numbers and compare each number with every other number in the list to check if their absolute difference is less than the given threshold.",
+          "initial_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i, num1 in enumerate(numbers):\n        for j, num2 in enumerate(numbers):\n            if i != j and abs(num1 - num2) < threshold:\n                return True\n    return False",
+          "final_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i, num1 in enumerate(numbers):\n        for j, num2 in enumerate(numbers):\n            if i != j and abs(num1 - num2) < threshold:\n                return True\n    return False",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-04-17_12-32-01",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "ollama",
+          "model": "qwen2.5-coder:3b",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 4,
+          "num_passed": 3,
+          "artifact": "",
+          "error_type": "NameError",
+          "error_message": "name 'List' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1, in <module>\nNameError: name 'List' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn only valid JSON.\nDo not use markdown fences.\nDo not add extra text.",
+          "initial_plan": "1. Initialize an empty list to store the separated groups of parentheses.\n2. Iterate through each character in the input string, ignoring spaces.\n3. Use a counter to track the balance of parentheses:\n   - Increment the counter for an opening parenthesis '('.\n   - Decrement the counter for a closing parenthesis ')'.\n4. When the counter returns to zero after processing a group of balanced parentheses,\n   append that group to the list and reset the counter.\n5. Return the list of separated groups.",
+          "initial_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    result = []\n    balance = 0\n    current_group = ''\n\n    for char in paren_string.replace(' ', ''):\n        if char == '(':\n            balance += 1\n            current_group += char\n        elif char == ')':\n            balance -= 1\n            current_group += char\n\n            if balance == 0:\n                result.append(current_group)\n                current_group = ''\n\n    return result",
+          "final_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    result = []\n    balance = 0\n    current_group = ''\n\n    for char in paren_string.replace(' ', ''):\n        if char == '(':\n            balance += 1\n            current_group += char\n        elif char == ')':\n            balance -= 1\n            current_group += char\n\n            if balance == 0:\n                result.append(current_group)\n                current_group = ''\n\n    return result",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        }
+      ]
+    },
+    "self_debug_single": {
+      "HumanEval::ollama::qwen2.5-coder:3b": [
+        {
+          "timestamp": "2026-04-17_12-32-01",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "ollama",
+          "model": "qwen2.5-coder:3b",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": "NameError",
+          "initial_error_message": "name 'List' is not defined",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn only valid JSON.\nDo not use markdown fences.\nDo not add extra text.",
+          "initial_plan": "Iterate through the list of numbers and compare each number with every other number in the list to check if their absolute difference is less than the given threshold.",
+          "initial_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i, num1 in enumerate(numbers):\n        for j, num2 in enumerate(numbers):\n            if i != j and abs(num1 - num2) < threshold:\n                return True\n    return False",
+          "final_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i, num1 in enumerate(numbers):\n        for j, num2 in enumerate(numbers):\n            if i != j and abs(num1 - num2) < threshold:\n                return True\n    return False",
+          "patch_models_used": [
+            "ollama:qwen2.5-coder:3b"
+          ],
+          "patch_explanations": [
+            "The error was due to the use of 'List' without importing it from the 'typing' module. This is necessary for type hinting in Python."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "patch_model": "ollama:qwen2.5-coder:3b",
+              "patch_explanation": "The error was due to the use of 'List' without importing it from the 'typing' module. This is necessary for type hinting in Python.",
+              "updated_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i, num1 in enumerate(numbers):\n        for j, num2 in enumerate(numbers):\n            if i != j and abs(num1 - num2) < threshold:\n                return True\n    return False",
+              "exec_result": {
+                "passed": true,
+                "num_tests": 7,
+                "num_passed": 7,
+                "error_type": null,
+                "error_message": null,
+                "traceback_str": null,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-04-17_12-32-01",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "ollama",
+          "model": "qwen2.5-coder:3b",
+          "mode_tag": "self_debug_single",
+          "passed": false,
+          "num_tests": 4,
+          "num_passed": 3,
+          "error_type": "SyntaxError",
+          "error_message": "'return' outside function (<string>, line 19)",
+          "initial_error_type": "NameError",
+          "initial_error_message": "name 'List' is not defined",
+          "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn only valid JSON.\nDo not use markdown fences.\nDo not add extra text.",
+          "initial_plan": "1. Initialize an empty list to store the separated groups of parentheses.\n2. Iterate through each character in the input string, ignoring spaces.\n3. Use a counter to track the balance of parentheses:\n   - Increment the counter for an opening parenthesis '('.\n   - Decrement the counter for a closing parenthesis ')'.\n4. When the counter returns to zero after processing a group of balanced parentheses,\n   append that group to the list and reset the counter.\n5. Return the list of separated groups.",
+          "initial_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    result = []\n    balance = 0\n    current_group = ''\n\n    for char in paren_string.replace(' ', ''):\n        if char == '(':\n            balance += 1\n            current_group += char\n        elif char == ')':\n            balance -= 1\n            current_group += char\n\n            if balance == 0:\n                result.append(current_group)\n                current_group = ''\n\n    return result",
+          "final_code": "result: List[str] = []\n\nbalance = 0\n\ncurrent_group = ''\n\nfor char in paren_string.replace(' ', ''):\n    if char == '(':\n        balance += 1\n        current_group += char\n    elif char == ')':\n        balance -= 1\n        current_group += char\n\n        if balance == 0:\n            result.append(current_group)\n            current_group = ''\n\nreturn result",
+          "patch_models_used": [
+            "ollama:qwen2.5-coder:3b"
+          ],
+          "patch_explanations": [
+            "By defining `result: List[str] = []`, we ensure that `result` is recognized as a list of strings, which resolves the `NameError`."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "patch_model": "ollama:qwen2.5-coder:3b",
+              "patch_explanation": "By defining `result: List[str] = []`, we ensure that `result` is recognized as a list of strings, which resolves the `NameError`.",
+              "updated_code": "result: List[str] = []\n\nbalance = 0\n\ncurrent_group = ''\n\nfor char in paren_string.replace(' ', ''):\n    if char == '(':\n        balance += 1\n        current_group += char\n    elif char == ')':\n        balance -= 1\n        current_group += char\n\n        if balance == 0:\n            result.append(current_group)\n            current_group = ''\n\nreturn result",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 4,
+                "num_passed": 3,
+                "error_type": "SyntaxError",
+                "error_message": "'return' outside function (<string>, line 19)",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 19\nSyntaxError: 'return' outside function\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 19\nSyntaxError: 'return' outside function\n",
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        }
+      ]
+    },
+    "sequential_handoff": {
+      "HumanEval::ollama::qwen2.5-coder:3b": {
+        "2": [
+          {
+            "timestamp": "2026-04-17_12-32-01",
+            "benchmark": "HumanEval",
+            "task_id": "HumanEval/0",
+            "provider": "ollama",
+            "base_model": "qwen2.5-coder:3b",
+            "handoff_models_used": [],
+            "mode_tag": "handoff_2agents",
+            "passed": true,
+            "num_tests": 7,
+            "num_passed": 7,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n\nReturn only valid JSON.\nDo not use markdown fences.\nDo not add extra text.",
+            "initial_plan": "Iterate through the list of numbers and compare each number with every other number in the list to check if their absolute difference is less than the given threshold.",
+            "initial_code": "def has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i, num1 in enumerate(numbers):\n        for j, num2 in enumerate(numbers):\n            if i != j and abs(num1 - num2) < threshold:\n                return True\n    return False",
+            "final_code": "from typing import List\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    for i, num1 in enumerate(numbers):\n        for j, num2 in enumerate(numbers):\n            if i != j and abs(num1 - num2) < threshold:\n                return True\n    return False",
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n",
+            "skipped_reason": "self_debug_solved",
+            "handoff_label": "handoff[ollama]:qwen2.5-coder:3b,qwen2.5-coder:1.5b"
+          },
+          {
+            "timestamp": "2026-04-17_12-32-01",
+            "benchmark": "HumanEval",
+            "task_id": "HumanEval/1",
+            "provider": "ollama",
+            "base_model": "qwen2.5-coder:3b",
+            "handoff_models_used": [
+              "ollama:qwen2.5-coder:3b"
+            ],
+            "mode_tag": "handoff_2agents",
+            "passed": false,
+            "num_tests": 4,
+            "num_passed": 3,
+            "error_type": "SyntaxError",
+            "error_message": "'return' outside function (<string>, line 19)",
+            "initial_raw_prompt": "TASK (HumanEval)\n------------------\nfrom typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n\nReturn only valid JSON.\nDo not use markdown fences.\nDo not add extra text.",
+            "initial_plan": "1. Initialize an empty list to store the separated groups of parentheses.\n2. Iterate through each character in the input string, ignoring spaces.\n3. Use a counter to track the balance of parentheses:\n   - Increment the counter for an opening parenthesis '('.\n   - Decrement the counter for a closing parenthesis ')'.\n4. When the counter returns to zero after processing a group of balanced parentheses,\n   append that group to the list and reset the counter.\n5. Return the list of separated groups.",
+            "initial_code": "def separate_paren_groups(paren_string: str) -> List[str]:\n    result = []\n    balance = 0\n    current_group = ''\n\n    for char in paren_string.replace(' ', ''):\n        if char == '(':\n            balance += 1\n            current_group += char\n        elif char == ')':\n            balance -= 1\n            current_group += char\n\n            if balance == 0:\n                result.append(current_group)\n                current_group = ''\n\n    return result",
+            "final_code": "result: List[str] = []\n\nbalance = 0\n\ncurrent_group = ''\n\nfor char in paren_string.replace(' ', ''):\n    if char == '(':\n        balance += 1\n        current_group += char\n    elif char == ')':\n        balance -= 1\n        current_group += char\n\n        if balance == 0:\n            result.append(current_group)\n            current_group = ''\n\nreturn result",
+            "patch_explanations": [
+              "By defining `result: List[str] = []`, we ensure that `result` is recognized as a list of strings, which resolves the `NameError`."
+            ],
+            "iterations": [
+              {
+                "iteration": 1,
+                "fixer": {
+                  "provider": "ollama",
+                  "model": "qwen2.5-coder:3b"
+                },
+                "patch_explanation": "By defining `result: List[str] = []`, we ensure that `result` is recognized as a list of strings, which resolves the `NameError`.",
+                "updated_code": "result: List[str] = []\n\nbalance = 0\n\ncurrent_group = ''\n\nfor char in paren_string.replace(' ', ''):\n    if char == '(':\n        balance += 1\n        current_group += char\n    elif char == ')':\n        balance -= 1\n        current_group += char\n\n        if balance == 0:\n            result.append(current_group)\n            current_group = ''\n\nreturn result",
+                "exec_result": {
+                  "passed": false,
+                  "num_tests": 4,
+                  "num_passed": 3,
+                  "error_type": "SyntaxError",
+                  "error_message": "'return' outside function (<string>, line 19)",
+                  "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 19\nSyntaxError: 'return' outside function\n",
+                  "stdout": "",
+                  "stderr": ""
+                }
+              }
+            ],
+            "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n",
+            "handoff_label": "handoff[ollama]:qwen2.5-coder:3b,qwen2.5-coder:1.5b"
+          }
+        ]
+      }
+    }
+  },
+  "artifacts": {
+    "run_dir": "results/run_2026-04-17_12-32-01",
+    "plots_dir": "results/run_2026-04-17_12-32-01/plots",
+    "plots": {
+      "pass_rates": [
+        "results/run_2026-04-17_12-32-01/plots/pass_rates_HumanEval_clean.png"
+      ]
+    },
+    "summary_report_text": [
+      "HumanEval on ollama:qwen2.5-coder:3b",
+      "Baseline: 0/2 (0.00%)",
+      "Self-debug (only on failures): 1/2 (50.00%)",
+      "Handoff (2): 1/2 (50.00%)"
+    ]
+  },
+  "summary_report_text": [
+    "HumanEval on ollama:qwen2.5-coder:3b",
+    "Baseline: 0/2 (0.00%)",
+    "Self-debug (only on failures): 1/2 (50.00%)",
+    "Handoff (2): 1/2 (50.00%)"
+  ]
+}
