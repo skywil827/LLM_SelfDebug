@@ -165,7 +165,7 @@ def generate_patched_code_with_openai(
 
     response = openai_client.chat.completions.create(
         model=model,
-        max_tokens=6000,
+        max_completion_tokens=6000,
         response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": system_msg},
@@ -173,7 +173,7 @@ def generate_patched_code_with_openai(
         ],
     )
 
-    content = (response.content[0].text or "").strip()
+    content = (response.choices[0].message.content or "").strip()
 
     if content.startswith("```"):
         lines = content.splitlines()[1:]

@@ -27,6 +27,8 @@ from error_explanation import (
     build_error_explanation_text,
 )
 from patch_generation import produce_next_code_version 
+import ollama
+
 
 
 
@@ -96,6 +98,8 @@ load_dotenv(override=True)
 openai_api_key = os.getenv("OPENAI_API_KEY")
 google_api_key = os.getenv("GOOGLE_API_KEY")
 anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
+ollama_api_key = os.getenv("OLLAMA_API_KEY")
+
 
 openai_client = OpenAI()
 gemini_client = genai.Client(api_key=google_api_key)
@@ -107,7 +111,8 @@ claude_client = anthropic.Anthropic(api_key=anthropic_api_key)
 
 OPENAI_MODEL = "gpt-5.4"
 GOOGLE_MODEL = "gemini-3.1-pro-preview"
-CLAUDE_MODEL = "claude-opus-4-6"
+# CLAUDE_MODEL = "claude-opus-4-6"
+CLAUDE_MODEL = "claude-sonnet-4-6"
 
 TaskType = Union[HumanEvalTask, MBPPTask, APPSTask, SWELITETask]
 Provider = Literal["openai", "gemini", "anthropic"]
@@ -831,13 +836,14 @@ if __name__ == "__main__":
         ("gemini", "gemini-3.1-pro-preview"),
         # ("openai", "gpt-5.4"),
         # ("anthropic", "claude-opus-4-6"),
+        # ("anthropic", "claude-sonnet-4-6"),
 
 
     ]
     # benchmarks = ["HumanEval", "MBPP", "APPS", "SWE-bench_LITE"]
-    benchmarks = ["HumanEval"]
+    benchmarks = ["MBPP"]
 
-    max_tasks = 150
+    max_tasks = 100
     max_self_debug_iters = 5
 
     # Patch pools used for sequential handoff 
@@ -861,7 +867,7 @@ if __name__ == "__main__":
     ]
 
     claude_patch_pool: List[AgentSpec] = [
-        AgentSpec("anthropic", "claude-opus-4-6"),
+        # AgentSpec("anthropic", "claude-opus-4-6"),
         AgentSpec("anthropic", "claude-sonnet-4-6"),
         AgentSpec("anthropic", "claude-haiku-4-5"),
     ]
