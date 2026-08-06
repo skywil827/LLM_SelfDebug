@@ -24,7 +24,8 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 google_api_key = os.getenv("GOOGLE_API_KEY")
 anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
 ollama_api_key = os.getenv("OLLAMA_API_KEY")
-ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+# ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+ollama_host = os.getenv("OLLAMA_HOST", "https://ollama.com")
 
 openai_client = OpenAI()
 gemini_client = genai.Client(api_key=google_api_key)
@@ -39,10 +40,10 @@ ollama_client = Client(
     headers=ollama_headers if ollama_headers else None,
 )
 
-OPENAI_MODEL = "gpt-5.4"
+OPENAI_MODEL = "gpt-5-mini"
 GOOGLE_MODEL = "gemini-3.1-pro-preview"
-CLAUDE_MODEL = "claude-sonnet-4-6"
-OLLAMA_MODEL = "qwen2.5-coder:3b" 
+CLAUDE_MODEL = "claude-opus-4-6"
+OLLAMA_MODEL = "kimi-k2.6:cloud"
 
 
 @dataclass

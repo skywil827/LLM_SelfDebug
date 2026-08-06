@@ -63,6 +63,9 @@ def normalize_to_list(x: Any) -> List[str]:
 def load_swe_instance(index: Union[str, int, None] = None) -> SWELITETask:
     dataset = load_dataset("princeton-nlp/SWE-bench_Lite", split="test")
 
+    # Generate random tasks
+    # row = dataset[random.randrange(len(dataset))]
+
     if index is None:
         row = dataset[random.randrange(len(dataset))]
 

@@ -29,6 +29,7 @@ from error_explanation import (
 )
 from patch_generation import produce_next_code_version
 from ollama import Client
+import difflib
 
 
 def _now_ts() -> str:
@@ -92,12 +93,34 @@ def save_experiment_results(
     return str(out_path)
 
 
+def print_code_changes(old_code: str, new_code: str):
+    old_lines = (old_code or "").splitlines()
+    new_lines = (new_code or "").splitlines()
+
+    diff = difflib.ndiff(old_lines, new_lines)
+
+    changes = []
+    for line in diff:
+        if line.startswith("- "):
+            changes.append(f"Bug {line[2:]}")
+        elif line.startswith("+ "):
+            changes.append(f"Fixes {line[2:]}")
+
+    if changes:
+        print("\n[Code Changes]")
+        for c in changes:
+            print(c)
+    else:
+        print("\n[Code Changes] (no changes)")
+
+
 load_dotenv(override=True)
 openai_api_key = os.getenv("OPENAI_API_KEY")
 google_api_key = os.getenv("GOOGLE_API_KEY")
 anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
 ollama_api_key = os.getenv("OLLAMA_API_KEY")
-ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+# ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+ollama_host = os.getenv("OLLAMA_HOST", "https://ollama.com")
 
 openai_client = OpenAI()
 gemini_client = genai.Client(api_key=google_api_key)
@@ -112,10 +135,10 @@ ollama_client = Client(
     headers=ollama_headers if ollama_headers else None,
 )
 
-OPENAI_MODEL = "gpt-5.4"
+OPENAI_MODEL = "gpt-4.1"
 GOOGLE_MODEL = "gemini-3.1-pro-preview"
-CLAUDE_MODEL = "claude-sonnet-4-6"
-OLLAMA_MODEL = "qwen2.5-coder:3b"
+CLAUDE_MODEL = "claude-opus-4-6"
+OLLAMA_MODEL = "qkimi-k2.6:cloud"
 
 TaskType = Union[HumanEvalTask, MBPPTask, APPSTask, SWELITETask]
 Provider = Literal["openai", "gemini", "anthropic", "ollama"]
@@ -127,10 +150,9 @@ class AgentSpec:
     model: str
 
 
-def pick_fixer(patch_agents: List["AgentSpec"], iteration: int) -> "AgentSpec":
-    if not patch_agents:
-        raise ValueError("patch_agents cannot be empty for sequential handoff.")
-    return patch_agents[(iteration - 1) % len(patch_agents)]
+def pick_fixer( patch_agents: List[AgentSpec], iteration: int, ) -> AgentSpec:
+    idx = min(iteration - 1, len(patch_agents) - 1)
+    return patch_agents[idx]
 
 
 @dataclass
@@ -597,6 +619,7 @@ def self_debug_stream(
         )
 
         patch_text = getattr(patch_info, "rationale", None) or ""
+        print_code_changes(current, next_candidate)
         current = next_candidate
 
         print("Patch explanation:")
@@ -716,6 +739,7 @@ def sequential_handoff_stream(
         )
 
         patch_text = getattr(patch_info, "rationale", None) or ""
+        print_code_changes(current, next_candidate)
         current = next_candidate
 
         print("Patch explanation:")
@@ -831,7 +855,7 @@ def plot_clean_grouped_bars(all_results: List[tuple], k_values: List[int], out_d
         n_tasks = bench_counts.get(benchmark, 0)
         ax.set_title(f"{benchmark} (N={n_tasks}): Baseline vs Single Self-Debug vs Sequential Handoff")
         ax.set_ylabel("Pass Rate (%)")
-        ax.set_ylim(0, 100)
+        ax.set_ylim(60, 100)
         ax.set_xticks(x)
         ax.set_xticklabels(labels, rotation=0)
 
@@ -924,21 +948,42 @@ def handoff_model_label(provider: Provider, agents_k: List[AgentSpec]) -> str:
 
 def get_patch_agents_for_provider(
     provider: Provider,
+    base_model: str,
     k: int,
-    patch_pool: List[AgentSpec],
-    gemini_patch_pool: List[AgentSpec],
-    claude_patch_pool: List[AgentSpec],
-    ollama_patch_pool: List[AgentSpec],
 ) -> List[AgentSpec]:
+
     if provider == "openai":
-        return patch_pool[:k]
-    if provider == "gemini":
-        return gemini_patch_pool[:k]
-    if provider == "anthropic":
-        return claude_patch_pool[:k]
-    if provider == "ollama":
-        return ollama_patch_pool[:k]
-    raise ValueError(f"Unknown provider for handoff: {provider}")
+        chain = [
+            AgentSpec("openai", base_model),       
+            AgentSpec("gemini", "gemini-3.1-pro-preview"),
+            AgentSpec("anthropic", "claude-sonnet-4-6"),
+            AgentSpec("ollama", "kimi-k2.6:cloud"),
+        ]
+    elif provider == "gemini":
+        chain = [
+            AgentSpec("gemini", base_model),
+            AgentSpec("openai", "gpt-4.1"),
+            AgentSpec("anthropic", "claude-sonnet-4-6"),
+            AgentSpec("ollama", "kimi-k2.6:cloud"),
+        ]
+    elif provider == "anthropic":
+        chain = [
+            AgentSpec("anthropic", base_model),
+            AgentSpec("openai", "gpt-4.1"),
+            AgentSpec("gemini", "gemini-3.1-pro-preview"),
+            AgentSpec("ollama", "kimi-k2.6:cloud"),
+        ]
+    elif provider == "ollama":
+        chain = [
+            AgentSpec("ollama", base_model),
+            AgentSpec("openai", "gpt-4.1"),
+            AgentSpec("gemini", "gemini-3.1-pro-preview"),
+            AgentSpec("anthropic", "claude-sonnet-4-6"),
+        ]
+    else:
+        raise ValueError(provider)
+
+    return chain[:k]
 
 
 if __name__ == "__main__":
@@ -952,33 +997,34 @@ if __name__ == "__main__":
 
     configs: List[Tuple[Provider, str]] = [
         # ("gemini", "gemini-3.1-pro-preview"),
-        # ("openai", "gpt-5.4"),
+        ("openai", "gpt-4.1"),
         # ("anthropic", "claude-opus-4-6"),
-        ("ollama", "qwen2.5-coder:3b"),
+        # ("ollama", "kimi-k2.6:cloud"),
     ]
 
 
     # benchmarks = ["HumanEval", "MBPP", "APPS", "SWE-bench_LITE"]
-    benchmarks = ["SWE-bench_LITE"]
+    benchmarks = ["MBPP"]
 
-    max_tasks = 2
-    max_self_debug_iters = 1
+    max_tasks = 100
+    max_self_debug_iters = 10
 
     patch_pool: List[AgentSpec] = [
         # AgentSpec("openai", "gpt-4.1-mini"),
-        # AgentSpec("openai", "gpt-4.1"),
-        # AgentSpec("openai", "gpt-5-mini"),
-        AgentSpec("openai", "gpt-5.4"),
-        AgentSpec("openai", "gpt-5.4-mini"),
-        AgentSpec("openai", "gpt-5.4-nano"),
-        AgentSpec("openai", "gpt-5"),
+        AgentSpec("openai", "gpt-4.1"),
+        AgentSpec("openai", "gpt-4.1-nano"),
         AgentSpec("openai", "gpt-5-mini"),
+        # AgentSpec("openai", "gpt-5.4"),
+        # AgentSpec("openai", "gpt-5.4-mini"),
+        # AgentSpec("openai", "gpt-5.4-nano"),
+        # AgentSpec("openai", "gpt-5"),
+        # AgentSpec("openai", "gpt-5-mini"),
     ]
 
     gemini_patch_pool: List[AgentSpec] = [
         AgentSpec("gemini", "gemini-3.1-pro-preview"),
         AgentSpec("gemini", "gemini-3-flash-preview"),
-        AgentSpec("gemini", "gemini-3-pro-preview"),
+        # AgentSpec("gemini", "gemini-3-pro-preview"),
         AgentSpec("gemini", "gemini-3.1-flash-lite-preview"),
         AgentSpec("gemini", "gemini-2.5-flash"),
     ]
@@ -989,19 +1035,19 @@ if __name__ == "__main__":
     ]
 
     ollama_patch_pool: List[AgentSpec] = [
-        AgentSpec("ollama", "qwen2.5-coder:3b"),
-        AgentSpec("ollama", "qwen2.5-coder:1.5b"),
-        AgentSpec("ollama", "deepseek-coder:1.3b"),
+        AgentSpec("ollama", "kimi-k2.6:cloud"),
+        AgentSpec("ollama", "glm-5.1:cloud"),
+        AgentSpec("ollama", "qwen3-coder-next"),
     ]
 
     # ollama_patch_pool: List[AgentSpec] = [
-    #     AgentSpec("ollama", "qwen2.5-coder:7b"),
-    #     AgentSpec("ollama", "deepseek-coder:6.7b"),
-    #     AgentSpec("ollama", "llama3:8b"),
+    #     AgentSpec("ollama", "qwen2.5-coder:1.5b"),
+    #     AgentSpec("ollama", "deepseek-coder:1.3b"),
+    #     AgentSpec("ollama", "llama3.2:latest"),
     # ]
 
 
-    k_values = [2]
+    k_values = [2,3]
 
     all_results: List[Tuple[str, Dict[str, Any]]] = []
     all_details: Dict[str, Any] = {"baseline": {}, "self_debug_single": {}, "sequential_handoff": {}}
@@ -1102,7 +1148,7 @@ if __name__ == "__main__":
 
                     for k in k_values:
                         agents_k = get_patch_agents_for_provider(
-                            provider, k, patch_pool, gemini_patch_pool, claude_patch_pool, ollama_patch_pool
+                            provider, base_model = model_name, k = k,
                         )
                         handoff_details_by_k[k].append(
                             {
@@ -1174,7 +1220,7 @@ if __name__ == "__main__":
                 if sd.get("passed") or sd.get("num_tests", 0) == 0:
                     for k in k_values:
                         agents_k = get_patch_agents_for_provider(
-                            provider, k, patch_pool, gemini_patch_pool, claude_patch_pool, ollama_patch_pool
+                            provider, base_model = model_name, k = k,
                         )
                         handoff_details_by_k[k].append(
                             {
@@ -1205,13 +1251,27 @@ if __name__ == "__main__":
 
                 for k in k_values:
                     agents_k = get_patch_agents_for_provider(
-                        provider, k, patch_pool, gemini_patch_pool, claude_patch_pool, ollama_patch_pool
+                        provider, base_model = model_name, k = k,
+                    )
+
+                    sd_exec = ExecutionResult(
+                        benchmark=base_exec.benchmark,
+                        task_id=base_exec.task_id,
+                        patch="",
+                        passed=sd["passed"],
+                        num_tests=sd["num_tests"],
+                        num_passed=sd["num_passed"],
+                        error_type=sd["error_type"],
+                        error_message=sd["error_message"],
+                        traceback_str=sd["traceback_str"],
+                        stdout=sd["stdout"],
+                        stderr=sd["stderr"],
                     )
 
                     handoff = sequential_handoff_stream(
                         task=task,
-                        initial_code=candidate,
-                        first_exec=base_exec,
+                        initial_code=sd["final_code"],
+                        first_exec=sd_exec,
                         patch_agents=agents_k,
                         max_iters=max_self_debug_iters,
                     )
@@ -1250,7 +1310,7 @@ if __name__ == "__main__":
             handoff_summaries_by_k: Dict[int, Dict[str, Any]] = {}
             for k in k_values:
                 agents_k = get_patch_agents_for_provider(
-                    provider, k, patch_pool, gemini_patch_pool, claude_patch_pool, ollama_patch_pool
+                   provider, base_model = model_name, k = k,
                 )
                 tag = f"handoff_{k}agents"
                 label = handoff_model_label(provider, agents_k)

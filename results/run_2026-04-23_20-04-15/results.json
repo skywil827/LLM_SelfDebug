@@ -1,0 +1,1657 @@
+{
+  "timestamp": "2026-04-23_20-04-15",
+  "config": {
+    "benchmarks": [
+      "MBPP"
+    ],
+    "configs": [
+      [
+        "openai",
+        "gpt-4.1-mini"
+      ]
+    ],
+    "max_tasks": 5,
+    "max_self_debug_iters": 2,
+    "patch_pools": {
+      "openai": [
+        {
+          "provider": "openai",
+          "model": "gpt-4.1-mini"
+        },
+        {
+          "provider": "openai",
+          "model": "gpt-4.1"
+        },
+        {
+          "provider": "openai",
+          "model": "gpt-4.1-nano"
+        },
+        {
+          "provider": "openai",
+          "model": "gpt-5-mini"
+        }
+      ],
+      "gemini": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.1-pro-preview"
+        },
+        {
+          "provider": "gemini",
+          "model": "gemini-3-flash-preview"
+        },
+        {
+          "provider": "gemini",
+          "model": "gemini-3-pro-preview"
+        },
+        {
+          "provider": "gemini",
+          "model": "gemini-3.1-flash-lite-preview"
+        },
+        {
+          "provider": "gemini",
+          "model": "gemini-2.5-flash"
+        }
+      ],
+      "anthropic": [
+        {
+          "provider": "anthropic",
+          "model": "claude-sonnet-4-6"
+        },
+        {
+          "provider": "anthropic",
+          "model": "claude-haiku-4-5"
+        }
+      ],
+      "ollama": [
+        {
+          "provider": "ollama",
+          "model": "kimi-k2.6:cloud"
+        },
+        {
+          "provider": "ollama",
+          "model": "glm-5.1:cloud"
+        },
+        {
+          "provider": "ollama",
+          "model": "qwen3-coder-next"
+        }
+      ]
+    },
+    "k_values": [
+      2,
+      3
+    ],
+    "openai_default_model": "gpt-4.1-mini",
+    "gemini_default_model": "gemini-3.1-pro-preview",
+    "anthropic_default_model": "claude-opus-4-6",
+    "ollama_default_model": "qkimi-k2.6:cloud"
+  },
+  "summaries": [
+    {
+      "mode_tag": "baseline",
+      "benchmark": "MBPP",
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "mode": "baseline",
+      "num_tasks": 5,
+      "num_passed": 2,
+      "pass_rate": 0.4,
+      "details": [
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/138",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 3,
+          "num_passed": 2,
+          "artifact": "",
+          "error_type": "AssertionError",
+          "error_message": "",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 6, in <module>\nAssertionError\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function to check whether the given number can be represented as sum of non-zero powers of 2 or not.\n\nYou must implement the following Python function:\n```python\ndef is_Sum_Of_Powers_Of_Two(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To determine whether a number n can be represented as a sum of non-zero powers of 2, we can check if n is a positive integer. Any positive integer greater than zero can be represented as a sum of distinct powers of 2 (this is basically its binary representation). Therefore, the function will return True if n is a positive integer, and False otherwise.",
+          "initial_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # Check if n is a positive integer\n    return n > 0",
+          "final_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # Check if n is a positive integer\n    return n > 0",
+          "prompt": "Write a python function to check whether the given number can be represented as sum of non-zero powers of 2 or not.\n\nYou must implement the following Python function:\n```python\ndef is_Sum_Of_Powers_Of_Two(n):\n    # TODO: implement\n    pass\n```"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/267",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "artifact": "",
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.\n\nYou must implement the following Python function:\n```python\ndef square_Sum(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To find the sum of the squares of the first n odd natural numbers, we know that the k-th odd number is (2k-1). We will iterate from 1 to n, compute the square of each odd number (2k-1)^2 and accumulate these values. Finally, return the sum.",
+          "initial_code": "def square_Sum(n):\n    return sum((2*k - 1)**2 for k in range(1, n+1))",
+          "final_code": "def square_Sum(n):\n    return sum((2*k - 1)**2 for k in range(1, n+1))",
+          "prompt": "Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.\n\nYou must implement the following Python function:\n```python\ndef square_Sum(n):\n    # TODO: implement\n    pass\n```"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/311",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 3,
+          "num_passed": 2,
+          "artifact": "",
+          "error_type": "AssertionError",
+          "error_message": "",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 13, in <module>\nAssertionError\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function to set the left most unset bit.\n\nYou must implement the following Python function:\n```python\ndef set_left_most_unset_bit(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To set the leftmost unset bit of the given integer n, first find the bit length of n to determine the position of the highest set bit. Then, iterate from the most significant bit down to the least significant bit to find the first unset bit (0). Once this bit is found, set it to 1 by OR'ing n with 1 left-shifted to that bit position. If all bits up to the most significant bit are set, then the leftmost unset bit is the next bit at the left, so set that bit (i.e., at position bit_length). Return the updated integer.",
+          "initial_code": "def set_left_most_unset_bit(n):\n    if n == 0:\n        return 1\n    bit_length = n.bit_length()\n    for i in range(bit_length - 1, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # All bits set till bit_length - set the next leftmost bit\n    return n | (1 << bit_length)",
+          "final_code": "def set_left_most_unset_bit(n):\n    if n == 0:\n        return 1\n    bit_length = n.bit_length()\n    for i in range(bit_length - 1, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # All bits set till bit_length - set the next leftmost bit\n    return n | (1 << bit_length)",
+          "prompt": "Write a python function to set the left most unset bit.\n\nYou must implement the following Python function:\n```python\ndef set_left_most_unset_bit(n):\n    # TODO: implement\n    pass\n```"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/273",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "artifact": "",
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a function that takes in two tuples and subtracts the elements of the first tuple by the elements of the second tuple with the same index.\n\nYou must implement the following Python function:\n```python\ndef substract_elements(test_tup1, test_tup2):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Define a function that takes two tuples as inputs. Inside the function, use a list comprehension with zip to iterate over both tuples in parallel and subtract the second tuple's element from the first tuple's element at each index. Convert the resulting list back to a tuple and return it.",
+          "initial_code": "def substract_elements(test_tup1, test_tup2):\n    return tuple(a - b for a, b in zip(test_tup1, test_tup2))",
+          "final_code": "def substract_elements(test_tup1, test_tup2):\n    return tuple(a - b for a, b in zip(test_tup1, test_tup2))",
+          "prompt": "Write a function that takes in two tuples and subtracts the elements of the first tuple by the elements of the second tuple with the same index.\n\nYou must implement the following Python function:\n```python\ndef substract_elements(test_tup1, test_tup2):\n    # TODO: implement\n    pass\n```"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/108",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 3,
+          "num_passed": 2,
+          "artifact": "",
+          "error_type": "NameError",
+          "error_message": "name 'merge_sorted_list' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 9, in <module>\nNameError: name 'merge_sorted_list' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a function to merge three lists into a single sorted list.\n\nYou must implement the following Python function:\n```python\nimport heapq\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Use the heapq.merge function to efficiently merge three sorted lists into one sorted list. The function will accept three lists as input, apply heapq.merge to them, and return a single sorted list.",
+          "initial_code": "import heapq\n\ndef merge_three_lists(lst1, lst2, lst3):\n    # Use heapq.merge to merge three sorted lists into a sorted iterator\n    merged_iter = heapq.merge(lst1, lst2, lst3)\n    # Convert the iterator to a list and return\n    return list(merged_iter)",
+          "final_code": "import heapq\n\ndef merge_three_lists(lst1, lst2, lst3):\n    # Use heapq.merge to merge three sorted lists into a sorted iterator\n    merged_iter = heapq.merge(lst1, lst2, lst3)\n    # Convert the iterator to a list and return\n    return list(merged_iter)",
+          "prompt": "Write a function to merge three lists into a single sorted list.\n\nYou must implement the following Python function:\n```python\nimport heapq\n    # TODO: implement\n    pass\n```"
+        }
+      ]
+    },
+    {
+      "mode_tag": "self_debug_single",
+      "benchmark": "MBPP",
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "mode": "self_debug_single",
+      "num_tasks": 5,
+      "num_passed": 3,
+      "pass_rate": 0.6,
+      "details": [
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/138",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "self_debug_single",
+          "passed": false,
+          "num_tests": 3,
+          "num_passed": 2,
+          "error_type": "AssertionError",
+          "error_message": "",
+          "initial_error_type": "AssertionError",
+          "initial_error_message": "",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function to check whether the given number can be represented as sum of non-zero powers of 2 or not.\n\nYou must implement the following Python function:\n```python\ndef is_Sum_Of_Powers_Of_Two(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To determine whether a number n can be represented as a sum of non-zero powers of 2, we can check if n is a positive integer. Any positive integer greater than zero can be represented as a sum of distinct powers of 2 (this is basically its binary representation). Therefore, the function will return True if n is a positive integer, and False otherwise.",
+          "initial_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # Check if n is a positive integer\n    return n > 0",
+          "final_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # A number can be represented as sum of non-zero powers of 2 if it is a positive integer\n    # because every positive integer has a binary representation which is such a sum\n    return isinstance(n, int) and n > 0",
+          "patch_models_used": [
+            "openai:gpt-4.1-mini",
+            "openai:gpt-4.1-mini"
+          ],
+          "patch_explanations": [
+            "The original code returns True for any positive integer. Since every positive integer has a unique binary representation, it can always be expressed as the sum of distinct powers of 2. Thus, the original implementation is logically correct and no change is needed.",
+            "Adding the type check ensures the input is an integer, and the condition n > 0 ensures only positive integers return True, aligning with the requirement that n must be representable as a sum of non-zero powers of 2. This fixes the incorrect acceptance of zero, negative, or non-integer inputs."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "patch_model": "openai:gpt-4.1-mini",
+              "patch_explanation": "The original code returns True for any positive integer. Since every positive integer has a unique binary representation, it can always be expressed as the sum of distinct powers of 2. Thus, the original implementation is logically correct and no change is needed.",
+              "updated_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # Check if n can be represented as sum of non-zero powers of 2\n    # This is equivalent to checking if n is a positive integer\n    # Because every positive integer can be represented as sum of distinct powers of 2\n    return n > 0",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 3,
+                "num_passed": 2,
+                "error_type": "AssertionError",
+                "error_message": "",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 8, in <module>\nAssertionError\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            {
+              "iteration": 2,
+              "patch_model": "openai:gpt-4.1-mini",
+              "patch_explanation": "Adding the type check ensures the input is an integer, and the condition n > 0 ensures only positive integers return True, aligning with the requirement that n must be representable as a sum of non-zero powers of 2. This fixes the incorrect acceptance of zero, negative, or non-integer inputs.",
+              "updated_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # A number can be represented as sum of non-zero powers of 2 if it is a positive integer\n    # because every positive integer has a binary representation which is such a sum\n    return isinstance(n, int) and n > 0",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 3,
+                "num_passed": 2,
+                "error_type": "AssertionError",
+                "error_message": "",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 7, in <module>\nAssertionError\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 7, in <module>\nAssertionError\n",
+          "stdout": "",
+          "stderr": "",
+          "prompt": "Write a python function to check whether the given number can be represented as sum of non-zero powers of 2 or not.\n\nYou must implement the following Python function:\n```python\ndef is_Sum_Of_Powers_Of_Two(n):\n    # TODO: implement\n    pass\n```"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/267",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.\n\nYou must implement the following Python function:\n```python\ndef square_Sum(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To find the sum of the squares of the first n odd natural numbers, we know that the k-th odd number is (2k-1). We will iterate from 1 to n, compute the square of each odd number (2k-1)^2 and accumulate these values. Finally, return the sum.",
+          "initial_code": "def square_Sum(n):\n    return sum((2*k - 1)**2 for k in range(1, n+1))",
+          "final_code": "def square_Sum(n):\n    return sum((2*k - 1)**2 for k in range(1, n+1))",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.\n\nYou must implement the following Python function:\n```python\ndef square_Sum(n):\n    # TODO: implement\n    pass\n```"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/311",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "self_debug_single",
+          "passed": false,
+          "num_tests": 3,
+          "num_passed": 2,
+          "error_type": "AssertionError",
+          "error_message": "",
+          "initial_error_type": "AssertionError",
+          "initial_error_message": "",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function to set the left most unset bit.\n\nYou must implement the following Python function:\n```python\ndef set_left_most_unset_bit(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To set the leftmost unset bit of the given integer n, first find the bit length of n to determine the position of the highest set bit. Then, iterate from the most significant bit down to the least significant bit to find the first unset bit (0). Once this bit is found, set it to 1 by OR'ing n with 1 left-shifted to that bit position. If all bits up to the most significant bit are set, then the leftmost unset bit is the next bit at the left, so set that bit (i.e., at position bit_length). Return the updated integer.",
+          "initial_code": "def set_left_most_unset_bit(n):\n    if n == 0:\n        return 1\n    bit_length = n.bit_length()\n    for i in range(bit_length - 1, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # All bits set till bit_length - set the next leftmost bit\n    return n | (1 << bit_length)",
+          "final_code": "def set_left_most_unset_bit(n):\n    # For n == 0, leftmost unset bit is bit 0\n    if n == 0:\n        return 1\n\n    # Find highest bit position where n has bit set\n    highest_set_bit = n.bit_length() - 1\n\n    # Scan from a higher possible bit; choose a search limit\n    # We search from a high bit position down to 0 to find the leftmost unset bit.\n    # Let's check bits from some maximum bit position down to zero.\n    # Since Python integers are unbounded, but input n is given,\n    # we can consider scanning from some bit higher than highest_set_bit to cover leading unset bits.\n    # The leftmost unset bit is the highest bit i >= highest_set_bit + 1 where bit i is 0,\n    # or any bit i <= highest_set_bit where bit is 0.\n\n    # To consider all bits including leading zeros above highest_set_bit,\n    # let's consider up to highest_set_bit + 64 bits arbitrarily.\n    max_check_bit = highest_set_bit + 64\n\n    for i in range(max_check_bit, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # If all bits are set in the range, return n (unlikely for int)\n    return n",
+          "patch_models_used": [
+            "openai:gpt-4.1-mini",
+            "openai:gpt-4.1-mini"
+          ],
+          "patch_explanations": [
+            "The original code already handled scanning bits from the highest bit down to 0. The fix was ensuring that when all bits are set up to bit_length-1, we set the bit at position bit_length, which is the correct next leftmost unset bit beyond the current highest bit. This matches the problem requirement to set the genuine leftmost unset bit. The initial zero check remains to set bit 0.",
+            "The original code only scanned bits up to the current highest set bit, missing unset bits above that. By scanning from a higher bit range (highest_set_bit + 64) down to zero, this code finds the truly leftmost unset bit in n's binary representation, including any leading unset bits beyond the highest set bit. This aligns with the problem requirement to set the leftmost unset bit."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "patch_model": "openai:gpt-4.1-mini",
+              "patch_explanation": "The original code already handled scanning bits from the highest bit down to 0. The fix was ensuring that when all bits are set up to bit_length-1, we set the bit at position bit_length, which is the correct next leftmost unset bit beyond the current highest bit. This matches the problem requirement to set the genuine leftmost unset bit. The initial zero check remains to set bit 0.",
+              "updated_code": "def set_left_most_unset_bit(n):\n    # Check bits starting from the highest to 0\n    # Find the leftmost unset bit from the most significant bit upwards\n    if n == 0:\n        return 1\n    bit_length = n.bit_length()\n    # Scan bits from current highest bit down to 0\n    for i in range(bit_length - 1, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # If all bits till bit_length-1 are set, set the bit at position bit_length\n    return n | (1 << bit_length)",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 3,
+                "num_passed": 2,
+                "error_type": "AssertionError",
+                "error_message": "",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 16, in <module>\nAssertionError\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            {
+              "iteration": 2,
+              "patch_model": "openai:gpt-4.1-mini",
+              "patch_explanation": "The original code only scanned bits up to the current highest set bit, missing unset bits above that. By scanning from a higher bit range (highest_set_bit + 64) down to zero, this code finds the truly leftmost unset bit in n's binary representation, including any leading unset bits beyond the highest set bit. This aligns with the problem requirement to set the leftmost unset bit.",
+              "updated_code": "def set_left_most_unset_bit(n):\n    # For n == 0, leftmost unset bit is bit 0\n    if n == 0:\n        return 1\n\n    # Find highest bit position where n has bit set\n    highest_set_bit = n.bit_length() - 1\n\n    # Scan from a higher possible bit; choose a search limit\n    # We search from a high bit position down to 0 to find the leftmost unset bit.\n    # Let's check bits from some maximum bit position down to zero.\n    # Since Python integers are unbounded, but input n is given,\n    # we can consider scanning from some bit higher than highest_set_bit to cover leading unset bits.\n    # The leftmost unset bit is the highest bit i >= highest_set_bit + 1 where bit i is 0,\n    # or any bit i <= highest_set_bit where bit is 0.\n\n    # To consider all bits including leading zeros above highest_set_bit,\n    # let's consider up to highest_set_bit + 64 bits arbitrarily.\n    max_check_bit = highest_set_bit + 64\n\n    for i in range(max_check_bit, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # If all bits are set in the range, return n (unlikely for int)\n    return n",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 3,
+                "num_passed": 2,
+                "error_type": "AssertionError",
+                "error_message": "",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 27, in <module>\nAssertionError\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 27, in <module>\nAssertionError\n",
+          "stdout": "",
+          "stderr": "",
+          "prompt": "Write a python function to set the left most unset bit.\n\nYou must implement the following Python function:\n```python\ndef set_left_most_unset_bit(n):\n    # TODO: implement\n    pass\n```"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/273",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a function that takes in two tuples and subtracts the elements of the first tuple by the elements of the second tuple with the same index.\n\nYou must implement the following Python function:\n```python\ndef substract_elements(test_tup1, test_tup2):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Define a function that takes two tuples as inputs. Inside the function, use a list comprehension with zip to iterate over both tuples in parallel and subtract the second tuple's element from the first tuple's element at each index. Convert the resulting list back to a tuple and return it.",
+          "initial_code": "def substract_elements(test_tup1, test_tup2):\n    return tuple(a - b for a, b in zip(test_tup1, test_tup2))",
+          "final_code": "def substract_elements(test_tup1, test_tup2):\n    return tuple(a - b for a, b in zip(test_tup1, test_tup2))",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "Write a function that takes in two tuples and subtracts the elements of the first tuple by the elements of the second tuple with the same index.\n\nYou must implement the following Python function:\n```python\ndef substract_elements(test_tup1, test_tup2):\n    # TODO: implement\n    pass\n```"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/108",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": "NameError",
+          "initial_error_message": "name 'merge_sorted_list' is not defined",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a function to merge three lists into a single sorted list.\n\nYou must implement the following Python function:\n```python\nimport heapq\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Use the heapq.merge function to efficiently merge three sorted lists into one sorted list. The function will accept three lists as input, apply heapq.merge to them, and return a single sorted list.",
+          "initial_code": "import heapq\n\ndef merge_three_lists(lst1, lst2, lst3):\n    # Use heapq.merge to merge three sorted lists into a sorted iterator\n    merged_iter = heapq.merge(lst1, lst2, lst3)\n    # Convert the iterator to a list and return\n    return list(merged_iter)",
+          "final_code": "import heapq\n\ndef merge_sorted_list(lst1, lst2, lst3):\n    # Sort each list before merging to ensure heapq.merge inputs are sorted\n    sorted_lst1 = sorted(lst1)\n    sorted_lst2 = sorted(lst2)\n    sorted_lst3 = sorted(lst3)\n    merged_iter = heapq.merge(sorted_lst1, sorted_lst2, sorted_lst3)\n    return list(merged_iter)",
+          "patch_models_used": [
+            "openai:gpt-4.1-mini",
+            "openai:gpt-4.1-mini"
+          ],
+          "patch_explanations": [
+            "The tests expect a function named 'merge_sorted_list', but the implemented function was named 'merge_three_lists'. By renaming the function to 'merge_sorted_list', the test can successfully call the function, resolving the NameError.",
+            "The original code assumed inputs were sorted, but heapq.merge requires sorted inputs to merge correctly. By sorting each input list first, this function ensures that heapq.merge receives sorted lists, producing a correctly sorted merged output."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "patch_model": "openai:gpt-4.1-mini",
+              "patch_explanation": "The tests expect a function named 'merge_sorted_list', but the implemented function was named 'merge_three_lists'. By renaming the function to 'merge_sorted_list', the test can successfully call the function, resolving the NameError.",
+              "updated_code": "import heapq\n\ndef merge_sorted_list(lst1, lst2, lst3):\n    # Use heapq.merge to merge three sorted lists into a sorted iterator\n    merged_iter = heapq.merge(lst1, lst2, lst3)\n    # Convert the iterator to a list and return\n    return list(merged_iter)",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 3,
+                "num_passed": 2,
+                "error_type": "AssertionError",
+                "error_message": "",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 9, in <module>\nAssertionError\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            {
+              "iteration": 2,
+              "patch_model": "openai:gpt-4.1-mini",
+              "patch_explanation": "The original code assumed inputs were sorted, but heapq.merge requires sorted inputs to merge correctly. By sorting each input list first, this function ensures that heapq.merge receives sorted lists, producing a correctly sorted merged output.",
+              "updated_code": "import heapq\n\ndef merge_sorted_list(lst1, lst2, lst3):\n    # Sort each list before merging to ensure heapq.merge inputs are sorted\n    sorted_lst1 = sorted(lst1)\n    sorted_lst2 = sorted(lst2)\n    sorted_lst3 = sorted(lst3)\n    merged_iter = heapq.merge(sorted_lst1, sorted_lst2, sorted_lst3)\n    return list(merged_iter)",
+              "exec_result": {
+                "passed": true,
+                "num_tests": 3,
+                "num_passed": 3,
+                "error_type": null,
+                "error_message": null,
+                "traceback_str": null,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "Write a function to merge three lists into a single sorted list.\n\nYou must implement the following Python function:\n```python\nimport heapq\n    # TODO: implement\n    pass\n```"
+        }
+      ]
+    },
+    {
+      "mode_tag": "handoff_2agents",
+      "benchmark": "MBPP",
+      "provider": "openai",
+      "model": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview",
+      "mode": "handoff_2agents",
+      "num_tasks": 5,
+      "num_passed": 4,
+      "pass_rate": 0.8,
+      "details": [
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/138",
+          "provider": "openai",
+          "base_model": "gpt-4.1-mini",
+          "handoff_models_used": [
+            "openai:gpt-4.1-mini",
+            "gemini:gemini-3-flash-preview"
+          ],
+          "mode_tag": "handoff_2agents",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function to check whether the given number can be represented as sum of non-zero powers of 2 or not.\n\nYou must implement the following Python function:\n```python\ndef is_Sum_Of_Powers_Of_Two(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To determine whether a number n can be represented as a sum of non-zero powers of 2, we can check if n is a positive integer. Any positive integer greater than zero can be represented as a sum of distinct powers of 2 (this is basically its binary representation). Therefore, the function will return True if n is a positive integer, and False otherwise.",
+          "initial_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # Check if n is a positive integer\n    return n > 0",
+          "final_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # n can be represented as sum of non-zero powers of 2 if n is even and n > 0\n    # Non-zero powers of 2 (2^1, 2^2, ...) are all even, so their sum must be even.\n    return n > 0 and n % 2 == 0",
+          "patch_explanations": [
+            "The original function already returned True for any positive integer, which is correct because every positive integer can be represented as a sum of distinct powers of two (its set bits in binary). Thus, the minimal fix is to remove the redundant comment and clarify understanding by confirming the is_Sum_Of_Powers_Of_Two returns True iff n > 0.",
+            "The error analysis states that 'non-zero powers' refers to powers of 2 with exponents greater than zero (2^1, 2^2, 2^3, ...). Since every such power is even, any sum of these powers must also be an even number. The original code returned True for all positive integers, including odd ones, which cannot be formed without using the power 2^0 (1)."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "fixer": {
+                "provider": "openai",
+                "model": "gpt-4.1-mini"
+              },
+              "patch_explanation": "The original function already returned True for any positive integer, which is correct because every positive integer can be represented as a sum of distinct powers of two (its set bits in binary). Thus, the minimal fix is to remove the redundant comment and clarify understanding by confirming the is_Sum_Of_Powers_Of_Two returns True iff n > 0.",
+              "updated_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # n can be represented as sum of non-zero powers of 2 if n > 0\n    # since powers of 2 correspond to bits set in binary representation\n    return n > 0",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 3,
+                "num_passed": 2,
+                "error_type": "AssertionError",
+                "error_message": "",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 7, in <module>\nAssertionError\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            {
+              "iteration": 2,
+              "fixer": {
+                "provider": "gemini",
+                "model": "gemini-3-flash-preview"
+              },
+              "patch_explanation": "The error analysis states that 'non-zero powers' refers to powers of 2 with exponents greater than zero (2^1, 2^2, 2^3, ...). Since every such power is even, any sum of these powers must also be an even number. The original code returned True for all positive integers, including odd ones, which cannot be formed without using the power 2^0 (1).",
+              "updated_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # n can be represented as sum of non-zero powers of 2 if n is even and n > 0\n    # Non-zero powers of 2 (2^1, 2^2, ...) are all even, so their sum must be even.\n    return n > 0 and n % 2 == 0",
+              "exec_result": {
+                "passed": true,
+                "num_tests": 3,
+                "num_passed": 3,
+                "error_type": null,
+                "error_message": null,
+                "traceback_str": null,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "prompt": "Write a python function to check whether the given number can be represented as sum of non-zero powers of 2 or not.\n\nYou must implement the following Python function:\n```python\ndef is_Sum_Of_Powers_Of_Two(n):\n    # TODO: implement\n    pass\n```",
+          "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/267",
+          "provider": "openai",
+          "base_model": "gpt-4.1-mini",
+          "handoff_models_used": [],
+          "mode_tag": "handoff_2agents",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.\n\nYou must implement the following Python function:\n```python\ndef square_Sum(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To find the sum of the squares of the first n odd natural numbers, we know that the k-th odd number is (2k-1). We will iterate from 1 to n, compute the square of each odd number (2k-1)^2 and accumulate these values. Finally, return the sum.",
+          "initial_code": "def square_Sum(n):\n    return sum((2*k - 1)**2 for k in range(1, n+1))",
+          "final_code": "def square_Sum(n):\n    return sum((2*k - 1)**2 for k in range(1, n+1))",
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.\n\nYou must implement the following Python function:\n```python\ndef square_Sum(n):\n    # TODO: implement\n    pass\n```",
+          "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/311",
+          "provider": "openai",
+          "base_model": "gpt-4.1-mini",
+          "handoff_models_used": [
+            "openai:gpt-4.1-mini",
+            "gemini:gemini-3-flash-preview"
+          ],
+          "mode_tag": "handoff_2agents",
+          "passed": false,
+          "num_tests": 3,
+          "num_passed": 2,
+          "error_type": "SyntaxError",
+          "error_message": "invalid syntax (<string>, line 1)",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function to set the left most unset bit.\n\nYou must implement the following Python function:\n```python\ndef set_left_most_unset_bit(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To set the leftmost unset bit of the given integer n, first find the bit length of n to determine the position of the highest set bit. Then, iterate from the most significant bit down to the least significant bit to find the first unset bit (0). Once this bit is found, set it to 1 by OR'ing n with 1 left-shifted to that bit position. If all bits up to the most significant bit are set, then the leftmost unset bit is the next bit at the left, so set that bit (i.e., at position bit_length). Return the updated integer.",
+          "initial_code": "def set_left_most_unset_bit(n):\n    if n == 0:\n        return 1\n    bit_length = n.bit_length()\n    for i in range(bit_length - 1, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # All bits set till bit_length - set the next leftmost bit\n    return n | (1 << bit_length)",
+          "final_code": "```json\n{\n  \"patched_code\": \"def set_left_most_unset_bit(n):\\n    if n == 0:\\n        return 1\\n    bit_length = n.bit_length()\\n    for i in range(bit_length - 1, -1, -1):\\n        if not (n & (1 << i)):\\n            return n | (1 << i)\\n    return n\",\n  \"patch_strategy\": \"Adjusted the loop range to start at the number's highest bit index and added a fallback return statement.\",\n  \"rationale\": \"The original code started its search at `bit_length`, which is the index of the first bit *above* the number's existing bits. Because this bit is always 0, it caused the function to set a new most-significant bit (e.g., changing 10 to 26) instead of an internal unset bit. By starting the loop at `bit_length - 1`, we correctly identify the leftmost zero within the number's current bit representation. Additionally, a fallback `return n` was added to handle cases where all bits are already set (like 15 or 1111), as the original code would have returned `None` in such scenarios.\"\n}\n```",
+          "patch_explanations": [
+            "Changing the loop to start from bit_length (which is the position just above current highest set bit) down to 0 allows checking for any unset bit including leftmost unset bits above the highest set bit. This addresses the original bug where the function only checked bits within current bit length minus one, missing unset bits beyond that range.",
+            ""
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "fixer": {
+                "provider": "openai",
+                "model": "gpt-4.1-mini"
+              },
+              "patch_explanation": "Changing the loop to start from bit_length (which is the position just above current highest set bit) down to 0 allows checking for any unset bit including leftmost unset bits above the highest set bit. This addresses the original bug where the function only checked bits within current bit length minus one, missing unset bits beyond that range.",
+              "updated_code": "def set_left_most_unset_bit(n):\n    if n == 0:\n        return 1\n    bit_length = n.bit_length()\n    # Check bits from the next bit position downward including next bit_length\n    for i in range(bit_length, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 3,
+                "num_passed": 2,
+                "error_type": "AssertionError",
+                "error_message": "",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 10, in <module>\nAssertionError\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            {
+              "iteration": 2,
+              "fixer": {
+                "provider": "gemini",
+                "model": "gemini-3-flash-preview"
+              },
+              "patch_explanation": "",
+              "updated_code": "```json\n{\n  \"patched_code\": \"def set_left_most_unset_bit(n):\\n    if n == 0:\\n        return 1\\n    bit_length = n.bit_length()\\n    for i in range(bit_length - 1, -1, -1):\\n        if not (n & (1 << i)):\\n            return n | (1 << i)\\n    return n\",\n  \"patch_strategy\": \"Adjusted the loop range to start at the number's highest bit index and added a fallback return statement.\",\n  \"rationale\": \"The original code started its search at `bit_length`, which is the index of the first bit *above* the number's existing bits. Because this bit is always 0, it caused the function to set a new most-significant bit (e.g., changing 10 to 26) instead of an internal unset bit. By starting the loop at `bit_length - 1`, we correctly identify the leftmost zero within the number's current bit representation. Additionally, a fallback `return n` was added to handle cases where all bits are already set (like 15 or 1111), as the original code would have returned `None` in such scenarios.\"\n}\n```",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 3,
+                "num_passed": 2,
+                "error_type": "SyntaxError",
+                "error_message": "invalid syntax (<string>, line 1)",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1\n    ```json\n    ^\nSyntaxError: invalid syntax\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "prompt": "Write a python function to set the left most unset bit.\n\nYou must implement the following Python function:\n```python\ndef set_left_most_unset_bit(n):\n    # TODO: implement\n    pass\n```",
+          "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/273",
+          "provider": "openai",
+          "base_model": "gpt-4.1-mini",
+          "handoff_models_used": [],
+          "mode_tag": "handoff_2agents",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a function that takes in two tuples and subtracts the elements of the first tuple by the elements of the second tuple with the same index.\n\nYou must implement the following Python function:\n```python\ndef substract_elements(test_tup1, test_tup2):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Define a function that takes two tuples as inputs. Inside the function, use a list comprehension with zip to iterate over both tuples in parallel and subtract the second tuple's element from the first tuple's element at each index. Convert the resulting list back to a tuple and return it.",
+          "initial_code": "def substract_elements(test_tup1, test_tup2):\n    return tuple(a - b for a, b in zip(test_tup1, test_tup2))",
+          "final_code": "def substract_elements(test_tup1, test_tup2):\n    return tuple(a - b for a, b in zip(test_tup1, test_tup2))",
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "Write a function that takes in two tuples and subtracts the elements of the first tuple by the elements of the second tuple with the same index.\n\nYou must implement the following Python function:\n```python\ndef substract_elements(test_tup1, test_tup2):\n    # TODO: implement\n    pass\n```",
+          "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/108",
+          "provider": "openai",
+          "base_model": "gpt-4.1-mini",
+          "handoff_models_used": [],
+          "mode_tag": "handoff_2agents",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a function to merge three lists into a single sorted list.\n\nYou must implement the following Python function:\n```python\nimport heapq\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Use the heapq.merge function to efficiently merge three sorted lists into one sorted list. The function will accept three lists as input, apply heapq.merge to them, and return a single sorted list.",
+          "initial_code": "import heapq\n\ndef merge_three_lists(lst1, lst2, lst3):\n    # Use heapq.merge to merge three sorted lists into a sorted iterator\n    merged_iter = heapq.merge(lst1, lst2, lst3)\n    # Convert the iterator to a list and return\n    return list(merged_iter)",
+          "final_code": "import heapq\n\ndef merge_sorted_list(lst1, lst2, lst3):\n    # Sort each list before merging to ensure heapq.merge inputs are sorted\n    sorted_lst1 = sorted(lst1)\n    sorted_lst2 = sorted(lst2)\n    sorted_lst3 = sorted(lst3)\n    merged_iter = heapq.merge(sorted_lst1, sorted_lst2, sorted_lst3)\n    return list(merged_iter)",
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "Write a function to merge three lists into a single sorted list.\n\nYou must implement the following Python function:\n```python\nimport heapq\n    # TODO: implement\n    pass\n```",
+          "skipped_reason": "self_debug_solved",
+          "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview"
+        }
+      ]
+    },
+    {
+      "mode_tag": "handoff_3agents",
+      "benchmark": "MBPP",
+      "provider": "openai",
+      "model": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview,claude-haiku-4-5",
+      "mode": "handoff_3agents",
+      "num_tasks": 5,
+      "num_passed": 4,
+      "pass_rate": 0.8,
+      "details": [
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/138",
+          "provider": "openai",
+          "base_model": "gpt-4.1-mini",
+          "handoff_models_used": [
+            "openai:gpt-4.1-mini"
+          ],
+          "mode_tag": "handoff_3agents",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function to check whether the given number can be represented as sum of non-zero powers of 2 or not.\n\nYou must implement the following Python function:\n```python\ndef is_Sum_Of_Powers_Of_Two(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To determine whether a number n can be represented as a sum of non-zero powers of 2, we can check if n is a positive integer. Any positive integer greater than zero can be represented as a sum of distinct powers of 2 (this is basically its binary representation). Therefore, the function will return True if n is a positive integer, and False otherwise.",
+          "initial_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # Check if n is a positive integer\n    return n > 0",
+          "final_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # Check if n is positive and does not have the 1's bit set (2^0=1)\n    if n <= 0:\n        return False\n    # If the least significant bit is set, return False because it uses 2^0\n    if n & 1:\n        return False\n    # If all other bits are combination of powers of two (which they are by definition), return True\n    return True",
+          "patch_explanations": [
+            "The fix rejects numbers that are not positive or contain the 2^0 bit set (i.e., odd numbers), because the problem explicitly excludes using 2^0=1 in sums. For any other positive number with no LSB set, the number can be represented as a sum of higher powers of two, so the function returns True."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "fixer": {
+                "provider": "openai",
+                "model": "gpt-4.1-mini"
+              },
+              "patch_explanation": "The fix rejects numbers that are not positive or contain the 2^0 bit set (i.e., odd numbers), because the problem explicitly excludes using 2^0=1 in sums. For any other positive number with no LSB set, the number can be represented as a sum of higher powers of two, so the function returns True.",
+              "updated_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # Check if n is positive and does not have the 1's bit set (2^0=1)\n    if n <= 0:\n        return False\n    # If the least significant bit is set, return False because it uses 2^0\n    if n & 1:\n        return False\n    # If all other bits are combination of powers of two (which they are by definition), return True\n    return True",
+              "exec_result": {
+                "passed": true,
+                "num_tests": 3,
+                "num_passed": 3,
+                "error_type": null,
+                "error_message": null,
+                "traceback_str": null,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "prompt": "Write a python function to check whether the given number can be represented as sum of non-zero powers of 2 or not.\n\nYou must implement the following Python function:\n```python\ndef is_Sum_Of_Powers_Of_Two(n):\n    # TODO: implement\n    pass\n```",
+          "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview,claude-haiku-4-5"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/267",
+          "provider": "openai",
+          "base_model": "gpt-4.1-mini",
+          "handoff_models_used": [],
+          "mode_tag": "handoff_3agents",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.\n\nYou must implement the following Python function:\n```python\ndef square_Sum(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To find the sum of the squares of the first n odd natural numbers, we know that the k-th odd number is (2k-1). We will iterate from 1 to n, compute the square of each odd number (2k-1)^2 and accumulate these values. Finally, return the sum.",
+          "initial_code": "def square_Sum(n):\n    return sum((2*k - 1)**2 for k in range(1, n+1))",
+          "final_code": "def square_Sum(n):\n    return sum((2*k - 1)**2 for k in range(1, n+1))",
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.\n\nYou must implement the following Python function:\n```python\ndef square_Sum(n):\n    # TODO: implement\n    pass\n```",
+          "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview,claude-haiku-4-5"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/311",
+          "provider": "openai",
+          "base_model": "gpt-4.1-mini",
+          "handoff_models_used": [
+            "openai:gpt-4.1-mini",
+            "gemini:gemini-3-flash-preview"
+          ],
+          "mode_tag": "handoff_3agents",
+          "passed": false,
+          "num_tests": 3,
+          "num_passed": 2,
+          "error_type": "SyntaxError",
+          "error_message": "invalid syntax (<string>, line 1)",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function to set the left most unset bit.\n\nYou must implement the following Python function:\n```python\ndef set_left_most_unset_bit(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To set the leftmost unset bit of the given integer n, first find the bit length of n to determine the position of the highest set bit. Then, iterate from the most significant bit down to the least significant bit to find the first unset bit (0). Once this bit is found, set it to 1 by OR'ing n with 1 left-shifted to that bit position. If all bits up to the most significant bit are set, then the leftmost unset bit is the next bit at the left, so set that bit (i.e., at position bit_length). Return the updated integer.",
+          "initial_code": "def set_left_most_unset_bit(n):\n    if n == 0:\n        return 1\n    bit_length = n.bit_length()\n    for i in range(bit_length - 1, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # All bits set till bit_length - set the next leftmost bit\n    return n | (1 << bit_length)",
+          "final_code": "```json\n{\n  \"patched_code\": \"def set_left_most_unset_bit(n):\\n    if n == 0:\\n        return 1\\n    bit_length = n.bit_length()\\n    # Start checking from the most significant bit (index bit_length - 1) down to 0\\n    for i in range(bit_length - 1, -1, -1):\\n        if not (n & (1 << i)):\\n            return n | (1 << i)\\n    # If all bits within the current bit length are set, return the number unchanged\\n    return n\",\n  \"patch_strategy\": \"The search range was adjusted to start at the most significant bit (MSB) rather than one bit past it, and the fallback return statement was changed to return the original number if no unset bits are found.\",\n  \"rationale\": \"As per the problem specification and error analysis, the 'leftmost unset bit' should be located within the binary structure of the existing number (i.e., at or below the MSB). The original code incorrectly started its search at index 'bit_length', which always corresponds to a 0 for positive integers, leading to incorrect results like 26 for n=10. By starting the search at 'bit_length - 1' and returning 'n' if no bits are found, the function correctly handles cases like n=10 (returning 14) and n=15 (returning 15).\"\n}\n```",
+          "patch_explanations": [
+            "The original code only checked bits from the highest set bit downwards, missing the possibility of unset bits beyond that. By scanning from bit_length down to 0, we correctly find the leftmost unset bit including the bit immediately higher than the highest set bit if needed. The final fallback sets the next higher bit if all bits are set. This aligns the function behavior with the problem specification as explained in the error analysis.",
+            ""
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "fixer": {
+                "provider": "openai",
+                "model": "gpt-4.1-mini"
+              },
+              "patch_explanation": "The original code only checked bits from the highest set bit downwards, missing the possibility of unset bits beyond that. By scanning from bit_length down to 0, we correctly find the leftmost unset bit including the bit immediately higher than the highest set bit if needed. The final fallback sets the next higher bit if all bits are set. This aligns the function behavior with the problem specification as explained in the error analysis.",
+              "updated_code": "def set_left_most_unset_bit(n):\n    # If n is 0, the leftmost unset bit is bit 0\n    if n == 0:\n        return 1\n    bit_length = n.bit_length()\n    # We start checking from bit_length (one past the highest set bit) down to 0\n    # because bit_length-th bit is the next possible leftmost unset bit\n    for i in range(bit_length, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # If all bits up to bit_length are set, set the next higher bit\n    return n | (1 << (bit_length + 1))",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 3,
+                "num_passed": 2,
+                "error_type": "AssertionError",
+                "error_message": "",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 14, in <module>\nAssertionError\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            {
+              "iteration": 2,
+              "fixer": {
+                "provider": "gemini",
+                "model": "gemini-3-flash-preview"
+              },
+              "patch_explanation": "",
+              "updated_code": "```json\n{\n  \"patched_code\": \"def set_left_most_unset_bit(n):\\n    if n == 0:\\n        return 1\\n    bit_length = n.bit_length()\\n    # Start checking from the most significant bit (index bit_length - 1) down to 0\\n    for i in range(bit_length - 1, -1, -1):\\n        if not (n & (1 << i)):\\n            return n | (1 << i)\\n    # If all bits within the current bit length are set, return the number unchanged\\n    return n\",\n  \"patch_strategy\": \"The search range was adjusted to start at the most significant bit (MSB) rather than one bit past it, and the fallback return statement was changed to return the original number if no unset bits are found.\",\n  \"rationale\": \"As per the problem specification and error analysis, the 'leftmost unset bit' should be located within the binary structure of the existing number (i.e., at or below the MSB). The original code incorrectly started its search at index 'bit_length', which always corresponds to a 0 for positive integers, leading to incorrect results like 26 for n=10. By starting the search at 'bit_length - 1' and returning 'n' if no bits are found, the function correctly handles cases like n=10 (returning 14) and n=15 (returning 15).\"\n}\n```",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 3,
+                "num_passed": 2,
+                "error_type": "SyntaxError",
+                "error_message": "invalid syntax (<string>, line 1)",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1\n    ```json\n    ^\nSyntaxError: invalid syntax\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "prompt": "Write a python function to set the left most unset bit.\n\nYou must implement the following Python function:\n```python\ndef set_left_most_unset_bit(n):\n    # TODO: implement\n    pass\n```",
+          "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview,claude-haiku-4-5"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/273",
+          "provider": "openai",
+          "base_model": "gpt-4.1-mini",
+          "handoff_models_used": [],
+          "mode_tag": "handoff_3agents",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a function that takes in two tuples and subtracts the elements of the first tuple by the elements of the second tuple with the same index.\n\nYou must implement the following Python function:\n```python\ndef substract_elements(test_tup1, test_tup2):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Define a function that takes two tuples as inputs. Inside the function, use a list comprehension with zip to iterate over both tuples in parallel and subtract the second tuple's element from the first tuple's element at each index. Convert the resulting list back to a tuple and return it.",
+          "initial_code": "def substract_elements(test_tup1, test_tup2):\n    return tuple(a - b for a, b in zip(test_tup1, test_tup2))",
+          "final_code": "def substract_elements(test_tup1, test_tup2):\n    return tuple(a - b for a, b in zip(test_tup1, test_tup2))",
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "Write a function that takes in two tuples and subtracts the elements of the first tuple by the elements of the second tuple with the same index.\n\nYou must implement the following Python function:\n```python\ndef substract_elements(test_tup1, test_tup2):\n    # TODO: implement\n    pass\n```",
+          "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview,claude-haiku-4-5"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/108",
+          "provider": "openai",
+          "base_model": "gpt-4.1-mini",
+          "handoff_models_used": [],
+          "mode_tag": "handoff_3agents",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a function to merge three lists into a single sorted list.\n\nYou must implement the following Python function:\n```python\nimport heapq\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Use the heapq.merge function to efficiently merge three sorted lists into one sorted list. The function will accept three lists as input, apply heapq.merge to them, and return a single sorted list.",
+          "initial_code": "import heapq\n\ndef merge_three_lists(lst1, lst2, lst3):\n    # Use heapq.merge to merge three sorted lists into a sorted iterator\n    merged_iter = heapq.merge(lst1, lst2, lst3)\n    # Convert the iterator to a list and return\n    return list(merged_iter)",
+          "final_code": "import heapq\n\ndef merge_sorted_list(lst1, lst2, lst3):\n    # Sort each list before merging to ensure heapq.merge inputs are sorted\n    sorted_lst1 = sorted(lst1)\n    sorted_lst2 = sorted(lst2)\n    sorted_lst3 = sorted(lst3)\n    merged_iter = heapq.merge(sorted_lst1, sorted_lst2, sorted_lst3)\n    return list(merged_iter)",
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "Write a function to merge three lists into a single sorted list.\n\nYou must implement the following Python function:\n```python\nimport heapq\n    # TODO: implement\n    pass\n```",
+          "skipped_reason": "self_debug_solved",
+          "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview,claude-haiku-4-5"
+        }
+      ]
+    }
+  ],
+  "details": {
+    "baseline": {
+      "MBPP::openai::gpt-4.1-mini": [
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/138",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 3,
+          "num_passed": 2,
+          "artifact": "",
+          "error_type": "AssertionError",
+          "error_message": "",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 6, in <module>\nAssertionError\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function to check whether the given number can be represented as sum of non-zero powers of 2 or not.\n\nYou must implement the following Python function:\n```python\ndef is_Sum_Of_Powers_Of_Two(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To determine whether a number n can be represented as a sum of non-zero powers of 2, we can check if n is a positive integer. Any positive integer greater than zero can be represented as a sum of distinct powers of 2 (this is basically its binary representation). Therefore, the function will return True if n is a positive integer, and False otherwise.",
+          "initial_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # Check if n is a positive integer\n    return n > 0",
+          "final_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # Check if n is a positive integer\n    return n > 0",
+          "prompt": "Write a python function to check whether the given number can be represented as sum of non-zero powers of 2 or not.\n\nYou must implement the following Python function:\n```python\ndef is_Sum_Of_Powers_Of_Two(n):\n    # TODO: implement\n    pass\n```"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/267",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "artifact": "",
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.\n\nYou must implement the following Python function:\n```python\ndef square_Sum(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To find the sum of the squares of the first n odd natural numbers, we know that the k-th odd number is (2k-1). We will iterate from 1 to n, compute the square of each odd number (2k-1)^2 and accumulate these values. Finally, return the sum.",
+          "initial_code": "def square_Sum(n):\n    return sum((2*k - 1)**2 for k in range(1, n+1))",
+          "final_code": "def square_Sum(n):\n    return sum((2*k - 1)**2 for k in range(1, n+1))",
+          "prompt": "Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.\n\nYou must implement the following Python function:\n```python\ndef square_Sum(n):\n    # TODO: implement\n    pass\n```"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/311",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 3,
+          "num_passed": 2,
+          "artifact": "",
+          "error_type": "AssertionError",
+          "error_message": "",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 13, in <module>\nAssertionError\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function to set the left most unset bit.\n\nYou must implement the following Python function:\n```python\ndef set_left_most_unset_bit(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To set the leftmost unset bit of the given integer n, first find the bit length of n to determine the position of the highest set bit. Then, iterate from the most significant bit down to the least significant bit to find the first unset bit (0). Once this bit is found, set it to 1 by OR'ing n with 1 left-shifted to that bit position. If all bits up to the most significant bit are set, then the leftmost unset bit is the next bit at the left, so set that bit (i.e., at position bit_length). Return the updated integer.",
+          "initial_code": "def set_left_most_unset_bit(n):\n    if n == 0:\n        return 1\n    bit_length = n.bit_length()\n    for i in range(bit_length - 1, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # All bits set till bit_length - set the next leftmost bit\n    return n | (1 << bit_length)",
+          "final_code": "def set_left_most_unset_bit(n):\n    if n == 0:\n        return 1\n    bit_length = n.bit_length()\n    for i in range(bit_length - 1, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # All bits set till bit_length - set the next leftmost bit\n    return n | (1 << bit_length)",
+          "prompt": "Write a python function to set the left most unset bit.\n\nYou must implement the following Python function:\n```python\ndef set_left_most_unset_bit(n):\n    # TODO: implement\n    pass\n```"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/273",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "artifact": "",
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a function that takes in two tuples and subtracts the elements of the first tuple by the elements of the second tuple with the same index.\n\nYou must implement the following Python function:\n```python\ndef substract_elements(test_tup1, test_tup2):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Define a function that takes two tuples as inputs. Inside the function, use a list comprehension with zip to iterate over both tuples in parallel and subtract the second tuple's element from the first tuple's element at each index. Convert the resulting list back to a tuple and return it.",
+          "initial_code": "def substract_elements(test_tup1, test_tup2):\n    return tuple(a - b for a, b in zip(test_tup1, test_tup2))",
+          "final_code": "def substract_elements(test_tup1, test_tup2):\n    return tuple(a - b for a, b in zip(test_tup1, test_tup2))",
+          "prompt": "Write a function that takes in two tuples and subtracts the elements of the first tuple by the elements of the second tuple with the same index.\n\nYou must implement the following Python function:\n```python\ndef substract_elements(test_tup1, test_tup2):\n    # TODO: implement\n    pass\n```"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/108",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "baseline",
+          "passed": false,
+          "num_tests": 3,
+          "num_passed": 2,
+          "artifact": "",
+          "error_type": "NameError",
+          "error_message": "name 'merge_sorted_list' is not defined",
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 9, in <module>\nNameError: name 'merge_sorted_list' is not defined\n",
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a function to merge three lists into a single sorted list.\n\nYou must implement the following Python function:\n```python\nimport heapq\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Use the heapq.merge function to efficiently merge three sorted lists into one sorted list. The function will accept three lists as input, apply heapq.merge to them, and return a single sorted list.",
+          "initial_code": "import heapq\n\ndef merge_three_lists(lst1, lst2, lst3):\n    # Use heapq.merge to merge three sorted lists into a sorted iterator\n    merged_iter = heapq.merge(lst1, lst2, lst3)\n    # Convert the iterator to a list and return\n    return list(merged_iter)",
+          "final_code": "import heapq\n\ndef merge_three_lists(lst1, lst2, lst3):\n    # Use heapq.merge to merge three sorted lists into a sorted iterator\n    merged_iter = heapq.merge(lst1, lst2, lst3)\n    # Convert the iterator to a list and return\n    return list(merged_iter)",
+          "prompt": "Write a function to merge three lists into a single sorted list.\n\nYou must implement the following Python function:\n```python\nimport heapq\n    # TODO: implement\n    pass\n```"
+        }
+      ]
+    },
+    "self_debug_single": {
+      "MBPP::openai::gpt-4.1-mini": [
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/138",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "self_debug_single",
+          "passed": false,
+          "num_tests": 3,
+          "num_passed": 2,
+          "error_type": "AssertionError",
+          "error_message": "",
+          "initial_error_type": "AssertionError",
+          "initial_error_message": "",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function to check whether the given number can be represented as sum of non-zero powers of 2 or not.\n\nYou must implement the following Python function:\n```python\ndef is_Sum_Of_Powers_Of_Two(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To determine whether a number n can be represented as a sum of non-zero powers of 2, we can check if n is a positive integer. Any positive integer greater than zero can be represented as a sum of distinct powers of 2 (this is basically its binary representation). Therefore, the function will return True if n is a positive integer, and False otherwise.",
+          "initial_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # Check if n is a positive integer\n    return n > 0",
+          "final_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # A number can be represented as sum of non-zero powers of 2 if it is a positive integer\n    # because every positive integer has a binary representation which is such a sum\n    return isinstance(n, int) and n > 0",
+          "patch_models_used": [
+            "openai:gpt-4.1-mini",
+            "openai:gpt-4.1-mini"
+          ],
+          "patch_explanations": [
+            "The original code returns True for any positive integer. Since every positive integer has a unique binary representation, it can always be expressed as the sum of distinct powers of 2. Thus, the original implementation is logically correct and no change is needed.",
+            "Adding the type check ensures the input is an integer, and the condition n > 0 ensures only positive integers return True, aligning with the requirement that n must be representable as a sum of non-zero powers of 2. This fixes the incorrect acceptance of zero, negative, or non-integer inputs."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "patch_model": "openai:gpt-4.1-mini",
+              "patch_explanation": "The original code returns True for any positive integer. Since every positive integer has a unique binary representation, it can always be expressed as the sum of distinct powers of 2. Thus, the original implementation is logically correct and no change is needed.",
+              "updated_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # Check if n can be represented as sum of non-zero powers of 2\n    # This is equivalent to checking if n is a positive integer\n    # Because every positive integer can be represented as sum of distinct powers of 2\n    return n > 0",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 3,
+                "num_passed": 2,
+                "error_type": "AssertionError",
+                "error_message": "",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 8, in <module>\nAssertionError\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            {
+              "iteration": 2,
+              "patch_model": "openai:gpt-4.1-mini",
+              "patch_explanation": "Adding the type check ensures the input is an integer, and the condition n > 0 ensures only positive integers return True, aligning with the requirement that n must be representable as a sum of non-zero powers of 2. This fixes the incorrect acceptance of zero, negative, or non-integer inputs.",
+              "updated_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # A number can be represented as sum of non-zero powers of 2 if it is a positive integer\n    # because every positive integer has a binary representation which is such a sum\n    return isinstance(n, int) and n > 0",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 3,
+                "num_passed": 2,
+                "error_type": "AssertionError",
+                "error_message": "",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 7, in <module>\nAssertionError\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 7, in <module>\nAssertionError\n",
+          "stdout": "",
+          "stderr": "",
+          "prompt": "Write a python function to check whether the given number can be represented as sum of non-zero powers of 2 or not.\n\nYou must implement the following Python function:\n```python\ndef is_Sum_Of_Powers_Of_Two(n):\n    # TODO: implement\n    pass\n```"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/267",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.\n\nYou must implement the following Python function:\n```python\ndef square_Sum(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To find the sum of the squares of the first n odd natural numbers, we know that the k-th odd number is (2k-1). We will iterate from 1 to n, compute the square of each odd number (2k-1)^2 and accumulate these values. Finally, return the sum.",
+          "initial_code": "def square_Sum(n):\n    return sum((2*k - 1)**2 for k in range(1, n+1))",
+          "final_code": "def square_Sum(n):\n    return sum((2*k - 1)**2 for k in range(1, n+1))",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.\n\nYou must implement the following Python function:\n```python\ndef square_Sum(n):\n    # TODO: implement\n    pass\n```"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/311",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "self_debug_single",
+          "passed": false,
+          "num_tests": 3,
+          "num_passed": 2,
+          "error_type": "AssertionError",
+          "error_message": "",
+          "initial_error_type": "AssertionError",
+          "initial_error_message": "",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function to set the left most unset bit.\n\nYou must implement the following Python function:\n```python\ndef set_left_most_unset_bit(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "To set the leftmost unset bit of the given integer n, first find the bit length of n to determine the position of the highest set bit. Then, iterate from the most significant bit down to the least significant bit to find the first unset bit (0). Once this bit is found, set it to 1 by OR'ing n with 1 left-shifted to that bit position. If all bits up to the most significant bit are set, then the leftmost unset bit is the next bit at the left, so set that bit (i.e., at position bit_length). Return the updated integer.",
+          "initial_code": "def set_left_most_unset_bit(n):\n    if n == 0:\n        return 1\n    bit_length = n.bit_length()\n    for i in range(bit_length - 1, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # All bits set till bit_length - set the next leftmost bit\n    return n | (1 << bit_length)",
+          "final_code": "def set_left_most_unset_bit(n):\n    # For n == 0, leftmost unset bit is bit 0\n    if n == 0:\n        return 1\n\n    # Find highest bit position where n has bit set\n    highest_set_bit = n.bit_length() - 1\n\n    # Scan from a higher possible bit; choose a search limit\n    # We search from a high bit position down to 0 to find the leftmost unset bit.\n    # Let's check bits from some maximum bit position down to zero.\n    # Since Python integers are unbounded, but input n is given,\n    # we can consider scanning from some bit higher than highest_set_bit to cover leading unset bits.\n    # The leftmost unset bit is the highest bit i >= highest_set_bit + 1 where bit i is 0,\n    # or any bit i <= highest_set_bit where bit is 0.\n\n    # To consider all bits including leading zeros above highest_set_bit,\n    # let's consider up to highest_set_bit + 64 bits arbitrarily.\n    max_check_bit = highest_set_bit + 64\n\n    for i in range(max_check_bit, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # If all bits are set in the range, return n (unlikely for int)\n    return n",
+          "patch_models_used": [
+            "openai:gpt-4.1-mini",
+            "openai:gpt-4.1-mini"
+          ],
+          "patch_explanations": [
+            "The original code already handled scanning bits from the highest bit down to 0. The fix was ensuring that when all bits are set up to bit_length-1, we set the bit at position bit_length, which is the correct next leftmost unset bit beyond the current highest bit. This matches the problem requirement to set the genuine leftmost unset bit. The initial zero check remains to set bit 0.",
+            "The original code only scanned bits up to the current highest set bit, missing unset bits above that. By scanning from a higher bit range (highest_set_bit + 64) down to zero, this code finds the truly leftmost unset bit in n's binary representation, including any leading unset bits beyond the highest set bit. This aligns with the problem requirement to set the leftmost unset bit."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "patch_model": "openai:gpt-4.1-mini",
+              "patch_explanation": "The original code already handled scanning bits from the highest bit down to 0. The fix was ensuring that when all bits are set up to bit_length-1, we set the bit at position bit_length, which is the correct next leftmost unset bit beyond the current highest bit. This matches the problem requirement to set the genuine leftmost unset bit. The initial zero check remains to set bit 0.",
+              "updated_code": "def set_left_most_unset_bit(n):\n    # Check bits starting from the highest to 0\n    # Find the leftmost unset bit from the most significant bit upwards\n    if n == 0:\n        return 1\n    bit_length = n.bit_length()\n    # Scan bits from current highest bit down to 0\n    for i in range(bit_length - 1, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # If all bits till bit_length-1 are set, set the bit at position bit_length\n    return n | (1 << bit_length)",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 3,
+                "num_passed": 2,
+                "error_type": "AssertionError",
+                "error_message": "",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 16, in <module>\nAssertionError\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            {
+              "iteration": 2,
+              "patch_model": "openai:gpt-4.1-mini",
+              "patch_explanation": "The original code only scanned bits up to the current highest set bit, missing unset bits above that. By scanning from a higher bit range (highest_set_bit + 64) down to zero, this code finds the truly leftmost unset bit in n's binary representation, including any leading unset bits beyond the highest set bit. This aligns with the problem requirement to set the leftmost unset bit.",
+              "updated_code": "def set_left_most_unset_bit(n):\n    # For n == 0, leftmost unset bit is bit 0\n    if n == 0:\n        return 1\n\n    # Find highest bit position where n has bit set\n    highest_set_bit = n.bit_length() - 1\n\n    # Scan from a higher possible bit; choose a search limit\n    # We search from a high bit position down to 0 to find the leftmost unset bit.\n    # Let's check bits from some maximum bit position down to zero.\n    # Since Python integers are unbounded, but input n is given,\n    # we can consider scanning from some bit higher than highest_set_bit to cover leading unset bits.\n    # The leftmost unset bit is the highest bit i >= highest_set_bit + 1 where bit i is 0,\n    # or any bit i <= highest_set_bit where bit is 0.\n\n    # To consider all bits including leading zeros above highest_set_bit,\n    # let's consider up to highest_set_bit + 64 bits arbitrarily.\n    max_check_bit = highest_set_bit + 64\n\n    for i in range(max_check_bit, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # If all bits are set in the range, return n (unlikely for int)\n    return n",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 3,
+                "num_passed": 2,
+                "error_type": "AssertionError",
+                "error_message": "",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 27, in <module>\nAssertionError\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 27, in <module>\nAssertionError\n",
+          "stdout": "",
+          "stderr": "",
+          "prompt": "Write a python function to set the left most unset bit.\n\nYou must implement the following Python function:\n```python\ndef set_left_most_unset_bit(n):\n    # TODO: implement\n    pass\n```"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/273",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a function that takes in two tuples and subtracts the elements of the first tuple by the elements of the second tuple with the same index.\n\nYou must implement the following Python function:\n```python\ndef substract_elements(test_tup1, test_tup2):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Define a function that takes two tuples as inputs. Inside the function, use a list comprehension with zip to iterate over both tuples in parallel and subtract the second tuple's element from the first tuple's element at each index. Convert the resulting list back to a tuple and return it.",
+          "initial_code": "def substract_elements(test_tup1, test_tup2):\n    return tuple(a - b for a, b in zip(test_tup1, test_tup2))",
+          "final_code": "def substract_elements(test_tup1, test_tup2):\n    return tuple(a - b for a, b in zip(test_tup1, test_tup2))",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "Write a function that takes in two tuples and subtracts the elements of the first tuple by the elements of the second tuple with the same index.\n\nYou must implement the following Python function:\n```python\ndef substract_elements(test_tup1, test_tup2):\n    # TODO: implement\n    pass\n```"
+        },
+        {
+          "timestamp": "2026-04-23_20-04-15",
+          "benchmark": "MBPP",
+          "task_id": "MBPP/108",
+          "provider": "openai",
+          "model": "gpt-4.1-mini",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 3,
+          "num_passed": 3,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": "NameError",
+          "initial_error_message": "name 'merge_sorted_list' is not defined",
+          "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a function to merge three lists into a single sorted list.\n\nYou must implement the following Python function:\n```python\nimport heapq\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Use the heapq.merge function to efficiently merge three sorted lists into one sorted list. The function will accept three lists as input, apply heapq.merge to them, and return a single sorted list.",
+          "initial_code": "import heapq\n\ndef merge_three_lists(lst1, lst2, lst3):\n    # Use heapq.merge to merge three sorted lists into a sorted iterator\n    merged_iter = heapq.merge(lst1, lst2, lst3)\n    # Convert the iterator to a list and return\n    return list(merged_iter)",
+          "final_code": "import heapq\n\ndef merge_sorted_list(lst1, lst2, lst3):\n    # Sort each list before merging to ensure heapq.merge inputs are sorted\n    sorted_lst1 = sorted(lst1)\n    sorted_lst2 = sorted(lst2)\n    sorted_lst3 = sorted(lst3)\n    merged_iter = heapq.merge(sorted_lst1, sorted_lst2, sorted_lst3)\n    return list(merged_iter)",
+          "patch_models_used": [
+            "openai:gpt-4.1-mini",
+            "openai:gpt-4.1-mini"
+          ],
+          "patch_explanations": [
+            "The tests expect a function named 'merge_sorted_list', but the implemented function was named 'merge_three_lists'. By renaming the function to 'merge_sorted_list', the test can successfully call the function, resolving the NameError.",
+            "The original code assumed inputs were sorted, but heapq.merge requires sorted inputs to merge correctly. By sorting each input list first, this function ensures that heapq.merge receives sorted lists, producing a correctly sorted merged output."
+          ],
+          "iterations": [
+            {
+              "iteration": 1,
+              "patch_model": "openai:gpt-4.1-mini",
+              "patch_explanation": "The tests expect a function named 'merge_sorted_list', but the implemented function was named 'merge_three_lists'. By renaming the function to 'merge_sorted_list', the test can successfully call the function, resolving the NameError.",
+              "updated_code": "import heapq\n\ndef merge_sorted_list(lst1, lst2, lst3):\n    # Use heapq.merge to merge three sorted lists into a sorted iterator\n    merged_iter = heapq.merge(lst1, lst2, lst3)\n    # Convert the iterator to a list and return\n    return list(merged_iter)",
+              "exec_result": {
+                "passed": false,
+                "num_tests": 3,
+                "num_passed": 2,
+                "error_type": "AssertionError",
+                "error_message": "",
+                "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 9, in <module>\nAssertionError\n",
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            {
+              "iteration": 2,
+              "patch_model": "openai:gpt-4.1-mini",
+              "patch_explanation": "The original code assumed inputs were sorted, but heapq.merge requires sorted inputs to merge correctly. By sorting each input list first, this function ensures that heapq.merge receives sorted lists, producing a correctly sorted merged output.",
+              "updated_code": "import heapq\n\ndef merge_sorted_list(lst1, lst2, lst3):\n    # Sort each list before merging to ensure heapq.merge inputs are sorted\n    sorted_lst1 = sorted(lst1)\n    sorted_lst2 = sorted(lst2)\n    sorted_lst3 = sorted(lst3)\n    merged_iter = heapq.merge(sorted_lst1, sorted_lst2, sorted_lst3)\n    return list(merged_iter)",
+              "exec_result": {
+                "passed": true,
+                "num_tests": 3,
+                "num_passed": 3,
+                "error_type": null,
+                "error_message": null,
+                "traceback_str": null,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "Write a function to merge three lists into a single sorted list.\n\nYou must implement the following Python function:\n```python\nimport heapq\n    # TODO: implement\n    pass\n```"
+        }
+      ]
+    },
+    "sequential_handoff": {
+      "MBPP::openai::gpt-4.1-mini": {
+        "2": [
+          {
+            "timestamp": "2026-04-23_20-04-15",
+            "benchmark": "MBPP",
+            "task_id": "MBPP/138",
+            "provider": "openai",
+            "base_model": "gpt-4.1-mini",
+            "handoff_models_used": [
+              "openai:gpt-4.1-mini",
+              "gemini:gemini-3-flash-preview"
+            ],
+            "mode_tag": "handoff_2agents",
+            "passed": true,
+            "num_tests": 3,
+            "num_passed": 3,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function to check whether the given number can be represented as sum of non-zero powers of 2 or not.\n\nYou must implement the following Python function:\n```python\ndef is_Sum_Of_Powers_Of_Two(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+            "initial_plan": "To determine whether a number n can be represented as a sum of non-zero powers of 2, we can check if n is a positive integer. Any positive integer greater than zero can be represented as a sum of distinct powers of 2 (this is basically its binary representation). Therefore, the function will return True if n is a positive integer, and False otherwise.",
+            "initial_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # Check if n is a positive integer\n    return n > 0",
+            "final_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # n can be represented as sum of non-zero powers of 2 if n is even and n > 0\n    # Non-zero powers of 2 (2^1, 2^2, ...) are all even, so their sum must be even.\n    return n > 0 and n % 2 == 0",
+            "patch_explanations": [
+              "The original function already returned True for any positive integer, which is correct because every positive integer can be represented as a sum of distinct powers of two (its set bits in binary). Thus, the minimal fix is to remove the redundant comment and clarify understanding by confirming the is_Sum_Of_Powers_Of_Two returns True iff n > 0.",
+              "The error analysis states that 'non-zero powers' refers to powers of 2 with exponents greater than zero (2^1, 2^2, 2^3, ...). Since every such power is even, any sum of these powers must also be an even number. The original code returned True for all positive integers, including odd ones, which cannot be formed without using the power 2^0 (1)."
+            ],
+            "iterations": [
+              {
+                "iteration": 1,
+                "fixer": {
+                  "provider": "openai",
+                  "model": "gpt-4.1-mini"
+                },
+                "patch_explanation": "The original function already returned True for any positive integer, which is correct because every positive integer can be represented as a sum of distinct powers of two (its set bits in binary). Thus, the minimal fix is to remove the redundant comment and clarify understanding by confirming the is_Sum_Of_Powers_Of_Two returns True iff n > 0.",
+                "updated_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # n can be represented as sum of non-zero powers of 2 if n > 0\n    # since powers of 2 correspond to bits set in binary representation\n    return n > 0",
+                "exec_result": {
+                  "passed": false,
+                  "num_tests": 3,
+                  "num_passed": 2,
+                  "error_type": "AssertionError",
+                  "error_message": "",
+                  "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 7, in <module>\nAssertionError\n",
+                  "stdout": "",
+                  "stderr": ""
+                }
+              },
+              {
+                "iteration": 2,
+                "fixer": {
+                  "provider": "gemini",
+                  "model": "gemini-3-flash-preview"
+                },
+                "patch_explanation": "The error analysis states that 'non-zero powers' refers to powers of 2 with exponents greater than zero (2^1, 2^2, 2^3, ...). Since every such power is even, any sum of these powers must also be an even number. The original code returned True for all positive integers, including odd ones, which cannot be formed without using the power 2^0 (1).",
+                "updated_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # n can be represented as sum of non-zero powers of 2 if n is even and n > 0\n    # Non-zero powers of 2 (2^1, 2^2, ...) are all even, so their sum must be even.\n    return n > 0 and n % 2 == 0",
+                "exec_result": {
+                  "passed": true,
+                  "num_tests": 3,
+                  "num_passed": 3,
+                  "error_type": null,
+                  "error_message": null,
+                  "traceback_str": null,
+                  "stdout": "",
+                  "stderr": ""
+                }
+              }
+            ],
+            "prompt": "Write a python function to check whether the given number can be represented as sum of non-zero powers of 2 or not.\n\nYou must implement the following Python function:\n```python\ndef is_Sum_Of_Powers_Of_Two(n):\n    # TODO: implement\n    pass\n```",
+            "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview"
+          },
+          {
+            "timestamp": "2026-04-23_20-04-15",
+            "benchmark": "MBPP",
+            "task_id": "MBPP/267",
+            "provider": "openai",
+            "base_model": "gpt-4.1-mini",
+            "handoff_models_used": [],
+            "mode_tag": "handoff_2agents",
+            "passed": true,
+            "num_tests": 3,
+            "num_passed": 3,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.\n\nYou must implement the following Python function:\n```python\ndef square_Sum(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+            "initial_plan": "To find the sum of the squares of the first n odd natural numbers, we know that the k-th odd number is (2k-1). We will iterate from 1 to n, compute the square of each odd number (2k-1)^2 and accumulate these values. Finally, return the sum.",
+            "initial_code": "def square_Sum(n):\n    return sum((2*k - 1)**2 for k in range(1, n+1))",
+            "final_code": "def square_Sum(n):\n    return sum((2*k - 1)**2 for k in range(1, n+1))",
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.\n\nYou must implement the following Python function:\n```python\ndef square_Sum(n):\n    # TODO: implement\n    pass\n```",
+            "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview"
+          },
+          {
+            "timestamp": "2026-04-23_20-04-15",
+            "benchmark": "MBPP",
+            "task_id": "MBPP/311",
+            "provider": "openai",
+            "base_model": "gpt-4.1-mini",
+            "handoff_models_used": [
+              "openai:gpt-4.1-mini",
+              "gemini:gemini-3-flash-preview"
+            ],
+            "mode_tag": "handoff_2agents",
+            "passed": false,
+            "num_tests": 3,
+            "num_passed": 2,
+            "error_type": "SyntaxError",
+            "error_message": "invalid syntax (<string>, line 1)",
+            "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function to set the left most unset bit.\n\nYou must implement the following Python function:\n```python\ndef set_left_most_unset_bit(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+            "initial_plan": "To set the leftmost unset bit of the given integer n, first find the bit length of n to determine the position of the highest set bit. Then, iterate from the most significant bit down to the least significant bit to find the first unset bit (0). Once this bit is found, set it to 1 by OR'ing n with 1 left-shifted to that bit position. If all bits up to the most significant bit are set, then the leftmost unset bit is the next bit at the left, so set that bit (i.e., at position bit_length). Return the updated integer.",
+            "initial_code": "def set_left_most_unset_bit(n):\n    if n == 0:\n        return 1\n    bit_length = n.bit_length()\n    for i in range(bit_length - 1, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # All bits set till bit_length - set the next leftmost bit\n    return n | (1 << bit_length)",
+            "final_code": "```json\n{\n  \"patched_code\": \"def set_left_most_unset_bit(n):\\n    if n == 0:\\n        return 1\\n    bit_length = n.bit_length()\\n    for i in range(bit_length - 1, -1, -1):\\n        if not (n & (1 << i)):\\n            return n | (1 << i)\\n    return n\",\n  \"patch_strategy\": \"Adjusted the loop range to start at the number's highest bit index and added a fallback return statement.\",\n  \"rationale\": \"The original code started its search at `bit_length`, which is the index of the first bit *above* the number's existing bits. Because this bit is always 0, it caused the function to set a new most-significant bit (e.g., changing 10 to 26) instead of an internal unset bit. By starting the loop at `bit_length - 1`, we correctly identify the leftmost zero within the number's current bit representation. Additionally, a fallback `return n` was added to handle cases where all bits are already set (like 15 or 1111), as the original code would have returned `None` in such scenarios.\"\n}\n```",
+            "patch_explanations": [
+              "Changing the loop to start from bit_length (which is the position just above current highest set bit) down to 0 allows checking for any unset bit including leftmost unset bits above the highest set bit. This addresses the original bug where the function only checked bits within current bit length minus one, missing unset bits beyond that range.",
+              ""
+            ],
+            "iterations": [
+              {
+                "iteration": 1,
+                "fixer": {
+                  "provider": "openai",
+                  "model": "gpt-4.1-mini"
+                },
+                "patch_explanation": "Changing the loop to start from bit_length (which is the position just above current highest set bit) down to 0 allows checking for any unset bit including leftmost unset bits above the highest set bit. This addresses the original bug where the function only checked bits within current bit length minus one, missing unset bits beyond that range.",
+                "updated_code": "def set_left_most_unset_bit(n):\n    if n == 0:\n        return 1\n    bit_length = n.bit_length()\n    # Check bits from the next bit position downward including next bit_length\n    for i in range(bit_length, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)",
+                "exec_result": {
+                  "passed": false,
+                  "num_tests": 3,
+                  "num_passed": 2,
+                  "error_type": "AssertionError",
+                  "error_message": "",
+                  "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 10, in <module>\nAssertionError\n",
+                  "stdout": "",
+                  "stderr": ""
+                }
+              },
+              {
+                "iteration": 2,
+                "fixer": {
+                  "provider": "gemini",
+                  "model": "gemini-3-flash-preview"
+                },
+                "patch_explanation": "",
+                "updated_code": "```json\n{\n  \"patched_code\": \"def set_left_most_unset_bit(n):\\n    if n == 0:\\n        return 1\\n    bit_length = n.bit_length()\\n    for i in range(bit_length - 1, -1, -1):\\n        if not (n & (1 << i)):\\n            return n | (1 << i)\\n    return n\",\n  \"patch_strategy\": \"Adjusted the loop range to start at the number's highest bit index and added a fallback return statement.\",\n  \"rationale\": \"The original code started its search at `bit_length`, which is the index of the first bit *above* the number's existing bits. Because this bit is always 0, it caused the function to set a new most-significant bit (e.g., changing 10 to 26) instead of an internal unset bit. By starting the loop at `bit_length - 1`, we correctly identify the leftmost zero within the number's current bit representation. Additionally, a fallback `return n` was added to handle cases where all bits are already set (like 15 or 1111), as the original code would have returned `None` in such scenarios.\"\n}\n```",
+                "exec_result": {
+                  "passed": false,
+                  "num_tests": 3,
+                  "num_passed": 2,
+                  "error_type": "SyntaxError",
+                  "error_message": "invalid syntax (<string>, line 1)",
+                  "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1\n    ```json\n    ^\nSyntaxError: invalid syntax\n",
+                  "stdout": "",
+                  "stderr": ""
+                }
+              }
+            ],
+            "prompt": "Write a python function to set the left most unset bit.\n\nYou must implement the following Python function:\n```python\ndef set_left_most_unset_bit(n):\n    # TODO: implement\n    pass\n```",
+            "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview"
+          },
+          {
+            "timestamp": "2026-04-23_20-04-15",
+            "benchmark": "MBPP",
+            "task_id": "MBPP/273",
+            "provider": "openai",
+            "base_model": "gpt-4.1-mini",
+            "handoff_models_used": [],
+            "mode_tag": "handoff_2agents",
+            "passed": true,
+            "num_tests": 3,
+            "num_passed": 3,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a function that takes in two tuples and subtracts the elements of the first tuple by the elements of the second tuple with the same index.\n\nYou must implement the following Python function:\n```python\ndef substract_elements(test_tup1, test_tup2):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+            "initial_plan": "Define a function that takes two tuples as inputs. Inside the function, use a list comprehension with zip to iterate over both tuples in parallel and subtract the second tuple's element from the first tuple's element at each index. Convert the resulting list back to a tuple and return it.",
+            "initial_code": "def substract_elements(test_tup1, test_tup2):\n    return tuple(a - b for a, b in zip(test_tup1, test_tup2))",
+            "final_code": "def substract_elements(test_tup1, test_tup2):\n    return tuple(a - b for a, b in zip(test_tup1, test_tup2))",
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "Write a function that takes in two tuples and subtracts the elements of the first tuple by the elements of the second tuple with the same index.\n\nYou must implement the following Python function:\n```python\ndef substract_elements(test_tup1, test_tup2):\n    # TODO: implement\n    pass\n```",
+            "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview"
+          },
+          {
+            "timestamp": "2026-04-23_20-04-15",
+            "benchmark": "MBPP",
+            "task_id": "MBPP/108",
+            "provider": "openai",
+            "base_model": "gpt-4.1-mini",
+            "handoff_models_used": [],
+            "mode_tag": "handoff_2agents",
+            "passed": true,
+            "num_tests": 3,
+            "num_passed": 3,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a function to merge three lists into a single sorted list.\n\nYou must implement the following Python function:\n```python\nimport heapq\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+            "initial_plan": "Use the heapq.merge function to efficiently merge three sorted lists into one sorted list. The function will accept three lists as input, apply heapq.merge to them, and return a single sorted list.",
+            "initial_code": "import heapq\n\ndef merge_three_lists(lst1, lst2, lst3):\n    # Use heapq.merge to merge three sorted lists into a sorted iterator\n    merged_iter = heapq.merge(lst1, lst2, lst3)\n    # Convert the iterator to a list and return\n    return list(merged_iter)",
+            "final_code": "import heapq\n\ndef merge_sorted_list(lst1, lst2, lst3):\n    # Sort each list before merging to ensure heapq.merge inputs are sorted\n    sorted_lst1 = sorted(lst1)\n    sorted_lst2 = sorted(lst2)\n    sorted_lst3 = sorted(lst3)\n    merged_iter = heapq.merge(sorted_lst1, sorted_lst2, sorted_lst3)\n    return list(merged_iter)",
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "Write a function to merge three lists into a single sorted list.\n\nYou must implement the following Python function:\n```python\nimport heapq\n    # TODO: implement\n    pass\n```",
+            "skipped_reason": "self_debug_solved",
+            "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview"
+          }
+        ],
+        "3": [
+          {
+            "timestamp": "2026-04-23_20-04-15",
+            "benchmark": "MBPP",
+            "task_id": "MBPP/138",
+            "provider": "openai",
+            "base_model": "gpt-4.1-mini",
+            "handoff_models_used": [
+              "openai:gpt-4.1-mini"
+            ],
+            "mode_tag": "handoff_3agents",
+            "passed": true,
+            "num_tests": 3,
+            "num_passed": 3,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function to check whether the given number can be represented as sum of non-zero powers of 2 or not.\n\nYou must implement the following Python function:\n```python\ndef is_Sum_Of_Powers_Of_Two(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+            "initial_plan": "To determine whether a number n can be represented as a sum of non-zero powers of 2, we can check if n is a positive integer. Any positive integer greater than zero can be represented as a sum of distinct powers of 2 (this is basically its binary representation). Therefore, the function will return True if n is a positive integer, and False otherwise.",
+            "initial_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # Check if n is a positive integer\n    return n > 0",
+            "final_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # Check if n is positive and does not have the 1's bit set (2^0=1)\n    if n <= 0:\n        return False\n    # If the least significant bit is set, return False because it uses 2^0\n    if n & 1:\n        return False\n    # If all other bits are combination of powers of two (which they are by definition), return True\n    return True",
+            "patch_explanations": [
+              "The fix rejects numbers that are not positive or contain the 2^0 bit set (i.e., odd numbers), because the problem explicitly excludes using 2^0=1 in sums. For any other positive number with no LSB set, the number can be represented as a sum of higher powers of two, so the function returns True."
+            ],
+            "iterations": [
+              {
+                "iteration": 1,
+                "fixer": {
+                  "provider": "openai",
+                  "model": "gpt-4.1-mini"
+                },
+                "patch_explanation": "The fix rejects numbers that are not positive or contain the 2^0 bit set (i.e., odd numbers), because the problem explicitly excludes using 2^0=1 in sums. For any other positive number with no LSB set, the number can be represented as a sum of higher powers of two, so the function returns True.",
+                "updated_code": "def is_Sum_Of_Powers_Of_Two(n):\n    # Check if n is positive and does not have the 1's bit set (2^0=1)\n    if n <= 0:\n        return False\n    # If the least significant bit is set, return False because it uses 2^0\n    if n & 1:\n        return False\n    # If all other bits are combination of powers of two (which they are by definition), return True\n    return True",
+                "exec_result": {
+                  "passed": true,
+                  "num_tests": 3,
+                  "num_passed": 3,
+                  "error_type": null,
+                  "error_message": null,
+                  "traceback_str": null,
+                  "stdout": "",
+                  "stderr": ""
+                }
+              }
+            ],
+            "prompt": "Write a python function to check whether the given number can be represented as sum of non-zero powers of 2 or not.\n\nYou must implement the following Python function:\n```python\ndef is_Sum_Of_Powers_Of_Two(n):\n    # TODO: implement\n    pass\n```",
+            "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview,claude-haiku-4-5"
+          },
+          {
+            "timestamp": "2026-04-23_20-04-15",
+            "benchmark": "MBPP",
+            "task_id": "MBPP/267",
+            "provider": "openai",
+            "base_model": "gpt-4.1-mini",
+            "handoff_models_used": [],
+            "mode_tag": "handoff_3agents",
+            "passed": true,
+            "num_tests": 3,
+            "num_passed": 3,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.\n\nYou must implement the following Python function:\n```python\ndef square_Sum(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+            "initial_plan": "To find the sum of the squares of the first n odd natural numbers, we know that the k-th odd number is (2k-1). We will iterate from 1 to n, compute the square of each odd number (2k-1)^2 and accumulate these values. Finally, return the sum.",
+            "initial_code": "def square_Sum(n):\n    return sum((2*k - 1)**2 for k in range(1, n+1))",
+            "final_code": "def square_Sum(n):\n    return sum((2*k - 1)**2 for k in range(1, n+1))",
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "Write a python function that takes in an integer n and returns the sum of the squares of the first n odd natural numbers.\n\nYou must implement the following Python function:\n```python\ndef square_Sum(n):\n    # TODO: implement\n    pass\n```",
+            "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview,claude-haiku-4-5"
+          },
+          {
+            "timestamp": "2026-04-23_20-04-15",
+            "benchmark": "MBPP",
+            "task_id": "MBPP/311",
+            "provider": "openai",
+            "base_model": "gpt-4.1-mini",
+            "handoff_models_used": [
+              "openai:gpt-4.1-mini",
+              "gemini:gemini-3-flash-preview"
+            ],
+            "mode_tag": "handoff_3agents",
+            "passed": false,
+            "num_tests": 3,
+            "num_passed": 2,
+            "error_type": "SyntaxError",
+            "error_message": "invalid syntax (<string>, line 1)",
+            "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a python function to set the left most unset bit.\n\nYou must implement the following Python function:\n```python\ndef set_left_most_unset_bit(n):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+            "initial_plan": "To set the leftmost unset bit of the given integer n, first find the bit length of n to determine the position of the highest set bit. Then, iterate from the most significant bit down to the least significant bit to find the first unset bit (0). Once this bit is found, set it to 1 by OR'ing n with 1 left-shifted to that bit position. If all bits up to the most significant bit are set, then the leftmost unset bit is the next bit at the left, so set that bit (i.e., at position bit_length). Return the updated integer.",
+            "initial_code": "def set_left_most_unset_bit(n):\n    if n == 0:\n        return 1\n    bit_length = n.bit_length()\n    for i in range(bit_length - 1, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # All bits set till bit_length - set the next leftmost bit\n    return n | (1 << bit_length)",
+            "final_code": "```json\n{\n  \"patched_code\": \"def set_left_most_unset_bit(n):\\n    if n == 0:\\n        return 1\\n    bit_length = n.bit_length()\\n    # Start checking from the most significant bit (index bit_length - 1) down to 0\\n    for i in range(bit_length - 1, -1, -1):\\n        if not (n & (1 << i)):\\n            return n | (1 << i)\\n    # If all bits within the current bit length are set, return the number unchanged\\n    return n\",\n  \"patch_strategy\": \"The search range was adjusted to start at the most significant bit (MSB) rather than one bit past it, and the fallback return statement was changed to return the original number if no unset bits are found.\",\n  \"rationale\": \"As per the problem specification and error analysis, the 'leftmost unset bit' should be located within the binary structure of the existing number (i.e., at or below the MSB). The original code incorrectly started its search at index 'bit_length', which always corresponds to a 0 for positive integers, leading to incorrect results like 26 for n=10. By starting the search at 'bit_length - 1' and returning 'n' if no bits are found, the function correctly handles cases like n=10 (returning 14) and n=15 (returning 15).\"\n}\n```",
+            "patch_explanations": [
+              "The original code only checked bits from the highest set bit downwards, missing the possibility of unset bits beyond that. By scanning from bit_length down to 0, we correctly find the leftmost unset bit including the bit immediately higher than the highest set bit if needed. The final fallback sets the next higher bit if all bits are set. This aligns the function behavior with the problem specification as explained in the error analysis.",
+              ""
+            ],
+            "iterations": [
+              {
+                "iteration": 1,
+                "fixer": {
+                  "provider": "openai",
+                  "model": "gpt-4.1-mini"
+                },
+                "patch_explanation": "The original code only checked bits from the highest set bit downwards, missing the possibility of unset bits beyond that. By scanning from bit_length down to 0, we correctly find the leftmost unset bit including the bit immediately higher than the highest set bit if needed. The final fallback sets the next higher bit if all bits are set. This aligns the function behavior with the problem specification as explained in the error analysis.",
+                "updated_code": "def set_left_most_unset_bit(n):\n    # If n is 0, the leftmost unset bit is bit 0\n    if n == 0:\n        return 1\n    bit_length = n.bit_length()\n    # We start checking from bit_length (one past the highest set bit) down to 0\n    # because bit_length-th bit is the next possible leftmost unset bit\n    for i in range(bit_length, -1, -1):\n        if not (n & (1 << i)):\n            return n | (1 << i)\n    # If all bits up to bit_length are set, set the next higher bit\n    return n | (1 << (bit_length + 1))",
+                "exec_result": {
+                  "passed": false,
+                  "num_tests": 3,
+                  "num_passed": 2,
+                  "error_type": "AssertionError",
+                  "error_message": "",
+                  "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 14, in <module>\nAssertionError\n",
+                  "stdout": "",
+                  "stderr": ""
+                }
+              },
+              {
+                "iteration": 2,
+                "fixer": {
+                  "provider": "gemini",
+                  "model": "gemini-3-flash-preview"
+                },
+                "patch_explanation": "",
+                "updated_code": "```json\n{\n  \"patched_code\": \"def set_left_most_unset_bit(n):\\n    if n == 0:\\n        return 1\\n    bit_length = n.bit_length()\\n    # Start checking from the most significant bit (index bit_length - 1) down to 0\\n    for i in range(bit_length - 1, -1, -1):\\n        if not (n & (1 << i)):\\n            return n | (1 << i)\\n    # If all bits within the current bit length are set, return the number unchanged\\n    return n\",\n  \"patch_strategy\": \"The search range was adjusted to start at the most significant bit (MSB) rather than one bit past it, and the fallback return statement was changed to return the original number if no unset bits are found.\",\n  \"rationale\": \"As per the problem specification and error analysis, the 'leftmost unset bit' should be located within the binary structure of the existing number (i.e., at or below the MSB). The original code incorrectly started its search at index 'bit_length', which always corresponds to a 0 for positive integers, leading to incorrect results like 26 for n=10. By starting the search at 'bit_length - 1' and returning 'n' if no bits are found, the function correctly handles cases like n=10 (returning 14) and n=15 (returning 15).\"\n}\n```",
+                "exec_result": {
+                  "passed": false,
+                  "num_tests": 3,
+                  "num_passed": 2,
+                  "error_type": "SyntaxError",
+                  "error_message": "invalid syntax (<string>, line 1)",
+                  "traceback_str": "Traceback (most recent call last):\n  File \"/home/osborn/thesis/runtime/code_exec.py\", line 119, in _run_code_with_test_code\n    exec(full_source, global_ns, global_ns)\n  File \"<string>\", line 1\n    ```json\n    ^\nSyntaxError: invalid syntax\n",
+                  "stdout": "",
+                  "stderr": ""
+                }
+              }
+            ],
+            "prompt": "Write a python function to set the left most unset bit.\n\nYou must implement the following Python function:\n```python\ndef set_left_most_unset_bit(n):\n    # TODO: implement\n    pass\n```",
+            "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview,claude-haiku-4-5"
+          },
+          {
+            "timestamp": "2026-04-23_20-04-15",
+            "benchmark": "MBPP",
+            "task_id": "MBPP/273",
+            "provider": "openai",
+            "base_model": "gpt-4.1-mini",
+            "handoff_models_used": [],
+            "mode_tag": "handoff_3agents",
+            "passed": true,
+            "num_tests": 3,
+            "num_passed": 3,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a function that takes in two tuples and subtracts the elements of the first tuple by the elements of the second tuple with the same index.\n\nYou must implement the following Python function:\n```python\ndef substract_elements(test_tup1, test_tup2):\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+            "initial_plan": "Define a function that takes two tuples as inputs. Inside the function, use a list comprehension with zip to iterate over both tuples in parallel and subtract the second tuple's element from the first tuple's element at each index. Convert the resulting list back to a tuple and return it.",
+            "initial_code": "def substract_elements(test_tup1, test_tup2):\n    return tuple(a - b for a, b in zip(test_tup1, test_tup2))",
+            "final_code": "def substract_elements(test_tup1, test_tup2):\n    return tuple(a - b for a, b in zip(test_tup1, test_tup2))",
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "Write a function that takes in two tuples and subtracts the elements of the first tuple by the elements of the second tuple with the same index.\n\nYou must implement the following Python function:\n```python\ndef substract_elements(test_tup1, test_tup2):\n    # TODO: implement\n    pass\n```",
+            "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview,claude-haiku-4-5"
+          },
+          {
+            "timestamp": "2026-04-23_20-04-15",
+            "benchmark": "MBPP",
+            "task_id": "MBPP/108",
+            "provider": "openai",
+            "base_model": "gpt-4.1-mini",
+            "handoff_models_used": [],
+            "mode_tag": "handoff_3agents",
+            "passed": true,
+            "num_tests": 3,
+            "num_passed": 3,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (MBPP)\n        ------------------\n        Write a function to merge three lists into a single sorted list.\n\nYou must implement the following Python function:\n```python\nimport heapq\n    # TODO: implement\n    pass\n```\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+            "initial_plan": "Use the heapq.merge function to efficiently merge three sorted lists into one sorted list. The function will accept three lists as input, apply heapq.merge to them, and return a single sorted list.",
+            "initial_code": "import heapq\n\ndef merge_three_lists(lst1, lst2, lst3):\n    # Use heapq.merge to merge three sorted lists into a sorted iterator\n    merged_iter = heapq.merge(lst1, lst2, lst3)\n    # Convert the iterator to a list and return\n    return list(merged_iter)",
+            "final_code": "import heapq\n\ndef merge_sorted_list(lst1, lst2, lst3):\n    # Sort each list before merging to ensure heapq.merge inputs are sorted\n    sorted_lst1 = sorted(lst1)\n    sorted_lst2 = sorted(lst2)\n    sorted_lst3 = sorted(lst3)\n    merged_iter = heapq.merge(sorted_lst1, sorted_lst2, sorted_lst3)\n    return list(merged_iter)",
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "Write a function to merge three lists into a single sorted list.\n\nYou must implement the following Python function:\n```python\nimport heapq\n    # TODO: implement\n    pass\n```",
+            "skipped_reason": "self_debug_solved",
+            "handoff_label": "handoff[openai]:gpt-4.1-mini,gemini-3-flash-preview,claude-haiku-4-5"
+          }
+        ]
+      }
+    }
+  },
+  "artifacts": {
+    "run_dir": "results/run_2026-04-23_20-04-15",
+    "plots_dir": "results/run_2026-04-23_20-04-15/plots",
+    "plots": {
+      "pass_rates": [
+        "results/run_2026-04-23_20-04-15/plots/pass_rates_MBPP_clean.png"
+      ]
+    },
+    "summary_report_text": [
+      "MBPP on openai:gpt-4.1-mini",
+      "Baseline: 2/5 (40.00%)",
+      "Self-debug (only on failures): 3/5 (60.00%)",
+      "Handoff (2): 4/5 (80.00%)",
+      "Handoff (3): 4/5 (80.00%)"
+    ]
+  },
+  "summary_report_text": [
+    "MBPP on openai:gpt-4.1-mini",
+    "Baseline: 2/5 (40.00%)",
+    "Self-debug (only on failures): 3/5 (60.00%)",
+    "Handoff (2): 4/5 (80.00%)",
+    "Handoff (3): 4/5 (80.00%)"
+  ]
+}

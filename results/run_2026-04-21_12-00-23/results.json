@@ -1,0 +1,553 @@
+{
+  "timestamp": "2026-04-21_12-00-23",
+  "config": {
+    "benchmarks": [
+      "HumanEval"
+    ],
+    "configs": [
+      [
+        "ollama",
+        "kimi-k2.6:cloud"
+      ]
+    ],
+    "max_tasks": 2,
+    "max_self_debug_iters": 1,
+    "patch_pools": {
+      "openai": [
+        {
+          "provider": "openai",
+          "model": "gpt-5.4"
+        },
+        {
+          "provider": "openai",
+          "model": "gpt-5.4-mini"
+        },
+        {
+          "provider": "openai",
+          "model": "gpt-5.4-nano"
+        },
+        {
+          "provider": "openai",
+          "model": "gpt-5"
+        },
+        {
+          "provider": "openai",
+          "model": "gpt-5-mini"
+        }
+      ],
+      "gemini": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.1-pro-preview"
+        },
+        {
+          "provider": "gemini",
+          "model": "gemini-3-flash-preview"
+        },
+        {
+          "provider": "gemini",
+          "model": "gemini-3-pro-preview"
+        },
+        {
+          "provider": "gemini",
+          "model": "gemini-3.1-flash-lite-preview"
+        },
+        {
+          "provider": "gemini",
+          "model": "gemini-2.5-flash"
+        }
+      ],
+      "anthropic": [
+        {
+          "provider": "anthropic",
+          "model": "claude-sonnet-4-6"
+        },
+        {
+          "provider": "anthropic",
+          "model": "claude-haiku-4-5"
+        }
+      ],
+      "ollama": [
+        {
+          "provider": "ollama",
+          "model": "kimi-k2.6:cloud"
+        },
+        {
+          "provider": "ollama",
+          "model": "deepseek-v3.1:671-cloud"
+        },
+        {
+          "provider": "ollama",
+          "model": "deepseek-coder:1.3b"
+        }
+      ]
+    },
+    "k_values": [
+      2,
+      3
+    ],
+    "openai_default_model": "gpt-5.4",
+    "gemini_default_model": "gemini-3.1-pro-preview",
+    "anthropic_default_model": "claude-sonnet-4-6",
+    "ollama_default_model": "kimi-k2.6:cloud"
+  },
+  "summaries": [
+    {
+      "mode_tag": "baseline",
+      "benchmark": "HumanEval",
+      "provider": "ollama",
+      "model": "kimi-k2.6:cloud",
+      "mode": "baseline",
+      "num_tasks": 2,
+      "num_passed": 2,
+      "pass_rate": 1.0,
+      "details": [
+        {
+          "timestamp": "2026-04-21_12-00-23",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "ollama",
+          "model": "kimi-k2.6:cloud",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "artifact": "",
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Sort the list of numbers and check adjacent pairs. If any adjacent pair has a difference strictly less than the threshold, return True. Otherwise, return False. This reduces the time complexity from O(n\u00b2) brute force to O(n log n) due to sorting.",
+          "initial_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False",
+          "final_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-04-21_12-00-23",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "ollama",
+          "model": "kimi-k2.6:cloud",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 4,
+          "num_passed": 4,
+          "artifact": "",
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Remove all spaces from the input string. Iterate through the characters while maintaining a balance counter: increment for '(' and decrement for ')'. Buffer characters into a temporary list. Whenever the balance returns to zero, the buffer contains a complete balanced group; join it into a string, add it to the result list, and reset the buffer. Return the collected groups.",
+          "initial_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    paren_string = paren_string.replace(' ', '')\n    result: List[str] = []\n    current: List[str] = []\n    balance = 0\n\n    for char in paren_string:\n        if char == '(':\n            balance += 1\n            current.append(char)\n        elif char == ')':\n            balance -= 1\n            current.append(char)\n            if balance == 0:\n                result.append(''.join(current))\n                current = []\n\n    return result",
+          "final_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    paren_string = paren_string.replace(' ', '')\n    result: List[str] = []\n    current: List[str] = []\n    balance = 0\n\n    for char in paren_string:\n        if char == '(':\n            balance += 1\n            current.append(char)\n        elif char == ')':\n            balance -= 1\n            current.append(char)\n            if balance == 0:\n                result.append(''.join(current))\n                current = []\n\n    return result",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        }
+      ]
+    },
+    {
+      "mode_tag": "self_debug_single",
+      "benchmark": "HumanEval",
+      "provider": "ollama",
+      "model": "kimi-k2.6:cloud",
+      "mode": "self_debug_single",
+      "num_tasks": 2,
+      "num_passed": 2,
+      "pass_rate": 1.0,
+      "details": [
+        {
+          "timestamp": "2026-04-21_12-00-23",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "ollama",
+          "model": "kimi-k2.6:cloud",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Sort the list of numbers and check adjacent pairs. If any adjacent pair has a difference strictly less than the threshold, return True. Otherwise, return False. This reduces the time complexity from O(n\u00b2) brute force to O(n log n) due to sorting.",
+          "initial_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False",
+          "final_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-04-21_12-00-23",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "ollama",
+          "model": "kimi-k2.6:cloud",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 4,
+          "num_passed": 4,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Remove all spaces from the input string. Iterate through the characters while maintaining a balance counter: increment for '(' and decrement for ')'. Buffer characters into a temporary list. Whenever the balance returns to zero, the buffer contains a complete balanced group; join it into a string, add it to the result list, and reset the buffer. Return the collected groups.",
+          "initial_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    paren_string = paren_string.replace(' ', '')\n    result: List[str] = []\n    current: List[str] = []\n    balance = 0\n\n    for char in paren_string:\n        if char == '(':\n            balance += 1\n            current.append(char)\n        elif char == ')':\n            balance -= 1\n            current.append(char)\n            if balance == 0:\n                result.append(''.join(current))\n                current = []\n\n    return result",
+          "final_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    paren_string = paren_string.replace(' ', '')\n    result: List[str] = []\n    current: List[str] = []\n    balance = 0\n\n    for char in paren_string:\n        if char == '(':\n            balance += 1\n            current.append(char)\n        elif char == ')':\n            balance -= 1\n            current.append(char)\n            if balance == 0:\n                result.append(''.join(current))\n                current = []\n\n    return result",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        }
+      ]
+    },
+    {
+      "mode_tag": "handoff_2agents",
+      "benchmark": "HumanEval",
+      "provider": "ollama",
+      "model": "handoff[ollama]:kimi-k2.6:cloud,deepseek-v3.1:671-cloud",
+      "mode": "handoff_2agents",
+      "num_tasks": 2,
+      "num_passed": 2,
+      "pass_rate": 1.0,
+      "details": [
+        {
+          "timestamp": "2026-04-21_12-00-23",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "ollama",
+          "base_model": "kimi-k2.6:cloud",
+          "handoff_models_used": [],
+          "mode_tag": "handoff_2agents",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Sort the list of numbers and check adjacent pairs. If any adjacent pair has a difference strictly less than the threshold, return True. Otherwise, return False. This reduces the time complexity from O(n\u00b2) brute force to O(n log n) due to sorting.",
+          "initial_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False",
+          "final_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False",
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n",
+          "handoff_label": "handoff[ollama]:kimi-k2.6:cloud,deepseek-v3.1:671-cloud"
+        },
+        {
+          "timestamp": "2026-04-21_12-00-23",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "ollama",
+          "base_model": "kimi-k2.6:cloud",
+          "handoff_models_used": [],
+          "mode_tag": "handoff_2agents",
+          "passed": true,
+          "num_tests": 4,
+          "num_passed": 4,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Remove all spaces from the input string. Iterate through the characters while maintaining a balance counter: increment for '(' and decrement for ')'. Buffer characters into a temporary list. Whenever the balance returns to zero, the buffer contains a complete balanced group; join it into a string, add it to the result list, and reset the buffer. Return the collected groups.",
+          "initial_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    paren_string = paren_string.replace(' ', '')\n    result: List[str] = []\n    current: List[str] = []\n    balance = 0\n\n    for char in paren_string:\n        if char == '(':\n            balance += 1\n            current.append(char)\n        elif char == ')':\n            balance -= 1\n            current.append(char)\n            if balance == 0:\n                result.append(''.join(current))\n                current = []\n\n    return result",
+          "final_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    paren_string = paren_string.replace(' ', '')\n    result: List[str] = []\n    current: List[str] = []\n    balance = 0\n\n    for char in paren_string:\n        if char == '(':\n            balance += 1\n            current.append(char)\n        elif char == ')':\n            balance -= 1\n            current.append(char)\n            if balance == 0:\n                result.append(''.join(current))\n                current = []\n\n    return result",
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n",
+          "handoff_label": "handoff[ollama]:kimi-k2.6:cloud,deepseek-v3.1:671-cloud"
+        }
+      ]
+    },
+    {
+      "mode_tag": "handoff_3agents",
+      "benchmark": "HumanEval",
+      "provider": "ollama",
+      "model": "handoff[ollama]:kimi-k2.6:cloud,deepseek-v3.1:671-cloud,deepseek-coder:1.3b",
+      "mode": "handoff_3agents",
+      "num_tasks": 2,
+      "num_passed": 2,
+      "pass_rate": 1.0,
+      "details": [
+        {
+          "timestamp": "2026-04-21_12-00-23",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "ollama",
+          "base_model": "kimi-k2.6:cloud",
+          "handoff_models_used": [],
+          "mode_tag": "handoff_3agents",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Sort the list of numbers and check adjacent pairs. If any adjacent pair has a difference strictly less than the threshold, return True. Otherwise, return False. This reduces the time complexity from O(n\u00b2) brute force to O(n log n) due to sorting.",
+          "initial_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False",
+          "final_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False",
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n",
+          "handoff_label": "handoff[ollama]:kimi-k2.6:cloud,deepseek-v3.1:671-cloud,deepseek-coder:1.3b"
+        },
+        {
+          "timestamp": "2026-04-21_12-00-23",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "ollama",
+          "base_model": "kimi-k2.6:cloud",
+          "handoff_models_used": [],
+          "mode_tag": "handoff_3agents",
+          "passed": true,
+          "num_tests": 4,
+          "num_passed": 4,
+          "error_type": null,
+          "error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Remove all spaces from the input string. Iterate through the characters while maintaining a balance counter: increment for '(' and decrement for ')'. Buffer characters into a temporary list. Whenever the balance returns to zero, the buffer contains a complete balanced group; join it into a string, add it to the result list, and reset the buffer. Return the collected groups.",
+          "initial_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    paren_string = paren_string.replace(' ', '')\n    result: List[str] = []\n    current: List[str] = []\n    balance = 0\n\n    for char in paren_string:\n        if char == '(':\n            balance += 1\n            current.append(char)\n        elif char == ')':\n            balance -= 1\n            current.append(char)\n            if balance == 0:\n                result.append(''.join(current))\n                current = []\n\n    return result",
+          "final_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    paren_string = paren_string.replace(' ', '')\n    result: List[str] = []\n    current: List[str] = []\n    balance = 0\n\n    for char in paren_string:\n        if char == '(':\n            balance += 1\n            current.append(char)\n        elif char == ')':\n            balance -= 1\n            current.append(char)\n            if balance == 0:\n                result.append(''.join(current))\n                current = []\n\n    return result",
+          "patch_explanations": [],
+          "iterations": [],
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n",
+          "handoff_label": "handoff[ollama]:kimi-k2.6:cloud,deepseek-v3.1:671-cloud,deepseek-coder:1.3b"
+        }
+      ]
+    }
+  ],
+  "details": {
+    "baseline": {
+      "HumanEval::ollama::kimi-k2.6:cloud": [
+        {
+          "timestamp": "2026-04-21_12-00-23",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "ollama",
+          "model": "kimi-k2.6:cloud",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "artifact": "",
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Sort the list of numbers and check adjacent pairs. If any adjacent pair has a difference strictly less than the threshold, return True. Otherwise, return False. This reduces the time complexity from O(n\u00b2) brute force to O(n log n) due to sorting.",
+          "initial_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False",
+          "final_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-04-21_12-00-23",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "ollama",
+          "model": "kimi-k2.6:cloud",
+          "mode_tag": "baseline",
+          "passed": true,
+          "num_tests": 4,
+          "num_passed": 4,
+          "artifact": "",
+          "error_type": null,
+          "error_message": null,
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Remove all spaces from the input string. Iterate through the characters while maintaining a balance counter: increment for '(' and decrement for ')'. Buffer characters into a temporary list. Whenever the balance returns to zero, the buffer contains a complete balanced group; join it into a string, add it to the result list, and reset the buffer. Return the collected groups.",
+          "initial_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    paren_string = paren_string.replace(' ', '')\n    result: List[str] = []\n    current: List[str] = []\n    balance = 0\n\n    for char in paren_string:\n        if char == '(':\n            balance += 1\n            current.append(char)\n        elif char == ')':\n            balance -= 1\n            current.append(char)\n            if balance == 0:\n                result.append(''.join(current))\n                current = []\n\n    return result",
+          "final_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    paren_string = paren_string.replace(' ', '')\n    result: List[str] = []\n    current: List[str] = []\n    balance = 0\n\n    for char in paren_string:\n        if char == '(':\n            balance += 1\n            current.append(char)\n        elif char == ')':\n            balance -= 1\n            current.append(char)\n            if balance == 0:\n                result.append(''.join(current))\n                current = []\n\n    return result",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        }
+      ]
+    },
+    "self_debug_single": {
+      "HumanEval::ollama::kimi-k2.6:cloud": [
+        {
+          "timestamp": "2026-04-21_12-00-23",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/0",
+          "provider": "ollama",
+          "model": "kimi-k2.6:cloud",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 7,
+          "num_passed": 7,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Sort the list of numbers and check adjacent pairs. If any adjacent pair has a difference strictly less than the threshold, return True. Otherwise, return False. This reduces the time complexity from O(n\u00b2) brute force to O(n log n) due to sorting.",
+          "initial_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False",
+          "final_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n"
+        },
+        {
+          "timestamp": "2026-04-21_12-00-23",
+          "benchmark": "HumanEval",
+          "task_id": "HumanEval/1",
+          "provider": "ollama",
+          "model": "kimi-k2.6:cloud",
+          "mode_tag": "self_debug_single",
+          "passed": true,
+          "num_tests": 4,
+          "num_passed": 4,
+          "error_type": null,
+          "error_message": null,
+          "initial_error_type": null,
+          "initial_error_message": null,
+          "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+          "initial_plan": "Remove all spaces from the input string. Iterate through the characters while maintaining a balance counter: increment for '(' and decrement for ')'. Buffer characters into a temporary list. Whenever the balance returns to zero, the buffer contains a complete balanced group; join it into a string, add it to the result list, and reset the buffer. Return the collected groups.",
+          "initial_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    paren_string = paren_string.replace(' ', '')\n    result: List[str] = []\n    current: List[str] = []\n    balance = 0\n\n    for char in paren_string:\n        if char == '(':\n            balance += 1\n            current.append(char)\n        elif char == ')':\n            balance -= 1\n            current.append(char)\n            if balance == 0:\n                result.append(''.join(current))\n                current = []\n\n    return result",
+          "final_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    paren_string = paren_string.replace(' ', '')\n    result: List[str] = []\n    current: List[str] = []\n    balance = 0\n\n    for char in paren_string:\n        if char == '(':\n            balance += 1\n            current.append(char)\n        elif char == ')':\n            balance -= 1\n            current.append(char)\n            if balance == 0:\n                result.append(''.join(current))\n                current = []\n\n    return result",
+          "patch_models_used": [],
+          "patch_explanations": [],
+          "iterations": [],
+          "traceback_str": null,
+          "stdout": "",
+          "stderr": "",
+          "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n"
+        }
+      ]
+    },
+    "sequential_handoff": {
+      "HumanEval::ollama::kimi-k2.6:cloud": {
+        "2": [
+          {
+            "timestamp": "2026-04-21_12-00-23",
+            "benchmark": "HumanEval",
+            "task_id": "HumanEval/0",
+            "provider": "ollama",
+            "base_model": "kimi-k2.6:cloud",
+            "handoff_models_used": [],
+            "mode_tag": "handoff_2agents",
+            "passed": true,
+            "num_tests": 7,
+            "num_passed": 7,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+            "initial_plan": "Sort the list of numbers and check adjacent pairs. If any adjacent pair has a difference strictly less than the threshold, return True. Otherwise, return False. This reduces the time complexity from O(n\u00b2) brute force to O(n log n) due to sorting.",
+            "initial_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False",
+            "final_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False",
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n",
+            "handoff_label": "handoff[ollama]:kimi-k2.6:cloud,deepseek-v3.1:671-cloud"
+          },
+          {
+            "timestamp": "2026-04-21_12-00-23",
+            "benchmark": "HumanEval",
+            "task_id": "HumanEval/1",
+            "provider": "ollama",
+            "base_model": "kimi-k2.6:cloud",
+            "handoff_models_used": [],
+            "mode_tag": "handoff_2agents",
+            "passed": true,
+            "num_tests": 4,
+            "num_passed": 4,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+            "initial_plan": "Remove all spaces from the input string. Iterate through the characters while maintaining a balance counter: increment for '(' and decrement for ')'. Buffer characters into a temporary list. Whenever the balance returns to zero, the buffer contains a complete balanced group; join it into a string, add it to the result list, and reset the buffer. Return the collected groups.",
+            "initial_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    paren_string = paren_string.replace(' ', '')\n    result: List[str] = []\n    current: List[str] = []\n    balance = 0\n\n    for char in paren_string:\n        if char == '(':\n            balance += 1\n            current.append(char)\n        elif char == ')':\n            balance -= 1\n            current.append(char)\n            if balance == 0:\n                result.append(''.join(current))\n                current = []\n\n    return result",
+            "final_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    paren_string = paren_string.replace(' ', '')\n    result: List[str] = []\n    current: List[str] = []\n    balance = 0\n\n    for char in paren_string:\n        if char == '(':\n            balance += 1\n            current.append(char)\n        elif char == ')':\n            balance -= 1\n            current.append(char)\n            if balance == 0:\n                result.append(''.join(current))\n                current = []\n\n    return result",
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n",
+            "handoff_label": "handoff[ollama]:kimi-k2.6:cloud,deepseek-v3.1:671-cloud"
+          }
+        ],
+        "3": [
+          {
+            "timestamp": "2026-04-21_12-00-23",
+            "benchmark": "HumanEval",
+            "task_id": "HumanEval/0",
+            "provider": "ollama",
+            "base_model": "kimi-k2.6:cloud",
+            "handoff_models_used": [],
+            "mode_tag": "handoff_3agents",
+            "passed": true,
+            "num_tests": 7,
+            "num_passed": 7,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+            "initial_plan": "Sort the list of numbers and check adjacent pairs. If any adjacent pair has a difference strictly less than the threshold, return True. Otherwise, return False. This reduces the time complexity from O(n\u00b2) brute force to O(n log n) due to sorting.",
+            "initial_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False",
+            "final_code": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n    sorted_numbers = sorted(numbers)\n    for i in range(len(sorted_numbers) - 1):\n        if sorted_numbers[i + 1] - sorted_numbers[i] < threshold:\n            return True\n    return False",
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "from typing import List\n\n\ndef has_close_elements(numbers: List[float], threshold: float) -> bool:\n    \"\"\" Check if in given list of numbers, are any two numbers closer to each other than\n    given threshold.\n    >>> has_close_elements([1.0, 2.0, 3.0], 0.5)\n    False\n    >>> has_close_elements([1.0, 2.8, 3.0, 4.0, 5.0, 2.0], 0.3)\n    True\n    \"\"\"\n",
+            "handoff_label": "handoff[ollama]:kimi-k2.6:cloud,deepseek-v3.1:671-cloud,deepseek-coder:1.3b"
+          },
+          {
+            "timestamp": "2026-04-21_12-00-23",
+            "benchmark": "HumanEval",
+            "task_id": "HumanEval/1",
+            "provider": "ollama",
+            "base_model": "kimi-k2.6:cloud",
+            "handoff_models_used": [],
+            "mode_tag": "handoff_3agents",
+            "passed": true,
+            "num_tests": 4,
+            "num_passed": 4,
+            "error_type": null,
+            "error_message": null,
+            "initial_raw_prompt": "TASK (HumanEval)\n        ------------------\n        from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n\n        \n        Return ONLY valid JSON\n        The \"code\" field must contain complete, self-contained Python code. Include all required imports needed for executionDo not omit imports from the problem specification if the generated code depends on them.\n\n        Return JSON:\n        { \"plan\": \"...\", \"code\": \"...\", \"explanation\": \"...\" }",
+            "initial_plan": "Remove all spaces from the input string. Iterate through the characters while maintaining a balance counter: increment for '(' and decrement for ')'. Buffer characters into a temporary list. Whenever the balance returns to zero, the buffer contains a complete balanced group; join it into a string, add it to the result list, and reset the buffer. Return the collected groups.",
+            "initial_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    paren_string = paren_string.replace(' ', '')\n    result: List[str] = []\n    current: List[str] = []\n    balance = 0\n\n    for char in paren_string:\n        if char == '(':\n            balance += 1\n            current.append(char)\n        elif char == ')':\n            balance -= 1\n            current.append(char)\n            if balance == 0:\n                result.append(''.join(current))\n                current = []\n\n    return result",
+            "final_code": "from typing import List\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n    paren_string = paren_string.replace(' ', '')\n    result: List[str] = []\n    current: List[str] = []\n    balance = 0\n\n    for char in paren_string:\n        if char == '(':\n            balance += 1\n            current.append(char)\n        elif char == ')':\n            balance -= 1\n            current.append(char)\n            if balance == 0:\n                result.append(''.join(current))\n                current = []\n\n    return result",
+            "patch_explanations": [],
+            "iterations": [],
+            "prompt": "from typing import List\n\n\ndef separate_paren_groups(paren_string: str) -> List[str]:\n    \"\"\" Input to this function is a string containing multiple groups of nested parentheses. Your goal is to\n    separate those group into separate strings and return the list of those.\n    Separate groups are balanced (each open brace is properly closed) and not nested within each other\n    Ignore any spaces in the input string.\n    >>> separate_paren_groups('( ) (( )) (( )( ))')\n    ['()', '(())', '(()())']\n    \"\"\"\n",
+            "handoff_label": "handoff[ollama]:kimi-k2.6:cloud,deepseek-v3.1:671-cloud,deepseek-coder:1.3b"
+          }
+        ]
+      }
+    }
+  },
+  "artifacts": {
+    "run_dir": "results/run_2026-04-21_12-00-23",
+    "plots_dir": "results/run_2026-04-21_12-00-23/plots",
+    "plots": {
+      "pass_rates": [
+        "results/run_2026-04-21_12-00-23/plots/pass_rates_HumanEval_clean.png"
+      ]
+    },
+    "summary_report_text": [
+      "HumanEval on ollama:kimi-k2.6:cloud",
+      "Baseline: 2/2 (100.00%)",
+      "Self-debug (only on failures): 2/2 (100.00%)",
+      "Handoff (2): 2/2 (100.00%)",
+      "Handoff (3): 2/2 (100.00%)"
+    ]
+  },
+  "summary_report_text": [
+    "HumanEval on ollama:kimi-k2.6:cloud",
+    "Baseline: 2/2 (100.00%)",
+    "Self-debug (only on failures): 2/2 (100.00%)",
+    "Handoff (2): 2/2 (100.00%)",
+    "Handoff (3): 2/2 (100.00%)"
+  ]
+}

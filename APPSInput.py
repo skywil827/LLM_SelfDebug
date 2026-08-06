@@ -30,17 +30,20 @@ def load_apps_task(
 ) -> APPSTask:
   
     ds = load_dataset("codeparrot/apps", split=split)
+    
+    # Generate random tasks
+    sample = ds[random.randrange(len(ds))]
 
-    if problem_id is None:
-        sample = ds[random.randrange(len(ds))]
-    else:
-        matches = [row for row in ds if int(row["problem_id"]) == int(problem_id)]
-        if not matches:
-            raise ValueError(
-                f"APPS problem_id {problem_id} not found in split '{split}'. "
-                f"Example available id: {ds[0]['problem_id']}"
-            )
-        sample = matches[0]
+    # if problem_id is None:
+    #     sample = ds[random.randrange(len(ds))]
+    # else:
+    #     matches = [row for row in ds if int(row["problem_id"]) == int(problem_id)]
+    #     if not matches:
+    #         raise ValueError(
+    #             f"APPS problem_id {problem_id} not found in split '{split}'. "
+    #             f"Example available id: {ds[0]['problem_id']}"
+    #         )
+    #     sample = matches[0]
 
     pid = int(sample["problem_id"])
     question: str = sample["question"]

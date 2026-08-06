@@ -20,16 +20,19 @@ class MBPPTask:
 def load_mbpp_task(task_id: Optional[int] = None) -> MBPPTask:
     ds = load_dataset("mbpp", "sanitized", split="test")
 
-    if task_id is None:
-        sample = ds[random.randrange(len(ds))]
-    else:
-        matches = [row for row in ds if int(row["task_id"]) == int(task_id)]
-        if not matches:
-            raise ValueError(
-                f"MBPP task_id {task_id} not found. "
-                f"Example available id: {ds[0]['task_id']}"
-            )
-        sample = matches[0]
+    # Generate random tasks
+    sample = ds[random.randrange(len(ds))]
+    
+    # if task_id is None:
+    #     sample = ds[random.randrange(len(ds))]
+    # else:
+    #     matches = [row for row in ds if int(row["task_id"]) == int(task_id)]
+    #     if not matches:
+    #         raise ValueError(
+    #             f"MBPP task_id {task_id} not found. "
+    #             f"Example available id: {ds[0]['task_id']}"
+    #         )
+    #     sample = matches[0]
 
     tid = int(sample["task_id"])
     nl_prompt: str = sample["prompt"]    
